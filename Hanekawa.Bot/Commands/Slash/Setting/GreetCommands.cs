@@ -18,17 +18,17 @@ namespace Hanekawa.Bot.Commands.Slash.Setting;
 [RequireAuthorPermissions(Permissions.ManageChannels)]
 public class GreetCommands : DiscordApplicationGuildModuleBase
 {
-    private readonly Metrics<GreetCommands> _metrics;
+    private readonly Metrics _metrics;
 
-    public GreetCommands(Metrics<GreetCommands> metrics)
+    public GreetCommands(Metrics metrics)
         => _metrics = metrics;
 
     [SlashCommand("channel")]
     [Description("Set the greet channel")]
     public async Task<DiscordInteractionResponseCommandResult> Set(IChannel channel)
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.MeasureDuration<GreetCommands>();
+        _metrics.IncrementCounter<GreetCommands>();
         if (channel is not TransientInteractionChannel { Type: ChannelType.Text } textChannel) 
             return Response(Localization.ChannelMustBeTextChannel);
         await using var scope = Bot.Services.CreateAsyncScope();
@@ -41,8 +41,8 @@ public class GreetCommands : DiscordApplicationGuildModuleBase
     [Description("Set the greet message")]
     public async Task<DiscordInteractionResponseCommandResult> Set(string message)
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.MeasureDuration<GreetCommands>();
+        _metrics.IncrementCounter<GreetCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IGreetService>();
         var response = await service.SetMessage(Context.GuildId, message);
@@ -53,8 +53,8 @@ public class GreetCommands : DiscordApplicationGuildModuleBase
     [Description("Set the greet image url")]
     public async Task<DiscordInteractionResponseCommandResult> SetImage(string url)
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.MeasureDuration<GreetCommands>();
+        _metrics.IncrementCounter<GreetCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IGreetService>();
         var response = await service.SetImage(Context.GuildId, url, Context.AuthorId);
@@ -65,8 +65,8 @@ public class GreetCommands : DiscordApplicationGuildModuleBase
     [Description("List the greet images")]
     public async Task<IResult> ListImages()
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.MeasureDuration<GreetCommands>();
+        _metrics.IncrementCounter<GreetCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IGreetService>();
         var response = await service.ListImages(Context.GuildId);
@@ -90,8 +90,8 @@ public class GreetCommands : DiscordApplicationGuildModuleBase
     [Description("Remove the greet image")]
     public async Task<DiscordInteractionResponseCommandResult> RemoveImage(int id)
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.MeasureDuration<GreetCommands>();
+        _metrics.IncrementCounter<GreetCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IGreetService>();
         var response = await service.RemoveImage(Context.GuildId, id);
@@ -104,8 +104,8 @@ public class GreetCommands : DiscordApplicationGuildModuleBase
     [Description("Toggle the greet image")]
     public async Task<DiscordInteractionResponseCommandResult> ToggleImage()
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.MeasureDuration<GreetCommands>();
+        _metrics.IncrementCounter<GreetCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IGreetService>();
         var response = await service.ToggleImage(Context.GuildId);

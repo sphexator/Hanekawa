@@ -3,9 +3,6 @@ using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Hanekawa.Application;
 using Hanekawa.Application.Interfaces;
-using Hanekawa.Bot.Commands.Slash.Administration;
-using Hanekawa.Bot.Commands.Slash.Club;
-using Hanekawa.Bot.Commands.Slash.Setting;
 using Hanekawa.Bot.Services.Grpc;
 using Hanekawa.Infrastructure;
 using Serilog;
@@ -13,11 +10,6 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddGrpc();
-
-builder.Services.AddSingleton<Metrics<AdministrationCommands>>();
-builder.Services.AddSingleton<Metrics<ClubCommands>>();
-builder.Services.AddSingleton<Metrics<GreetCommands>>();
-builder.Services.AddSingleton<Metrics<LevelCommands>>();
 
 builder.Services.AddApplicationLayer();
 builder.Services.AddInfrastructureLayer(builder.Configuration);

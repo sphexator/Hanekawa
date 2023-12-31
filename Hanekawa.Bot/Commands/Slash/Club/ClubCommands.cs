@@ -12,17 +12,16 @@ namespace Hanekawa.Bot.Commands.Slash.Club;
 [SlashGroup("club")]
 public class ClubCommands : DiscordApplicationGuildModuleBase
 {
-    private readonly Metrics<ClubCommands> _metrics;
+    private readonly Metrics _metrics;
 
-    public ClubCommands(Metrics<ClubCommands> metrics)
+    public ClubCommands(Metrics metrics)
         => _metrics = metrics;
 
     [SlashCommand("create")]
     [Description("Create a club")]
     public async Task<DiscordInteractionResponseCommandResult> Create(string name, string description)
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.All<ClubCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IClubCommandService>();
         var response = await service.Create(Context.GuildId, name, description, Context.AuthorId);
@@ -34,6 +33,7 @@ public class ClubCommands : DiscordApplicationGuildModuleBase
     [RequireAuthorPermissions(Permissions.ManageGuild)]
     public async Task<DiscordInteractionResponseCommandResult> Delete(string name)
     {
+        using var _ = _metrics.All<ClubCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IClubCommandService>();
         var response = await service.Delete(Context.GuildId, name, Context.AuthorId);
@@ -44,8 +44,7 @@ public class ClubCommands : DiscordApplicationGuildModuleBase
     [Description("List all clubs")]
     public async Task<DiscordInteractionResponseCommandResult> List()
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.All<ClubCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IClubCommandService>();
         var response = await service.List(Context.GuildId);
@@ -56,8 +55,7 @@ public class ClubCommands : DiscordApplicationGuildModuleBase
     [Description("Join a club")]
     public async Task<DiscordInteractionResponseCommandResult> Join(string name)
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.All<ClubCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IClubCommandService>();
         var response = await service.Join(Context.GuildId, name, Context.AuthorId);
@@ -68,8 +66,7 @@ public class ClubCommands : DiscordApplicationGuildModuleBase
     [Description("Leave a club")]
     public async Task<DiscordInteractionResponseCommandResult> Leave(string name)
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.All<ClubCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IClubCommandService>();
         var response = await service.Leave(Context.GuildId, name, Context.AuthorId);
@@ -80,8 +77,7 @@ public class ClubCommands : DiscordApplicationGuildModuleBase
     [Description("Get club info")]
     public async Task<DiscordInteractionResponseCommandResult> Info(string name)
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.All<ClubCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IClubCommandService>();
         var response = await service.Info(Context.GuildId, name);

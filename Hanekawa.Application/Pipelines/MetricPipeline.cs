@@ -1,32 +1,29 @@
 ﻿using System.Diagnostics;
+using Hanekawa.Application.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Prometheus.Client;
-using IMetric = Hanekawa.Application.Interfaces.IMetric;
 
 namespace Hanekawa.Application.Pipelines;
 
 public class MetricPipeline<TRequest, TResult> : IPipelineBehavior<IMetric, TResult> where TRequest : notnull
 {
     private readonly ILogger<MetricPipeline<TRequest, TResult>> _logger;
-    private readonly IMetricFactory _metricFactory;
+    private readonly Metrics _metrics;
 
-    public MetricPipeline(ILogger<MetricPipeline<TRequest, TResult>> logger, IMetricFactory metricFactory)
+    public MetricPipeline(ILogger<MetricPipeline<TRequest, TResult>> logger, Metrics metrics)
     {
         _logger = logger;
-        _metricFactory = metricFactory;
+        _metrics = metrics;
     }
 
     public async Task<TResult> Handle(IMetric request, RequestHandlerDelegate<TResult> next, CancellationToken cancellationToken)
     {
         var type = request.GetType();
-        _metricFactory.CreateCounter(type.Name, "Global events", "Request").Inc();
-        _metricFactory.CreateCounter(request.GuildId + "-" + type.Name, "Guild specific events",
-            $"{request.GuildId}", type.Name, "Request").Inc();
+        _metrics.IncrementCounter(type.Name);
+        using var _ = _metrics.MeasureDuration(type.Name);
         var start = Stopwatch.GetTimestamp();
-        var response = await next();
+        var response = await next().ConfigureAwait(false);
         var elapsedTime = Stopwatch.GetElapsedTime(start);
-        
         _logger.LogInformation("Request {Request} executed in {Elapsed}ms",  nameof(request), elapsedTime);
         return response;
     }

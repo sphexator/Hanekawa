@@ -5,8 +5,8 @@ using Disqord.Bot.Commands.Interaction;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Hanekawa.Application;
-using Hanekawa.Application.Commands.Administration;
-using Hanekawa.Application.Handlers.Warnings;
+using Hanekawa.Application.Handlers.Commands.Administration;
+using Hanekawa.Application.Handlers.Services.Warnings;
 using Hanekawa.Bot.Mapper;
 using MediatR;
 using Qmmands;
@@ -17,12 +17,10 @@ namespace Hanekawa.Bot.Commands.Slash.Administration;
 [Description("Administration commands")]
 public class AdministrationCommands : DiscordApplicationGuildModuleBase
 {
-    private readonly Metrics<AdministrationCommands> _metrics;
+    private readonly Metrics _metrics;
     
-    public AdministrationCommands(Metrics<AdministrationCommands> metrics)
-    {
-        _metrics = metrics;
-    }
+    public AdministrationCommands(Metrics metrics)
+        => _metrics = metrics;
 
     [SlashCommand("ban")]
     [RequireBotPermissions(Permissions.BanMembers)]
@@ -30,8 +28,7 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     [Description("Bans a user from the server")]
     public async Task<DiscordInteractionResponseCommandResult> BanAsync(AutoComplete<IMember> member, string reason)
     {
-        _metrics.IncrementCounter();
-        using var _ = _metrics.MeasureDuration();
+        using var _ = _metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
         var result = await Bot.Services.GetRequiredService<AdministrationCommandService>()
             .BanUserAsync(user.ToDiscordMember(), Context.AuthorId, reason);
@@ -44,8 +41,7 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     [Description("Unbans a user from the server")]
     public async Task<DiscordInteractionResponseCommandResult> UnbanAsync(AutoComplete<IMember> member, string reason)
     {
-        _metrics.IncrementCounter();
-        using var _ = _metrics.MeasureDuration();
+        using var _ = _metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
         var result = await Bot.Services.GetRequiredService<AdministrationCommandService>()
             .UnbanUserAsync(user.ToGuild(),user.Id, Context.AuthorId.RawValue, reason);
@@ -58,8 +54,7 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     [Description("Kick a user from the server")]
     public async Task<DiscordInteractionResponseCommandResult> KickAsync(AutoComplete<IMember> member, string reason)
     {
-        _metrics.IncrementCounter();
-        using var _ = _metrics.MeasureDuration();
+        using var _ = _metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
         var result = await Bot.Services.GetRequiredService<AdministrationCommandService>()
             .KickUserAsync(user.ToDiscordMember(), Context.AuthorId, reason);
@@ -73,8 +68,7 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     public async Task<DiscordInteractionResponseCommandResult> MuteAsync(AutoComplete<IMember> member, 
         TimeSpan duration, string reason)
     {
-        _metrics.IncrementCounter();
-        using var _ = _metrics.MeasureDuration();
+        using var _ = _metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
         var result = await Bot.Services.GetRequiredService<AdministrationCommandService>()
             .MuteUserAsync(user.ToDiscordMember(), Context.AuthorId, reason, duration);
@@ -87,8 +81,7 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     [Description("Un-mutes a user in the server")]
     public async Task<DiscordInteractionResponseCommandResult> UnmuteAsync(AutoComplete<IMember> member, string reason)
     {
-        _metrics.IncrementCounter();
-        using var _ = _metrics.MeasureDuration();
+        using var _ = _metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
         var result = await Bot.Services.GetRequiredService<AdministrationCommandService>()
             .UnmuteUserAsync(user.ToDiscordMember(), Context.AuthorId, reason);
@@ -100,8 +93,7 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     [Description("Warns a user in the server")]
     public async Task<DiscordInteractionResponseCommandResult> WarnAsync(AutoComplete<IMember> member, string reason)
     {
-        _metrics.IncrementCounter();
-        using var _ = _metrics.MeasureDuration();
+        using var _ = _metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
         var response = await Bot.Services.GetRequiredService<IMediator>()
             .Send(new WarningReceived(user.ToDiscordMember(), reason, Context.AuthorId));
@@ -113,8 +105,7 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     [Description("Voids a warn from a user in the server")]
     public async Task<DiscordInteractionResponseCommandResult> VoidWarnAsync(AutoComplete<IMember> member)
     {
-        _metrics.IncrementCounter();
-        using var _ = _metrics.MeasureDuration();
+        using var _ = _metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
         var response = await Bot.Services.GetRequiredService<IMediator>()
             .Send(new WarningClear(user.ToDiscordMember(), Context.AuthorId, "Voided by moderator"));
@@ -126,8 +117,7 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     [Description("List all warnings from a user in the server")]
     public async Task<DiscordInteractionResponseCommandResult> WarnsAsync(AutoComplete<IMember> member)
     {
-        _metrics.IncrementCounter();
-        using var _ = _metrics.MeasureDuration();
+        using var _ = _metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
         var response = await Bot.Services.GetRequiredService<IMediator>()
             .Send(new WarningList(user.GuildId, user.Id));
@@ -139,8 +129,7 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     [Description("Clears all warnings from a user in the server")]
     public async Task<DiscordInteractionResponseCommandResult> ClearWarnsAsync(AutoComplete<IMember> member)
     {
-        _metrics.IncrementCounter();
-        using var _ = _metrics.MeasureDuration();
+        using var _ = _metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
         var response = await Bot.Services.GetRequiredService<IMediator>()
             .Send(new WarningClear(user.ToDiscordMember(), Context.AuthorId, 
@@ -154,8 +143,7 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     [Description("Prunes a number of messages from a channel")] 
     public async Task<DiscordInteractionResponseCommandResult> Prune(int messageCount = 100)
     {
-        _metrics.IncrementCounter();
-        using var _ = _metrics.MeasureDuration();
+        using var _ = _metrics.All<AdministrationCommands>();
         var channel = Bot.GetChannel(Context.GuildId, Context.ChannelId) as ITextChannel;
         var messagesAsync = await channel.FetchMessagesAsync(messageCount);
         var messageIds = new ulong[messagesAsync.Count];

@@ -17,17 +17,16 @@ namespace Hanekawa.Bot.Commands.Slash.Setting;
 [RequireAuthorPermissions(Permissions.ManageGuild)]
 public class LevelCommands : DiscordApplicationGuildModuleBase
 {
-    private readonly Metrics<LevelCommands> _metrics;
+    private readonly Metrics _metrics;
     
-    public LevelCommands(Metrics<LevelCommands> metrics)
+    public LevelCommands(Metrics metrics)
         => _metrics = metrics;
 
     [SlashCommand("add")]
     [Description("Add a level role")] 
     public async Task<DiscordInteractionResponseCommandResult> Add(int level, IRole role)
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.All<LevelCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<ILevelCommandService>();
         await service.AddAsync(Context.GuildId, role.Id, level, Context.CancellationToken);
@@ -38,8 +37,7 @@ public class LevelCommands : DiscordApplicationGuildModuleBase
     [Description("Remove a level role")]
     public async Task<DiscordInteractionResponseCommandResult> Remove(IRole role)
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.All<LevelCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<ILevelCommandService>();
         await service.RemoveAsync(Context.GuildId, role.Id, Context.CancellationToken);
@@ -50,8 +48,7 @@ public class LevelCommands : DiscordApplicationGuildModuleBase
     [Description("List all level roles")]
     public async Task<IDiscordCommandResult> List()
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.All<LevelCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<ILevelCommandService>();
         var response = await service.ListAsync(Context.GuildId, Context.CancellationToken);
@@ -63,8 +60,7 @@ public class LevelCommands : DiscordApplicationGuildModuleBase
     [Description("Modify a level role")]
     public async Task<DiscordInteractionResponseCommandResult> Modify(int level, IRole role)
     {
-        using var _ = _metrics.MeasureDuration();
-        _metrics.IncrementCounter();
+        using var _ = _metrics.All<LevelCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<ILevelCommandService>();
         await service.ModifyAsync(Context.GuildId, role.Id, level, Context.CancellationToken);

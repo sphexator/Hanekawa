@@ -1,4 +1,5 @@
-﻿using Hanekawa.Application.Commands.Settings;
+﻿using Hanekawa.Application.Handlers.Commands.Settings;
+using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Commands;
 using Hanekawa.Application.Interfaces.Services;
 using Hanekawa.Application.Services;
@@ -25,6 +26,7 @@ public static class DependencyInjection
         serviceCollection.AddSingleton(fontCollection);
 
         serviceCollection.AddMetricFactory(new CollectorRegistry());
+        serviceCollection.AddSingleton<IMetrics, Metrics>();
         
         return serviceCollection;
     }
