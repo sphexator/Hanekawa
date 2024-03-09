@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Bot.Commands;
@@ -8,6 +9,7 @@ using Disqord.Rest.Pagination;
 using Hanekawa.Application.Handlers.Services.Metrics;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Bot.Mapper;
+using Hanekawa.Entities;
 using Hanekawa.Entities.Discord;
 using MediatR;
 using Microsoft.Extensions.Options;
@@ -17,17 +19,21 @@ using IResult = Qmmands.IResult;
 namespace Hanekawa.Bot.Bot;
 
 /// <inheritdoc cref="Hanekawa.Application.Interfaces.IBot" />
-public class Bot : DiscordBot, IBot
+public sealed class Bot : DiscordBot, IBot
 {
-    public Bot(IOptions<DiscordBotConfiguration> options, ILogger<Bot> logger, 
-        IServiceProvider services, DiscordClient client) : base(options, logger, services, client)
-    { }
+    private readonly Counter<long> _commandsExecutedTotal;
 
+    public Bot(IOptions<DiscordBotConfiguration> options, ILogger<Bot> logger,
+            IServiceProvider services, DiscordClient client)
+            : base(options, logger, services, client)
+    {
+        var meter = services.GetRequiredService<IMeterFactory>().Create(MeterName.DiscordCommands);
+        _commandsExecutedTotal = meter.CreateCounter<long>(MeterName.DiscordCommands + ".Total");
+    }
+    
     protected override ValueTask<bool> OnAfterExecuted(IDiscordCommandContext context, IResult result)
     {
-        Services.GetRequiredService<IMetricFactory>().CreateCounter("hanekawa_commands_executed_total", 
-            "Total number of commands executed", "command", "module").WithLabels(
-            context.Command?.Name ?? "Unknown", context.Command?.Module.Name ?? "Unknown").Inc();
+        _commandsExecutedTotal.Add(1);
         return base.OnAfterExecuted(context, result);
     }
 
@@ -38,52 +44,46 @@ public class Bot : DiscordBot, IBot
         var elapsedTime = Stopwatch.GetElapsedTime(start);
         Serilog.Log.Information("Command {Command} executed in {Elapsed}ms", 
             context.Command?.Name, elapsedTime);
-
-        if(context.GuildId is not null)
-            await Services.GetRequiredService<IMediator>().Send(new CommandMetric(context.GuildId.Value, 
-                context.Author.Id, $"{context.Command?.Module.Name ?? "Unknown"}-{context.Command?.Name ?? "Unknown"}", 
-                DateTimeOffset.UtcNow));
-        
         return result;
     }
 
     /// <inheritdoc />
-    public async Task BanAsync(ulong guildId, ulong userId, int days, string reason)
-        => await this.CreateBanAsync(guildId, userId, reason, days, new DefaultRestRequestOptions { Reason = reason });
+    public Task BanAsync(ulong guildId, ulong userId, int days, string reason)
+        => this.CreateBanAsync(guildId, userId, reason, days, new DefaultRestRequestOptions { Reason = reason });
     
     /// <inheritdoc />
-    public async Task UnbanAsync(ulong guildId, ulong userId, string reason)
-        => await this.DeleteBanAsync(guildId, userId, new DefaultRestRequestOptions { Reason = reason });
+    public Task UnbanAsync(ulong guildId, ulong userId, string reason)
+        => this.DeleteBanAsync(guildId, userId, new DefaultRestRequestOptions { Reason = reason });
     
     /// <inheritdoc />
-    public async Task KickAsync(ulong guildId, ulong userId, string reason)
-        => await this.KickMemberAsync(guildId, userId, new DefaultRestRequestOptions { Reason = reason});
+    public Task KickAsync(ulong guildId, ulong userId, string reason)
+        => this.KickMemberAsync(guildId, userId, new DefaultRestRequestOptions { Reason = reason});
     
     /// <inheritdoc />
-    public async Task MuteAsync(ulong guildId, ulong userId, string reason, TimeSpan duration) 
-        => await this.ModifyMemberAsync(guildId, userId, x =>
+    public Task MuteAsync(ulong guildId, ulong userId, string reason, TimeSpan duration) 
+        => this.ModifyMemberAsync(guildId, userId, x =>
         {
             x.TimedOutUntil = DateTimeOffset.UtcNow.Add(duration);
         }, new DefaultRestRequestOptions{ Reason = reason } );
     
     /// <inheritdoc />
-    public async Task UnmuteAsync(ulong guildId, ulong userId, string reason) 
-        => await this.ModifyMemberAsync(guildId, userId, x =>
+    public Task UnmuteAsync(ulong guildId, ulong userId, string reason) 
+        => this.ModifyMemberAsync(guildId, userId, x =>
         {
             x.TimedOutUntil = null;
         }, new DefaultRestRequestOptions{ Reason = reason } );
     
     /// <inheritdoc />
-    public async Task AddRoleAsync(ulong guildId, ulong userId, ulong roleId) 
-        => await this.GrantRoleAsync(guildId, userId, roleId);
+    public Task AddRoleAsync(ulong guildId, ulong userId, ulong roleId) 
+        => this.GrantRoleAsync(guildId, userId, roleId);
     
     /// <inheritdoc />
-    public async Task RemoveRoleAsync(ulong guildId, ulong userId, ulong roleId) 
-        => await this.RevokeRoleAsync(guildId, userId, roleId);
+    public Task RemoveRoleAsync(ulong guildId, ulong userId, ulong roleId) 
+        => this.RevokeRoleAsync(guildId, userId, roleId);
     
     /// <inheritdoc />
-    public async Task ModifyRolesAsync(DiscordMember member, ulong[] modifiedRoles) 
-        => await this.ModifyMemberAsync(member.Guild.Id, member.Id, x =>
+    public Task ModifyRolesAsync(DiscordMember member, ulong[] modifiedRoles) 
+        => this.ModifyMemberAsync(member.Guild.Id, member.Id, x =>
         {
             x.RoleIds = ConvertToSnowflake(modifiedRoles);
         });
@@ -93,13 +93,13 @@ public class Bot : DiscordBot, IBot
         => this.GetGuild(guildId)!.GetChannel(channelId)!.Id;
 
     /// <inheritdoc />
-    public async Task PruneMessagesAsync(ulong guildId, ulong channelId, ulong[] messageIds) 
-        => await (this.GetGuild(guildId)!.GetChannel(channelId) as ITextChannel)
+    public Task PruneMessagesAsync(ulong guildId, ulong channelId, ulong[] messageIds) 
+        => (this.GetGuild(guildId)!.GetChannel(channelId) as ITextChannel)
             !.DeleteMessagesAsync(ConvertToSnowflake(messageIds));
 
     /// <inheritdoc />
-    public async Task DeleteMessageAsync(ulong guildId, ulong channelId, ulong messageId) 
-        => await (this.GetGuild(guildId)?.GetChannel(channelId) as ITextChannel)
+    public Task DeleteMessageAsync(ulong guildId, ulong channelId, ulong messageId) 
+        => (this.GetGuild(guildId)?.GetChannel(channelId) as ITextChannel)
             !.DeleteMessageAsync(messageId);
 
     /// <inheritdoc />
@@ -109,7 +109,7 @@ public class Bot : DiscordBot, IBot
             .WithContent(message)
             .WithAllowedMentions(LocalAllowedMentions.None);
         if (attachment is not null) localMsg.WithAttachments(new LocalAttachment(attachment.Stream, attachment.FileName));
-        var result = await this.SendMessageAsync(channelId, localMsg);
+        var result = await this.SendMessageAsync(channelId, localMsg).ConfigureAwait(false);
         return new ()
         {
             Id = result.Id,
@@ -128,13 +128,13 @@ public class Bot : DiscordBot, IBot
             .WithEmbeds(embedMessage.ToLocalEmbed())
             .WithAllowedMentions(LocalAllowedMentions.None);
         if (attachment is not null) localMsg.WithAttachments(new LocalAttachment(attachment.Stream, attachment.FileName));
-        await this.SendMessageAsync(channelId, localMsg);
+        await this.SendMessageAsync(channelId, localMsg).ConfigureAwait(false);
     }
 
     public async Task GetAuditLogAsync(ulong guildId)
     {
         var auditLogs = this.GetGuild(guildId)!.EnumerateAuditLogs(5);
-        var result = await auditLogs.FlattenAsync();
+        var result = await auditLogs.FlattenAsync().ConfigureAwait(false);
     }
 
     private static Snowflake[] ConvertToSnowflake(ulong[] modifiedRoles)

@@ -5,9 +5,12 @@ using Hanekawa.Entities.Discord;
 using Hanekawa.Entities.Users;
 using Microsoft.Extensions.Logging;
 using SixLabors.Fonts;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace Hanekawa.Application.Services;
 

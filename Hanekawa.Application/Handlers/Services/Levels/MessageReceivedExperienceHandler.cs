@@ -1,4 +1,5 @@
 ﻿using Hanekawa.Application.Contracts.Discord;
+using Hanekawa.Application.Contracts.Discord.Services;
 using Hanekawa.Application.Interfaces.Services;
 using MediatR;
 using Microsoft.Extensions.Configuration;

@@ -1,11 +1,15 @@
-﻿using SixLabors.ImageSharp.Drawing;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace Hanekawa.Application.Extensions;
 
 public static class ImageExtensions
 {
-    public static IImageProcessingContext ConvertToAvatar(this IImageProcessingContext processingContext, Size size, float cornerRadius) =>
+    public static IImageProcessingContext ConvertToAvatar(this IImageProcessingContext processingContext, 
+            Size size, float cornerRadius) =>
         processingContext.Resize(new ResizeOptions
         {
             Size = size,
@@ -30,11 +34,12 @@ public static class ImageExtensions
         return ctx;
     }
 
-    private static IPathCollection BuildCorners(int imageWidth, int imageHeight, float cornerRadius)
+    private static PathCollection BuildCorners(int imageWidth, int imageHeight, float cornerRadius)
     {
         var rect = new RectangularPolygon(-0.5f, -0.5f, cornerRadius, cornerRadius);
         
-        var cornerTopLeft = rect.Clip(new EllipsePolygon(cornerRadius - 0.5f, cornerRadius - 0.5f, cornerRadius));
+        var cornerTopLeft = rect.Clip(
+                new EllipsePolygon(cornerRadius - 0.5f, cornerRadius - 0.5f, cornerRadius));
 
         var rightPos = imageWidth - cornerTopLeft.Bounds.Width + 1;
         var bottomPos = imageHeight - cornerTopLeft.Bounds.Height + 1;
@@ -43,6 +48,6 @@ public static class ImageExtensions
         var cornerBottomLeft = cornerTopLeft.RotateDegree(-90).Translate(0, bottomPos);
         var cornerBottomRight = cornerTopLeft.RotateDegree(180).Translate(rightPos, bottomPos);
 
-        return new PathCollection(cornerTopLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight);
+        return new(cornerTopLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight);
     }
 }

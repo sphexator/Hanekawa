@@ -1,4 +1,5 @@
 ﻿using Hanekawa.Application.Contracts.Discord;
+using Hanekawa.Application.Contracts.Discord.Services;
 using MediatR;
 
 namespace Hanekawa.Application.Handlers.Services.Logs;

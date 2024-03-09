@@ -3,14 +3,9 @@ using Hanekawa.Application.Interfaces;
 
 namespace Hanekawa.Application;
 
-public class Metrics : IMetrics
+public class Metrics(IMeterFactory meterFactory) : IMetrics
 {
 	private readonly Dictionary<string, MetricCollection> _metrics = new();
-	private readonly IMeterFactory _meterFactory;
-	
-	public Metrics(IMeterFactory meterFactory)
-		=> _meterFactory = meterFactory;
-
 
 	/// <inheritdoc />
 	public TrackedDuration All<T>(ulong? guildId = null) => All(nameof(T), guildId);
@@ -29,7 +24,7 @@ public class Metrics : IMetrics
 
 	/// <inheritdoc />
 	public void IncrementCounter(string name, ulong? guildId = null)
-	{
+	{ 
 		if(_metrics.TryGetValue(name, out var metric))
 		{
 			metric.GlobalCounter.Add(1);
@@ -53,7 +48,7 @@ public class Metrics : IMetrics
 
 	private MetricCollection CreateMetric(string name, ulong? guildId = null)
 	{
-		var meter = _meterFactory.Create($"hanekawa.{name}");
+		var meter = meterFactory.Create($"hanekawa.{name}");
 		var counter = meter.CreateCounter<long>($"hanekawa.{name}.request.counter");
 		var guildCounter = new Dictionary<ulong, Counter<long>>();
 		if (guildId != null)

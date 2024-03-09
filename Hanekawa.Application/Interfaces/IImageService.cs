@@ -1,6 +1,7 @@
 ﻿using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Discord;
 using Hanekawa.Entities.Users;
+using SixLabors.ImageSharp;
 
 namespace Hanekawa.Application.Interfaces;
 

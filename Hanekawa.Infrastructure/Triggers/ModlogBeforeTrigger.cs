@@ -7,33 +7,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Infrastructure.Triggers;
 
-internal class ModLogBeforeTrigger : IBeforeSaveTrigger<GuildModerationLog>
+internal abstract class ModLogBeforeTrigger(IDbContext dbContext) : IBeforeSaveTrigger<GuildModerationLog>
 {
-    private readonly IDbContext _dbContext;
-    private readonly IBot _bot;
-    public ModLogBeforeTrigger(IDbContext dbContext, IBot bot)
-    {
-        _dbContext = dbContext;
-        _bot = bot;
-    }
-
+    /// <summary>
+    /// Before saving the moderation log, set the ID to the number of moderation logs in the guild
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="cancellationToken"></param>
     public async Task BeforeSave(ITriggerContext<GuildModerationLog> context, CancellationToken cancellationToken)
     {
         if(context.ChangeType is not ChangeType.Added) return;
         
         context.Entity.Id = 
-            await _dbContext.ModerationLogs.CountAsync(x => x.GuildId == context.Entity.GuildId,
-            cancellationToken: cancellationToken) + 1;
+            await dbContext.ModerationLogs.CountAsync(x => x.GuildId == context.Entity.GuildId,
+                    cancellationToken: cancellationToken).ConfigureAwait(false) + 1;
     }
 }
 
-internal class ModLogAfterTrigger : IAfterSaveTrigger<GuildModerationLog>
+internal abstract class ModLogAfterTrigger : IAfterSaveTrigger<GuildModerationLog>
 {
-    private readonly IBot _bot;
-    public ModLogAfterTrigger(IBot bot) => _bot = bot;
-
-    public async Task AfterSave(ITriggerContext<GuildModerationLog> context, CancellationToken cancellationToken)
+    public Task AfterSave(ITriggerContext<GuildModerationLog> context, CancellationToken cancellationToken)
     {
-        if (context.ChangeType is not ChangeType.Added) return;
+        if (context.ChangeType is ChangeType.Added) { }
+        return Task.CompletedTask;
     }
 }

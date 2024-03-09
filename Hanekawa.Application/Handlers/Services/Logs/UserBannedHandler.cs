@@ -1,4 +1,5 @@
 ﻿using Hanekawa.Application.Contracts.Discord;
+using Hanekawa.Application.Contracts.Discord.Services;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Discord;
 using MediatR;

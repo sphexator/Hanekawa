@@ -47,6 +47,7 @@
       <Folder Include="Commands\Slash\Board\" />
       <Folder Include="Commands\Slash\Boost\" />
       <Folder Include="Extensions\" />
+      <Folder Include="Validators\" />
     </ItemGroup>
 
 </Project>
