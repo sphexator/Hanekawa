@@ -1,4 +1,5 @@
 ﻿using Disqord;
+using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Discord;
@@ -17,11 +18,11 @@ internal static class DiscordExtensions
                 IconUrl = embed.Header.IconUrl,
                 Url = embed.Header.Url
             },
-            Title = embed.Title,
-            ThumbnailUrl = embed.Icon,
+            Title = embed.Title ?? string.Empty,
+            ThumbnailUrl = embed.Icon ?? string.Empty,
             Color = new Color(embed.Color),
-            Description = embed.Content,
-            ImageUrl = embed.Attachment,
+            Description = embed.Content ?? string.Empty,
+            ImageUrl = embed.Attachment ?? string.Empty,
             Timestamp = embed.Timestamp,
             Footer = new LocalEmbedFooter
             {
@@ -133,4 +134,18 @@ internal static class DiscordExtensions
             },
             IsEphemeral = response.Data.Emphemeral
         };
+
+    internal static Page[] ToPages(this Response<Pagination<Message>> list)
+    {
+        var pages = new Page[list.Data.Items.Length / 5 + 1];
+        for (var i = 0; i < list.Data.Items.Length; i++)
+        {
+            var x = list.Data.Items[i];
+            pages[i] = new()
+            {
+                Content = x.Content
+            };
+        }
+        return pages;
+    }
 }
