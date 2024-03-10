@@ -164,6 +164,329 @@
                     {
                         "name": "",
                         "description": ""
+                    },
+                    "imageremove":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "id":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    }
+                }
+            },
+            "unmute":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "",
+                        "description": ""
+                    },
+                    "reason":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "ban":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "",
+                        "description": ""
+                    },
+                    "reason":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "voidwarn":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "mute":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "",
+                        "description": ""
+                    },
+                    "duration":
+                    {
+                        "name": "",
+                        "description": ""
+                    },
+                    "reason":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "unban":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "",
+                        "description": ""
+                    },
+                    "reason":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "prune":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "message-count":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "clearwarns":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "warn":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "",
+                        "description": ""
+                    },
+                    "reason":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "kick":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "",
+                        "description": ""
+                    },
+                    "reason":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "warnlog":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "club":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "delete":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "name":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    },
+                    "leave":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "name":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    },
+                    "join":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "name":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    },
+                    "info":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "name":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    },
+                    "create":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "name":
+                            {
+                                "name": "",
+                                "description": ""
+                            },
+                            "description":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    },
+                    "list":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "level":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "modify":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "level":
+                            {
+                                "name": "",
+                                "description": ""
+                            },
+                            "role":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    },
+                    "remove":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "role":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    },
+                    "add":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "level":
+                            {
+                                "name": "",
+                                "description": ""
+                            },
+                            "role":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    },
+                    "list":
+                    {
+                        "name": "",
+                        "description": ""
                     }
                 }
             }

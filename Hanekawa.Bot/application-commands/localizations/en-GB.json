@@ -100,47 +100,47 @@
                 {
                     "message":
                     {
-                        "name": "",
-                        "description": "",
+                        "name": "message",
+                        "description": "Set the greet message",
                         "options":
                         {
                             "message":
                             {
-                                "name": "",
-                                "description": ""
+                                "name": "message",
+                                "description": "No description."
                             }
                         }
                     },
                     "imageurl":
                     {
-                        "name": "",
-                        "description": "",
+                        "name": "imageurl",
+                        "description": "Set the greet image url",
                         "options":
                         {
                             "url":
                             {
-                                "name": "",
-                                "description": ""
+                                "name": "url",
+                                "description": "No description."
                             }
                         }
                     },
                     "channel":
                     {
-                        "name": "",
-                        "description": "",
+                        "name": "channel",
+                        "description": "Set the greet channel",
                         "options":
                         {
                             "channel":
                             {
-                                "name": "",
-                                "description": ""
+                                "name": "channel",
+                                "description": "No description."
                             }
                         }
                     },
                     "image":
                     {
-                        "name": "",
-                        "description": ""
+                        "name": "image",
+                        "description": "Toggle the greet image"
                     },
                     "listimages":
                     {
@@ -162,8 +162,331 @@
                     },
                     "imagelist":
                     {
-                        "name": "",
-                        "description": ""
+                        "name": "imagelist",
+                        "description": "List the greet images"
+                    },
+                    "imageremove":
+                    {
+                        "name": "imageremove",
+                        "description": "Remove the greet image",
+                        "options":
+                        {
+                            "id":
+                            {
+                                "name": "id",
+                                "description": "No description."
+                            }
+                        }
+                    }
+                }
+            },
+            "unmute":
+            {
+                "name": "unmute",
+                "description": "Un-mutes a user in the server",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "member",
+                        "description": "No description."
+                    },
+                    "reason":
+                    {
+                        "name": "reason",
+                        "description": "No description."
+                    }
+                }
+            },
+            "ban":
+            {
+                "name": "ban",
+                "description": "Bans a user from the server",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "member",
+                        "description": "No description."
+                    },
+                    "reason":
+                    {
+                        "name": "reason",
+                        "description": "No description."
+                    }
+                }
+            },
+            "voidwarn":
+            {
+                "name": "voidwarn",
+                "description": "Voids a warn from a user in the server",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "member",
+                        "description": "No description."
+                    }
+                }
+            },
+            "mute":
+            {
+                "name": "mute",
+                "description": "Mutes a user in the server",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "member",
+                        "description": "No description."
+                    },
+                    "duration":
+                    {
+                        "name": "duration",
+                        "description": "No description."
+                    },
+                    "reason":
+                    {
+                        "name": "reason",
+                        "description": "No description."
+                    }
+                }
+            },
+            "unban":
+            {
+                "name": "unban",
+                "description": "Unbans a user from the server",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "member",
+                        "description": "No description."
+                    },
+                    "reason":
+                    {
+                        "name": "reason",
+                        "description": "No description."
+                    }
+                }
+            },
+            "prune":
+            {
+                "name": "prune",
+                "description": "Prunes a number of messages from a channel",
+                "options":
+                {
+                    "message-count":
+                    {
+                        "name": "message-count",
+                        "description": "No description."
+                    }
+                }
+            },
+            "clearwarns":
+            {
+                "name": "clearwarns",
+                "description": "Clears all warnings from a user in the server",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "member",
+                        "description": "No description."
+                    }
+                }
+            },
+            "warn":
+            {
+                "name": "warn",
+                "description": "Warns a user in the server",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "member",
+                        "description": "No description."
+                    },
+                    "reason":
+                    {
+                        "name": "reason",
+                        "description": "No description."
+                    }
+                }
+            },
+            "kick":
+            {
+                "name": "kick",
+                "description": "Kick a user from the server",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "member",
+                        "description": "No description."
+                    },
+                    "reason":
+                    {
+                        "name": "reason",
+                        "description": "No description."
+                    }
+                }
+            },
+            "warnlog":
+            {
+                "name": "warnlog",
+                "description": "List all warnings from a user in the server",
+                "options":
+                {
+                    "member":
+                    {
+                        "name": "member",
+                        "description": "No description."
+                    }
+                }
+            },
+            "club":
+            {
+                "name": "club",
+                "description": "No description.",
+                "options":
+                {
+                    "delete":
+                    {
+                        "name": "delete",
+                        "description": "Delete a club",
+                        "options":
+                        {
+                            "name":
+                            {
+                                "name": "name",
+                                "description": "No description."
+                            }
+                        }
+                    },
+                    "leave":
+                    {
+                        "name": "leave",
+                        "description": "Leave a club",
+                        "options":
+                        {
+                            "name":
+                            {
+                                "name": "name",
+                                "description": "No description."
+                            }
+                        }
+                    },
+                    "join":
+                    {
+                        "name": "join",
+                        "description": "Join a club",
+                        "options":
+                        {
+                            "name":
+                            {
+                                "name": "name",
+                                "description": "No description."
+                            }
+                        }
+                    },
+                    "info":
+                    {
+                        "name": "info",
+                        "description": "Get club info",
+                        "options":
+                        {
+                            "name":
+                            {
+                                "name": "name",
+                                "description": "No description."
+                            }
+                        }
+                    },
+                    "create":
+                    {
+                        "name": "create",
+                        "description": "Create a club",
+                        "options":
+                        {
+                            "name":
+                            {
+                                "name": "name",
+                                "description": "No description."
+                            },
+                            "description":
+                            {
+                                "name": "description",
+                                "description": "No description."
+                            }
+                        }
+                    },
+                    "list":
+                    {
+                        "name": "list",
+                        "description": "List all clubs"
+                    }
+                }
+            },
+            "level":
+            {
+                "name": "level",
+                "description": "No description.",
+                "options":
+                {
+                    "modify":
+                    {
+                        "name": "modify",
+                        "description": "Modify a level role",
+                        "options":
+                        {
+                            "level":
+                            {
+                                "name": "level",
+                                "description": "No description."
+                            },
+                            "role":
+                            {
+                                "name": "role",
+                                "description": "No description."
+                            }
+                        }
+                    },
+                    "remove":
+                    {
+                        "name": "remove",
+                        "description": "Remove a level role",
+                        "options":
+                        {
+                            "role":
+                            {
+                                "name": "role",
+                                "description": "No description."
+                            }
+                        }
+                    },
+                    "add":
+                    {
+                        "name": "add",
+                        "description": "Add a level role",
+                        "options":
+                        {
+                            "level":
+                            {
+                                "name": "level",
+                                "description": "No description."
+                            },
+                            "role":
+                            {
+                                "name": "role",
+                                "description": "No description."
+                            }
+                        }
+                    },
+                    "list":
+                    {
+                        "name": "list",
+                        "description": "List all level roles"
                     }
                 }
             }
