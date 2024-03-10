@@ -19,6 +19,7 @@ builder.Host.ConfigureDiscordBot<Bot>((_, bot) =>
     bot.ReadyEventDelayMode = ReadyEventDelayMode.Guilds;
     bot.Intents |= GatewayIntents.All;
 });
+builder.Services.AddSingleton<IBot, Bot>();
 
 builder.Host.UseDefaultServiceProvider(x =>
 {
