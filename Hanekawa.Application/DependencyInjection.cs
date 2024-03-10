@@ -20,8 +20,8 @@ public static class DependencyInjection
         serviceCollection.AddScoped<ILogService, LogSettingService>();
 
         var fontCollection = new FontCollection();
-        fontCollection.Add("Hanekawa/Data/Fonts/ARIAL.TTF");
-        fontCollection.Add("Hanekawa/Data/Fonts/TIMES.TTF");
+        fontCollection.Add(@"Data/Fonts/ARIAL.TTF");
+        fontCollection.Add(@"Data/Fonts/TIMES.TTF");
         
         serviceCollection.AddSingleton(fontCollection);
 
