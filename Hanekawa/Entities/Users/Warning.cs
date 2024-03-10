@@ -11,4 +11,10 @@ public class Warning
     public string Reason { get; set; } = "No reason provided.";
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public bool Valid { get; set; } = true;
+
+    public override string ToString()
+    {
+        return
+            $" Id: {Id}, GuildId: {GuildId}, UserId: {UserId}, ModeratorId: {ModeratorId}, Reason: {Reason}, CreatedAt: {CreatedAt}, Valid: {Valid}";
+    }
 }

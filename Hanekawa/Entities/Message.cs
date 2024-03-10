@@ -4,6 +4,14 @@ namespace Hanekawa.Entities;
 
 public class Message
 {
+    public Message()
+    {
+    }
+    public Message(string content)
+    {
+        Content = content;
+    }
+    
     public Message(string content, bool allowMentions = false, bool ephemeral = true)
     {
         Content = content;
@@ -20,6 +28,6 @@ public class Message
     
     public string Content { get; set; } = null!;
     public Embed Embed { get; set; } = null!;
-    public bool AllowMentions { get; set; }
-    public bool Emphemeral { get; set; }
+    public bool AllowMentions { get; set; } = false;
+    public bool Emphemeral { get; set; } = true;
 }
