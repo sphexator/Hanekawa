@@ -7,6 +7,7 @@ using Disqord.Rest;
 using Hanekawa.Application.Handlers.Commands.Administration;
 using Hanekawa.Application.Handlers.Services.Warnings;
 using Hanekawa.Application.Interfaces;
+using Hanekawa.Bot.Commands.Metas;
 using Hanekawa.Bot.Mapper;
 using MediatR;
 using Qmmands;
@@ -17,7 +18,7 @@ namespace Hanekawa.Bot.Commands.Slash.Administration;
 [Description("Administration commands")]
 public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
 {
-    [SlashCommand("ban")]
+    [SlashCommand(Admin.Ban)]
     [RequireBotPermissions(Permissions.BanMembers)]
     [RequireAuthorPermissions(Permissions.BanMembers)]
     [Description("Bans a user from the server")]
@@ -30,7 +31,7 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
         return Response(result.ToLocalInteractionMessageResponse());
     }
     
-    [SlashCommand("unban")]
+    [SlashCommand(Admin.Unban)]
     [RequireBotPermissions(Permissions.BanMembers)]
     [RequireAuthorPermissions(Permissions.BanMembers)]
     [Description("Unbans a user from the server")]
@@ -43,7 +44,7 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
         return Response(result.ToLocalInteractionMessageResponse());
     }
     
-    [SlashCommand("kick")]
+    [SlashCommand(Admin.Kick)]
     [RequireBotPermissions(Permissions.BanMembers)]
     [RequireAuthorPermissions(Permissions.BanMembers)]
     [Description("Kick a user from the server")]
@@ -56,7 +57,7 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
         return Response(result.ToLocalInteractionMessageResponse());
     }
     
-    [SlashCommand("mute")]
+    [SlashCommand(Admin.Mute)]
     [RequireBotPermissions(Permissions.MuteMembers)]
     [RequireAuthorPermissions(Permissions.MuteMembers)]
     [Description("Mutes a user in the server")]
@@ -70,7 +71,7 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
         return Response(result.ToLocalInteractionMessageResponse());
     }
     
-    [SlashCommand("unmute")]
+    [SlashCommand(Admin.Unmute)]
     [RequireBotPermissions(Permissions.MuteMembers)]
     [RequireAuthorPermissions(Permissions.MuteMembers)]
     [Description("Un-mutes a user in the server")]
@@ -83,7 +84,7 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
         return Response(result.ToLocalInteractionMessageResponse());
     }
     
-    [SlashCommand("warn")]
+    [SlashCommand(Admin.Warn)]
     [RequireAuthorPermissions(Permissions.MuteMembers)]
     [Description("Warns a user in the server")]
     public async Task<DiscordInteractionResponseCommandResult> WarnAsync(AutoComplete<IMember> member, string reason)
@@ -95,7 +96,7 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
         return Response(response.ToLocalInteractionMessageResponse());
     }
     
-    [SlashCommand("voidwarn")]
+    [SlashCommand(Admin.VoidWarn)]
     [RequireAuthorPermissions(Permissions.BanMembers)]
     [Description("Voids a warn from a user in the server")]
     public async Task<DiscordInteractionResponseCommandResult> VoidWarnAsync(AutoComplete<IMember> member)
@@ -107,19 +108,19 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
         return Response(response.ToLocalInteractionMessageResponse());
     }
     
-    [SlashCommand("warnlog")]
+    [SlashCommand(Admin.WarnLog)]
     [RequireAuthorPermissions(Permissions.MuteMembers)]
     [Description("List all warnings from a user in the server")]
-    public async Task<DiscordInteractionResponseCommandResult> WarnsAsync(AutoComplete<IMember> member)
+    public async Task<DiscordMenuCommandResult> WarnsAsync(AutoComplete<IMember> member)
     {
         using var _ = metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
         var response = await Bot.Services.GetRequiredService<IMediator>()
             .Send(new WarningList(user.GuildId, user.Id));
-        return Response(response.ToLocalInteractionMessageResponse());
+        return Pages(response.ToPages());
     }
     
-    [SlashCommand("clearwarns")]    
+    [SlashCommand(Admin.ClearWarns)]    
     [RequireAuthorPermissions(Permissions.BanMembers)]
     [Description("Clears all warnings from a user in the server")]
     public async Task<DiscordInteractionResponseCommandResult> ClearWarnsAsync(AutoComplete<IMember> member)
@@ -132,15 +133,16 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
         return Response(response.ToLocalInteractionMessageResponse());
     }
     
-    [SlashCommand("prune")]
+    [SlashCommand(Admin.Prune)]
     [RequireBotPermissions(Permissions.ManageMessages)]
     [RequireAuthorPermissions(Permissions.ManageMessages)]
     [Description("Prunes a number of messages from a channel")] 
     public async Task<DiscordInteractionResponseCommandResult> Prune(int messageCount = 100)
     {
         using var _ = metrics.All<AdministrationCommands>();
-        var channel = Bot.GetChannel(Context.GuildId, Context.ChannelId) as ITextChannel;
-        var messagesAsync = await channel.FetchMessagesAsync(messageCount);
+        var channel = Bot.GetChannel(Context.GuildId, Context.ChannelId);
+        if (channel is not ITextChannel textChannel) return Response("This command can only be used in text channels");
+        var messagesAsync = await textChannel.FetchMessagesAsync(messageCount);
         var messageIds = new ulong[messagesAsync.Count];
 
         for (var i = 0; i < messagesAsync.Count; i++)

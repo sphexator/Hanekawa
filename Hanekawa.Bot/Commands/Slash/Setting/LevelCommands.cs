@@ -7,17 +7,18 @@ using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Commands;
+using Hanekawa.Bot.Commands.Metas;
 using Hanekawa.Entities.Levels;
 using Hanekawa.Localize;
 using Qmmands;
 
 namespace Hanekawa.Bot.Commands.Slash.Setting;
 
-[SlashGroup("level")]
+[SlashGroup(SlashGroupName.Level)]
 [RequireAuthorPermissions(Permissions.ManageGuild)]
 public class LevelCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
 {
-    [SlashCommand("add")]
+    [SlashCommand(LevelName.Add)]
     [Description("Add a level role")] 
     public async Task<DiscordInteractionResponseCommandResult> Add(int level, IRole role)
     {
@@ -28,7 +29,7 @@ public class LevelCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         return Response();
     }
     
-    [SlashCommand("remove")]
+    [SlashCommand(LevelName.Remove)]
     [Description("Remove a level role")]
     public async Task<DiscordInteractionResponseCommandResult> Remove(IRole role)
     {
@@ -39,7 +40,7 @@ public class LevelCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         return Response();
     }
     
-    [SlashCommand("list")]
+    [SlashCommand(LevelName.List)]
     [Description("List all level roles")]
     public async Task<IDiscordCommandResult> List()
     {
@@ -51,7 +52,7 @@ public class LevelCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         return Pages(BuildPages(response));
     }
     
-    [SlashCommand("modify")]
+    [SlashCommand(LevelName.Modify)]
     [Description("Modify a level role")]
     public async Task<DiscordInteractionResponseCommandResult> Modify(int level, IRole role)
     {
@@ -62,15 +63,16 @@ public class LevelCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         return Response();
     }
     
-    [AutoComplete("add")]
-    public async Task AutoCompleteAdd(AutoComplete<int> level, AutoComplete<IRole> role)
+    [AutoComplete(LevelName.Add)]
+    public Task AutoCompleteAdd(AutoComplete<int> level, AutoComplete<IRole> role)
     {
-        if (!role.IsFocused) return;
-        if(Context.CancellationToken.IsCancellationRequested) return;
+        if (!role.IsFocused) return Task.CompletedTask;
+        if(Context.CancellationToken.IsCancellationRequested) return Task.CompletedTask;
         role.Choices?.AddRange(Bot.GetGuild(Context.GuildId)?.Roles.Values ?? throw new InvalidOperationException());
+        return Task.CompletedTask;
     }
     
-    [AutoComplete("remove")]
+    [AutoComplete(LevelName.Remove)]
     public async Task AutoCompleteRemove(AutoComplete<IRole> role)
     {
         if (!role.IsFocused) return;
@@ -80,7 +82,7 @@ public class LevelCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         
     }
     
-    private static IEnumerable<Page> BuildPages(List<LevelReward> roles)
+    private static List<Page> BuildPages(List<LevelReward> roles)
     {
         var result = new List<Page>();
         var span = CollectionsMarshal.AsSpan(roles);

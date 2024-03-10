@@ -6,6 +6,7 @@ using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Commands;
+using Hanekawa.Bot.Commands.Metas;
 using Hanekawa.Bot.Mapper;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Localize;
@@ -14,11 +15,11 @@ using IResult = Qmmands.IResult;
 
 namespace Hanekawa.Bot.Commands.Slash.Setting;
 
-[SlashGroup("greet")]
+[SlashGroup(SlashGroupName.Greet)]
 [RequireAuthorPermissions(Permissions.ManageChannels)]
 public class GreetCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
 {
-    [SlashCommand("channel")]
+    [SlashCommand(Greet.Channel)]
     [Description("Set the greet channel")]
     public async Task<DiscordInteractionResponseCommandResult> Set(IChannel channel)
     {
@@ -32,7 +33,7 @@ public class GreetCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         return Response(response);
     }
     
-    [SlashCommand("message")]
+    [SlashCommand(Greet.Message)]
     [Description("Set the greet message")]
     public async Task<DiscordInteractionResponseCommandResult> Set(string message)
     {
@@ -44,7 +45,7 @@ public class GreetCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         return Response(response);
     }
     
-    [SlashCommand("imageurl")]
+    [SlashCommand(Greet.ImageUrl)]
     [Description("Set the greet image url")]
     public async Task<DiscordInteractionResponseCommandResult> SetImage(string url)
     {
@@ -56,7 +57,7 @@ public class GreetCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         return Response(response);
     }
     
-    [SlashCommand("imagelist")]
+    [SlashCommand(Greet.ImageList)]
     [Description("List the greet images")]
     public async Task<IResult> ListImages()
     {
@@ -81,7 +82,7 @@ public class GreetCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         return Pages(pages);
     }
     
-    [SlashCommand("removeImage")]
+    [SlashCommand(Greet.ImageRemove)]
     [Description("Remove the greet image")]
     public async Task<DiscordInteractionResponseCommandResult> RemoveImage(int id)
     {
@@ -95,7 +96,7 @@ public class GreetCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
             : Localization.NoImageWithIdFound);
     }
     
-    [SlashCommand("image")]
+    [SlashCommand(Greet.ImageToggle)]
     [Description("Toggle the greet image")]
     public async Task<DiscordInteractionResponseCommandResult> ToggleImage()
     {
@@ -107,7 +108,7 @@ public class GreetCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         return Response(response);
     }
 
-    [AutoComplete("channel")]
+    [AutoComplete(Greet.Channel)]
     public void GreetAutoComplete(AutoComplete<ITextChannel> channel)
     {
         if (!channel.IsFocused) return;
@@ -120,7 +121,7 @@ public class GreetCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
                 channel.Choices.Add($"{textChannel.Name}", textChannel);
     }
     
-    [AutoComplete("removeImage")]
+    [AutoComplete(Greet.ImageRemove)]
     public async Task RemoveImage(AutoComplete<int> id)
     {
         if(!id.IsFocused) return;
