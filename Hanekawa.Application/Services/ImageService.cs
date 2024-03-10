@@ -15,18 +15,9 @@ using SixLabors.ImageSharp.Processing;
 namespace Hanekawa.Application.Services;
 
 /// <inheritdoc />
-public class ImageService : IImageService
+public class ImageService(IHttpClientFactory httpClientFactory, IReadOnlyFontCollection fontCollection, 
+    ILogger<ImageService> logger) : IImageService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IFontCollection _fontCollection;
-    private readonly ILogger<ImageService> _logger;
-    
-    public ImageService(IHttpClientFactory httpClientFactory, IFontCollection fontCollection, ILogger<ImageService> logger)
-    {
-        _httpClientFactory = httpClientFactory;
-        _fontCollection = fontCollection;
-        _logger = logger;
-    }
 
     /// <inheritdoc />
     public async Task<Image> CreateAvatarAsync(string avatarUrl, int size, CancellationToken cancellationToken = default)
@@ -49,7 +40,7 @@ public class ImageService : IImageService
         image.Mutate(x =>
         {
             x.DrawImage(avatar, new Point(dbImage.AvatarX, dbImage.AvatarY), 1f);
-            x.DrawText(member.Username, new(_fontCollection.Get("Arial"), dbImage.UsernameSize), Color.White,
+            x.DrawText(member.Username, new(fontCollection.Get("Arial"), dbImage.UsernameSize), Color.White,
                 new Point(dbImage.UsernameX, dbImage.UsernameY));
         });
         
@@ -69,7 +60,7 @@ public class ImageService : IImageService
                 new Point(0, 0), new GraphicsOptions());
             x.DrawImage(avatar, new Point(145, 4),
                 new GraphicsOptions { Antialias = true });
-            x.DrawLines(Color.White, 1,CreateProfileProgressBar(userData, 0));
+            x.DrawLine(Color.White, 1,CreateProfileProgressBar(userData, 0));
         });
         
         await img.SaveAsync(toReturn, WebpFormat.Instance, cancellationToken: cancellationToken);
@@ -84,12 +75,12 @@ public class ImageService : IImageService
     /// <returns></returns>
     private async Task<Image> GetImageFromUrlAsync(Uri uri, CancellationToken cancellationToken = default)
     {
-        var client = _httpClientFactory.CreateClient("ImageService");
+        var client = httpClientFactory.CreateClient("ImageService");
         var imgStream = await client.GetStreamAsync(uri, cancellationToken);
         return await Image.LoadAsync<Rgba32>(imgStream, cancellationToken);
     }
     
-    private PointF[] CreateProfileProgressBar(GuildUser userData, long currentLevelExperience)
+    private static PointF[] CreateProfileProgressBar(GuildUser userData, long currentLevelExperience)
     {
         var percentage = (userData.Experience - userData.CurrentLevelExperience)/ (float) userData.NextLevelExperience;
         var numb = percentage * 100 / 100 * 360 * 2;

@@ -8,25 +8,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Application.Handlers.Services.Warnings;
 
-public record WarningClear(DiscordMember user, ulong ModeratorId, string? Reason, bool All = false) : IRequest<Response<Message>>;
+public record WarningClear(DiscordMember User, ulong ModeratorId, string? Reason, bool All = false) 
+    : IRequest<Response<Message>>;
 
-public class WarningClearHandler : IRequestHandler<WarningClear, Response<Message>>
+public class WarningClearHandler(IDbContext db, ILogger<WarningClearHandler> logger) 
+    : IRequestHandler<WarningClear, Response<Message>>
 {
-    private readonly IDbContext _db;
-    private readonly ILogger<WarningClearHandler> _logger;
-
-    public WarningClearHandler(IDbContext db, ILogger<WarningClearHandler> logger)
-    {
-        _db = db;
-        _logger = logger;
-    }
-
     public async Task<Response<Message>> Handle(WarningClear request, CancellationToken cancellationToken)
     {
         if (request.All)
         {
-            var warnings = await _db.Warnings.Where(x => x.GuildId == request.user.Guild.Id
-                                                         && x.UserId == request.user.Id
+            var warnings = await db.Warnings.Where(x => x.GuildId == request.User.Guild.Id
+                                                         && x.UserId == request.User.Id
                                                          && x.Valid)
                 .ToArrayAsync(cancellationToken: cancellationToken);
             for (var i = 0; i < warnings.Length; i++)
@@ -34,24 +27,24 @@ public class WarningClearHandler : IRequestHandler<WarningClear, Response<Messag
                 var x = warnings[i];
                 x.Valid = false;
             }
-            await _db.SaveChangesAsync();
+            await db.SaveChangesAsync();
             return new(new(string.Format(Localization.ClearedAllWarnUserMention, 
-                request.user.Mention)));
+                request.User.Mention)));
         }
-        var warning = await _db.Warnings.FirstOrDefaultAsync(x => x.GuildId == request.user.Guild.Id
-                                                                  && x.UserId == request.user.Id
+        var warning = await db.Warnings.FirstOrDefaultAsync(x => x.GuildId == request.User.Guild.Id
+                                                                  && x.UserId == request.User.Id
                                                                   && x.Valid,
             cancellationToken: cancellationToken);
         if (warning is null)
         {
             return new(new(string.Format(Localization.NoWarningsUserMention, 
-                request.user.Mention)));
+                request.User.Mention)));
         }
 
         warning.Valid = false;
-        _db.Warnings.Update(warning);
-        await _db.SaveChangesAsync();
+        db.Warnings.Update(warning);
+        await db.SaveChangesAsync();
         return new(new(string.Format(Localization.ClearedWarningUserMention, 
-            request.user.Mention)));
+            request.User.Mention)));
     }
 }
