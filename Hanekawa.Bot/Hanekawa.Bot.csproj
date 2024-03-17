@@ -38,7 +38,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Commands\Slash\Account\" />
       <Folder Include="Commands\Slash\Advertise\" />
       <Folder Include="Commands\Slash\AutoMessage\" />
       <Folder Include="Commands\Slash\Board\" />

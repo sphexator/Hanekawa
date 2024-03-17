@@ -1,6 +1,6 @@
 ﻿namespace Hanekawa.Bot.Commands.Metas;
 
-public abstract class SlashGroupName 
+public static class SlashGroupName 
 {
     public const string Greet = "greet";
     public const string Administration = "administration";
@@ -8,7 +8,14 @@ public abstract class SlashGroupName
     public const string Level = "level";
 }
 
-public abstract class Admin 
+public static class Account 
+{
+    public const string Rank = "rank";
+    public const string Wallet = "wallet";
+    public const string Profile = "profile";
+}
+
+public static class Admin 
 {
     public const string Ban = "ban";
     public const string Unban = "unban";
@@ -22,7 +29,7 @@ public abstract class Admin
     public const string Prune = "prune";
 }
 
-public abstract class Club 
+public static class Club 
 {
     public const string Create = "create";
     public const string Delete = "delete";
@@ -32,7 +39,7 @@ public abstract class Club
     public const string Info = "info";
 }
 
-public abstract class Greet 
+public static class Greet 
 {
     public const string Channel = "channel";
     public const string Message = "message";
@@ -42,7 +49,7 @@ public abstract class Greet
     public const string ImageToggle = "image";
 }
 
-public abstract class LevelName 
+public static class LevelName 
 {
     public const string Add = "add";
     public const string Remove = "remove";
