@@ -25,6 +25,7 @@
 
     <ItemGroup>
       <Folder Include="Contracts\Discord\Commands\" />
+      <Folder Include="Handlers\Commands\Account\" />
       <Folder Include="Handlers\Services\BotLeave\" />
     </ItemGroup>
 

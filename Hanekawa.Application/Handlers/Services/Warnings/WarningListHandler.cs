@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Hanekawa.Application.Interfaces;
+﻿using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
 using MediatR;
