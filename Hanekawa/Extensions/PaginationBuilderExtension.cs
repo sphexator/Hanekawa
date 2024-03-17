@@ -6,7 +6,7 @@ namespace Hanekawa.Extensions;
 
 public static class PaginationBuilderExtension
 {
-    public static string[] BuildPage<T>(this IList<T> list) 
+    public static Span<string> BuildPage<T>(this IList<T> list) 
     {
         var pages = new List<string>(list.Count / 5 + 1);
         for (var i = 0; i < list.Count;)
@@ -23,12 +23,13 @@ public static class PaginationBuilderExtension
             pages.Add(sb.ToString());
         }
         
-        return CollectionsMarshal.AsSpan(pages).ToArray();
+        return CollectionsMarshal.AsSpan(pages);
     }
     
-    public static string[] BuildPage<T>(this T[] list)
+    public static Span<string> BuildPage<T>(this ReadOnlySpan<T> list)
     {
-        var pages = new List<string>(list.Length / 5 + 1);
+        var pages = new string[list.Length / 5 + 1];
+        //var pages = new List<string>(list.Length / 5 + 1);
         for (var i = 0; i < list.Length;)
         {
             var sb = new StringBuilder();
@@ -40,12 +41,12 @@ public static class PaginationBuilderExtension
                 sb.AppendLine(x.ToString());
                 i++;
             }
-            pages.Add(sb.ToString());
+            pages.Append(sb.ToString());
         }
-        return CollectionsMarshal.AsSpan(pages).ToArray();
+        return pages;
     }
     
-    public static T[] Paginate<T> (this string[] list) where T : Message, new()
+    public static T[] Paginate<T> (this Span<string> list) where T : Message, new()
     {
         var pages = new T[list.Length / 5 + 1];
         for (var i = 0; i < list.Length; i++)
