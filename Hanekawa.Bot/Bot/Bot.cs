@@ -41,7 +41,7 @@ public sealed class Bot : DiscordBot, IBot
     {
         var start = Stopwatch.GetTimestamp();
         var result = await base.OnBeforeExecuted(context);
-        var elapsedTime = Stopwatch.GetElapsedTime(start);
+        var elapsedTime = Stopwatch.GetElapsedTime(start).Milliseconds;
         Serilog.Log.Information("Command {Command} executed in {Elapsed}ms", 
             context.Command?.Name, elapsedTime);
         return result;

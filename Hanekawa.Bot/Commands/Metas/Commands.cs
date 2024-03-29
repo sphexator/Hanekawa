@@ -13,6 +13,7 @@ public static class Account
     public const string Rank = "rank";
     public const string Wallet = "wallet";
     public const string Profile = "profile";
+    public const string Top = "top";
 }
 
 public static class Admin 
