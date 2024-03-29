@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Hanekawa.Entities.Discord;
+﻿namespace Hanekawa.Entities.Discord;
 
 public class DiscordMember
 {
