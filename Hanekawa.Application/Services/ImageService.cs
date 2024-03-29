@@ -15,7 +15,7 @@ using SixLabors.ImageSharp.Processing;
 namespace Hanekawa.Application.Services;
 
 /// <inheritdoc />
-public class ImageService(IHttpClientFactory httpClientFactory, IReadOnlyFontCollection fontCollection, 
+public class ImageService(IHttpClientFactory httpClientFactory, FontCollection fontCollection, 
     ILogger<ImageService> logger) : IImageService
 {
 
@@ -60,7 +60,7 @@ public class ImageService(IHttpClientFactory httpClientFactory, IReadOnlyFontCol
                 new Point(0, 0), new GraphicsOptions());
             x.DrawImage(avatar, new Point(145, 4),
                 new GraphicsOptions { Antialias = true });
-            x.DrawLine(Color.White, 1,CreateProfileProgressBar(userData, 0));
+            x.DrawLine(Color.White, 1,CreateProfileProgressBar(userData));
         });
         
         await img.SaveAsync(toReturn, WebpFormat.Instance, cancellationToken: cancellationToken);
@@ -80,11 +80,11 @@ public class ImageService(IHttpClientFactory httpClientFactory, IReadOnlyFontCol
         return await Image.LoadAsync<Rgba32>(imgStream, cancellationToken);
     }
     
-    private static PointF[] CreateProfileProgressBar(GuildUser userData, long currentLevelExperience)
+    private static PointF[] CreateProfileProgressBar(GuildUser userData)
     {
-        var percentage = (userData.Experience - userData.CurrentLevelExperience)/ (float) userData.NextLevelExperience;
+        var percentage = (userData.Experience - userData.CurrentLevelExperience) / (float) userData.NextLevelExperience;
         var numb = percentage * 100 / 100 * 360 * 2;
-        var points = new List<PointF>();
+        var points = new PointF[Convert.ToInt32(numb)];
         const double radius = 55;
 
         for (var i = 0; i < numb; i++)
@@ -93,8 +93,8 @@ public class ImageService(IHttpClientFactory httpClientFactory, IReadOnlyFontCol
 
             var x = 200 + radius * Math.Cos(radians - Math.PI / 2);
             var y = 59 + radius * Math.Sin(radians - Math.PI / 2);
-            points.Add(new((float) x, (float) y));
+            points[i] = (new((float) x, (float) y));
         }
-        return points.ToArray();
+        return points;
     }
 }
