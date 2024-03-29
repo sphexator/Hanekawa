@@ -20,7 +20,7 @@ builder.Host.ConfigureDiscordBot<Bot>((_, bot) =>
     bot.Intents |= GatewayIntents.All;
 });
 builder.Services.AddSingleton<IBot, Bot>();
-
+builder.Services.AddHttpClient();
 builder.Host.UseDefaultServiceProvider(x =>
 {
     x.ValidateScopes = true;
