@@ -88,7 +88,7 @@ internal static class DiscordExtensions
                     {
                         Id = e.Key.RawValue,
                         Name = e.Value.Name
-                    }).ToList()
+                    }).ToArray()
             },
             Nickname = member.Nick,
             IsBot = member.IsBot,
@@ -111,7 +111,7 @@ internal static class DiscordExtensions
                 {
                     Id = e.Key.RawValue,
                     Name = e.Value.Name
-                }).ToList()
+                }).ToArray()
         };
     
     internal static LocalInteractionMessageResponse ToLocalInteractionMessageResponse(this Response<Message> response) =>

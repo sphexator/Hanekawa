@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Hanekawa.Entities.Discord;
+﻿namespace Hanekawa.Entities.Discord;
 
 public class Guild : SimpleGuild
 {
@@ -9,5 +7,5 @@ public class Guild : SimpleGuild
     public int EmoteCount { get; set; }
     public int? BoostCount { get; set; }
     public int BoostTier { get; set; }
-    public List<Emote> Emotes = new();
+    public Emote[] Emotes = [];
 }

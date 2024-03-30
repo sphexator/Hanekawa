@@ -1,7 +1,6 @@
 ﻿using Hanekawa.Application.Extensions;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Discord;
-using Hanekawa.Entities.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Application.Handlers.Commands.Account;
