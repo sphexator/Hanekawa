@@ -33,7 +33,7 @@ public static class DbExtensions
                 Id = member.Id,
                 PremiumExpiration = null
             }
-        };
+        }; 
         await dbSet.AddAsync(user, cancellationToken);
         return user;
     }
