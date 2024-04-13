@@ -45,15 +45,13 @@ public static class DbExtensions
     /// <param name="predicate"></param>
     /// <param name="entity"></param>
     /// <param name="cancellationToken"></param>
-    /// <typeparam name="TEntity"></typeparam>
-    /// <typeparam name="TProperty"></typeparam>
     /// <returns></returns>
-    public static async ValueTask<TEntity> GetOrCreateAsync<TEntity, TProperty>(
-        this IIncludableQueryable<TEntity, TProperty> queryable, 
-        Expression<Func<TEntity, bool>> predicate, 
-        TEntity entity, 
+    public static async ValueTask<T1> GetOrCreateAsync<T1, T2>(
+        this IIncludableQueryable<T1, T2> queryable, 
+        Expression<Func<T1, bool>> predicate, 
+        T1 entity, 
         CancellationToken cancellationToken = default
-        ) where TEntity : IMemberEntity
+        ) where T1 : IMemberEntity
     {
         var user = await queryable.FirstOrDefaultAsync(predicate, cancellationToken);
         return user ?? entity;
