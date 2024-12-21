@@ -1,0 +1,11 @@
+﻿<Solution>
+  <Folder Name="/src/">
+    <Project Path="Hanekawa.Application\Hanekawa.Application.csproj" Type="Classic C#" />
+    <Project Path="Hanekawa.Bot\Hanekawa.Bot.csproj" Type="Classic C#" />
+    <Project Path="Hanekawa.Infrastructure\Hanekawa.Infrastructure.csproj" />
+    <Project Path="Hanekawa\Hanekawa.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="Hanekawa.Test\Hanekawa.Test.csproj" Type="Classic C#" />
+  </Folder>
+</Solution>
