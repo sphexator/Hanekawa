@@ -21,7 +21,7 @@ public class DropConfig : IConfig
     /// <summary>
     /// List of blacklisted channels or categories
     /// </summary>
-    public ulong[] Blacklist { get; set; } = Array.Empty<ulong>();
+    public ulong[] Blacklist { get; set; } = [];
     
     [JsonIgnore]
     public GuildConfig GuildConfig { get; set; } = null!;

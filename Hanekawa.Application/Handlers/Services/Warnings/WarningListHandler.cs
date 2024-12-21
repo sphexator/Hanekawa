@@ -18,10 +18,10 @@ public class WarningListHandler(IDbContext db ) : IRequestHandler<WarningList, R
             .ToArrayAsync(cancellationToken: cancellationToken);
         if (result.Length == 0)
         {
-            return new(new([new("No warnings found")]));
+            return new Response<Pagination<Message>>(new Pagination<Message>([new Message("No warnings found")]));
         }
 
         var pages = result.BuildPage().Paginate<Message>();
-        return new(new(pages));
+        return new Response<Pagination<Message>>(new Pagination<Message>(pages));
     }
 }

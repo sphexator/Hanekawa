@@ -17,10 +17,68 @@ namespace Hanekawa.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.4")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Hanekawa.Entities.Configs.AdminConfig", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("MaxWarnings")
+                        .HasColumnType("integer");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("AdminConfig");
+                });
+
+            modelBuilder.Entity("Hanekawa.Entities.Configs.CurrencyConfig", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("CurrencyName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CurrencySymbol")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsEmote")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("SymbolAffix")
+                        .HasColumnType("integer");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("CurrencyConfig");
+                });
+
+            modelBuilder.Entity("Hanekawa.Entities.Configs.DropConfig", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.PrimitiveCollection<decimal[]>("Blacklist")
+                        .IsRequired()
+                        .HasColumnType("numeric(20,0)[]");
+
+                    b.Property<string>("Emote")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ExpReward")
+                        .HasColumnType("integer");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("DropConfig");
+                });
 
             modelBuilder.Entity("Hanekawa.Entities.Configs.GreetConfig", b =>
                 {
@@ -40,10 +98,6 @@ namespace Hanekawa.Infrastructure.Migrations
                     b.Property<bool>("ImageEnabled")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("text");
@@ -61,6 +115,15 @@ namespace Hanekawa.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AvatarSize")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("AvatarX")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("AvatarY")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -73,6 +136,15 @@ namespace Hanekawa.Infrastructure.Migrations
 
                     b.Property<decimal>("Uploader")
                         .HasColumnType("numeric(20,0)");
+
+                    b.Property<float>("UsernameSize")
+                        .HasColumnType("real");
+
+                    b.Property<int>("UsernameX")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsernameY")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -105,76 +177,75 @@ namespace Hanekawa.Infrastructure.Migrations
                     b.Property<decimal>("GuildId")
                         .HasColumnType("numeric(20,0)");
 
+                    b.Property<bool>("DecayEnabled")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("LevelEnabled")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("LevelUpDmEnabled")
-                        .HasColumnType("boolean");
+                    b.Property<int>("Multiplier")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("LevelUpDmMessage")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("LevelUpMessage")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("LevelUpMessageEnabled")
-                        .HasColumnType("boolean");
+                    b.Property<DateTimeOffset>("MultiplierEnd")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("GuildId");
 
                     b.ToTable("LevelConfig");
                 });
 
-            modelBuilder.Entity("Hanekawa.Entities.Users.GuildUser", b =>
+            modelBuilder.Entity("Hanekawa.Entities.Configs.LogConfig", b =>
                 {
                     b.Property<decimal>("GuildId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<decimal>("UserId")
+                    b.Property<decimal?>("JoinLeaveLogChannelId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<DateTimeOffset>("DailyClaimed")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<decimal?>("MessageLogChannelId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<int>("DailyStreak")
-                        .HasColumnType("integer");
+                    b.Property<decimal?>("ModLogChannelId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long>("Experience")
-                        .HasColumnType("bigint");
+                    b.Property<decimal?>("VoiceLogChannelId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<DateTimeOffset>("LastSeen")
-                        .HasColumnType("timestamp with time zone");
+                    b.HasKey("GuildId");
 
-                    b.Property<int>("Level")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeSpan>("TotalVoiceTime")
-                        .HasColumnType("interval");
-
-                    b.HasKey("GuildId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Users");
+                    b.ToTable("LogConfig");
                 });
 
-            modelBuilder.Entity("Hanekawa.Entities.Users.User", b =>
+            modelBuilder.Entity("Hanekawa.Entities.GuildModerationLog", b =>
                 {
-                    b.Property<decimal>("UserId")
-                        .ValueGeneratedOnAdd()
+                    b.Property<decimal>("GuildId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<DateTimeOffset?>("PremiumExpiration")
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("UserId");
+                    b.Property<decimal>("MessageId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.ToTable("User");
+                    b.Property<decimal?>("ModeratorId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("UserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.HasKey("GuildId", "Id");
+
+                    b.ToTable("ModerationLogs");
                 });
 
-            modelBuilder.Entity("Hanekawa.Infrastructure.Tables.Internal.Log", b =>
+            modelBuilder.Entity("Hanekawa.Entities.Internals.Log", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -211,6 +282,165 @@ namespace Hanekawa.Infrastructure.Migrations
                     b.ToTable("Logs");
                 });
 
+            modelBuilder.Entity("Hanekawa.Entities.Levels.LevelRequirement", b =>
+                {
+                    b.Property<int>("Level")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Level"));
+
+                    b.Property<int>("Experience")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Level");
+
+                    b.ToTable("LevelRequirements");
+                });
+
+            modelBuilder.Entity("Hanekawa.Entities.Levels.LevelReward", b =>
+                {
+                    b.Property<int>("Level")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Level"));
+
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int?>("Money")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("RoleId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.HasKey("Level");
+
+                    b.HasIndex("GuildId");
+
+                    b.ToTable("LevelReward");
+                });
+
+            modelBuilder.Entity("Hanekawa.Entities.Users.GuildUser", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<decimal>("Id")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<long>("Currency")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("CurrentLevelExperience")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("DailyClaimed")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DailyStreak")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("Experience")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("LastSeen")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("NextLevelExperience")
+                        .HasColumnType("bigint");
+
+                    b.Property<TimeSpan>("TotalVoiceTime")
+                        .HasColumnType("interval");
+
+                    b.HasKey("GuildId", "Id");
+
+                    b.HasIndex("Id");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Hanekawa.Entities.Users.User", b =>
+                {
+                    b.Property<decimal>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<DateTimeOffset?>("PremiumExpiration")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("User");
+                });
+
+            modelBuilder.Entity("Hanekawa.Entities.Users.Warning", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<decimal>("ModeratorId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("UserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<bool>("Valid")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Warnings");
+                });
+
+            modelBuilder.Entity("Hanekawa.Entities.Configs.AdminConfig", b =>
+                {
+                    b.HasOne("Hanekawa.Entities.Configs.GuildConfig", "GuildConfig")
+                        .WithOne("AdminConfig")
+                        .HasForeignKey("Hanekawa.Entities.Configs.AdminConfig", "GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GuildConfig");
+                });
+
+            modelBuilder.Entity("Hanekawa.Entities.Configs.CurrencyConfig", b =>
+                {
+                    b.HasOne("Hanekawa.Entities.Configs.GuildConfig", "GuildConfig")
+                        .WithOne("CurrencyConfig")
+                        .HasForeignKey("Hanekawa.Entities.Configs.CurrencyConfig", "GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GuildConfig");
+                });
+
+            modelBuilder.Entity("Hanekawa.Entities.Configs.DropConfig", b =>
+                {
+                    b.HasOne("Hanekawa.Entities.Configs.GuildConfig", "GuildConfig")
+                        .WithOne("DropConfig")
+                        .HasForeignKey("Hanekawa.Entities.Configs.DropConfig", "GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GuildConfig");
+                });
+
             modelBuilder.Entity("Hanekawa.Entities.Configs.GreetConfig", b =>
                 {
                     b.HasOne("Hanekawa.Entities.Configs.GuildConfig", "GuildConfig")
@@ -244,11 +474,33 @@ namespace Hanekawa.Infrastructure.Migrations
                     b.Navigation("GuildConfig");
                 });
 
+            modelBuilder.Entity("Hanekawa.Entities.Configs.LogConfig", b =>
+                {
+                    b.HasOne("Hanekawa.Entities.Configs.GuildConfig", "GuildConfig")
+                        .WithOne("LogConfig")
+                        .HasForeignKey("Hanekawa.Entities.Configs.LogConfig", "GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GuildConfig");
+                });
+
+            modelBuilder.Entity("Hanekawa.Entities.Levels.LevelReward", b =>
+                {
+                    b.HasOne("Hanekawa.Entities.Configs.LevelConfig", "LevelConfig")
+                        .WithMany("Rewards")
+                        .HasForeignKey("GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LevelConfig");
+                });
+
             modelBuilder.Entity("Hanekawa.Entities.Users.GuildUser", b =>
                 {
                     b.HasOne("Hanekawa.Entities.Users.User", "User")
                         .WithMany("GuildUsers")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -262,11 +514,22 @@ namespace Hanekawa.Infrastructure.Migrations
 
             modelBuilder.Entity("Hanekawa.Entities.Configs.GuildConfig", b =>
                 {
-                    b.Navigation("GreetConfig")
-                        .IsRequired();
+                    b.Navigation("AdminConfig");
 
-                    b.Navigation("LevelConfig")
-                        .IsRequired();
+                    b.Navigation("CurrencyConfig");
+
+                    b.Navigation("DropConfig");
+
+                    b.Navigation("GreetConfig");
+
+                    b.Navigation("LevelConfig");
+
+                    b.Navigation("LogConfig");
+                });
+
+            modelBuilder.Entity("Hanekawa.Entities.Configs.LevelConfig", b =>
+                {
+                    b.Navigation("Rewards");
                 });
 
             modelBuilder.Entity("Hanekawa.Entities.Users.User", b =>

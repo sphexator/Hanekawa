@@ -18,9 +18,9 @@ public class AdministrationCommandService(IBot bot, ILogger<AdministrationComman
     {
         logger.LogInformation("Banning user {UserId} from guild {GuildId} by moderator {ModeratorId} for " +
                                "reason {Reason}", 
-            user.Id, user.Guild.Id, moderatorId, reason);
-        await bot.BanAsync(user.Guild.Id, user.Id, days, reason).ConfigureAwait(false);
-        return new (new (
+            user.Id, user.Guild.GuildId, moderatorId, reason);
+        await bot.BanAsync(user.Guild.GuildId, user.Id, days, reason).ConfigureAwait(false);
+        return new Response<Message>(new Message(
             string.Format(Localization.BannedGuildUser, user.Mention, user.Guild.Name)));
     }
     
@@ -29,9 +29,9 @@ public class AdministrationCommandService(IBot bot, ILogger<AdministrationComman
     {
         logger.LogInformation("Unbanning user {UserId} from guild {GuildId} by moderator {ModeratorId} for " +
                                "reason {Reason}", 
-            userId, guild.Id, moderatorId, reason);
-        await bot.UnbanAsync(guild.Id, userId, reason).ConfigureAwait(false);
-        return new (new (
+            userId, guild.GuildId, moderatorId, reason);
+        await bot.UnbanAsync(guild.GuildId, userId, reason).ConfigureAwait(false);
+        return new Response<Message>(new Message(
             string.Format(Localization.UnbannedGuildUser, userId, guild.Name)));
     }
     
@@ -40,9 +40,9 @@ public class AdministrationCommandService(IBot bot, ILogger<AdministrationComman
     {
         logger.LogInformation("Kicking user {UserId} from guild {GuildId} by moderator {ModeratorId} for " +
                                "reason {Reason}", 
-            user.Id, user.Guild.Id, moderatorId, reason);
-        await bot.KickAsync(user.Guild.Id, user.Id, reason).ConfigureAwait(false);
-        return new (new (
+            user.Id, user.Guild.GuildId, moderatorId, reason);
+        await bot.KickAsync(user.Guild.GuildId, user.Id, reason).ConfigureAwait(false);
+        return new Response<Message>(new Message(
             string.Format(Localization.KickedGuildUser, user.Username, user.Guild.Name)));
     }
     
@@ -52,9 +52,9 @@ public class AdministrationCommandService(IBot bot, ILogger<AdministrationComman
     {
         logger.LogInformation("Muting user {UserId} from guild {GuildId} by moderator {ModeratorId} for " +
                                "reason {Reason} for duration {Duration}", 
-            user.Id, user.Guild.Id, moderatorId, reason, duration);
-        await bot.MuteAsync(user.Guild.Id, user.Id, reason, duration).ConfigureAwait(false);
-        return new (new (string.Format(Localization.MutedGuildUserDuration, 
+            user.Id, user.Guild.GuildId, moderatorId, reason, duration);
+        await bot.MuteAsync(user.Guild.GuildId, user.Id, reason, duration).ConfigureAwait(false);
+        return new Response<Message>(new Message(string.Format(Localization.MutedGuildUserDuration, 
             user.Mention, duration.Humanize())));
     }
     
@@ -63,9 +63,9 @@ public class AdministrationCommandService(IBot bot, ILogger<AdministrationComman
     {
         logger.LogInformation("Unmuting user {UserId} from guild {GuildId} by moderator {ModeratorId} for " +
                                "reason {Reason}", 
-            user.Id, user.Guild.Id, moderatorId, reason);
-        await bot.UnmuteAsync(user.Guild.Id, user.Id, reason).ConfigureAwait(false);
-        return new (new (string.Format(Localization.UnMutedUser, user.Mention)));
+            user.Id, user.Guild.GuildId, moderatorId, reason);
+        await bot.UnmuteAsync(user.Guild.GuildId, user.Id, reason).ConfigureAwait(false);
+        return new Response<Message>(new Message(string.Format(Localization.UnMutedUser, user.Mention)));
     }
     
     /// <inheritdoc />
@@ -73,9 +73,9 @@ public class AdministrationCommandService(IBot bot, ILogger<AdministrationComman
     {
         logger.LogInformation("Adding role {RoleId} to user {UserId} from guild {GuildId} by moderator " +
                                "{ModeratorId}", 
-            roleId, user.Id, user.Guild.Id, moderatorId);
-        await bot.AddRoleAsync(user.Guild.Id, user.Id, roleId).ConfigureAwait(false);
-        return new (new (""));
+            roleId, user.Id, user.Guild.GuildId, moderatorId);
+        await bot.AddRoleAsync(user.Guild.GuildId, user.Id, roleId).ConfigureAwait(false);
+        return new Response<Message>(new Message(""));
     }
     
     /// <inheritdoc />
@@ -83,9 +83,9 @@ public class AdministrationCommandService(IBot bot, ILogger<AdministrationComman
     {
         logger.LogInformation("Removing role {RoleId} from user {UserId} from guild {GuildId} by moderator " +
                                "{ModeratorId}", 
-            roleId, user.Id, user.Guild.Id, moderatorId);
-        await bot.RemoveRoleAsync(user.Guild.Id, user.Id, roleId).ConfigureAwait(false);
-        return new (new (""));
+            roleId, user.Id, user.Guild.GuildId, moderatorId);
+        await bot.RemoveRoleAsync(user.Guild.GuildId, user.Id, roleId).ConfigureAwait(false);
+        return new Response<Message>(new Message(""));
     }
     
     /// <inheritdoc />
@@ -96,6 +96,6 @@ public class AdministrationCommandService(IBot bot, ILogger<AdministrationComman
                                "{ModeratorId} for reason {Reason}", 
             messageIds.Length, channelId, moderatorId, reason);
         await bot.PruneMessagesAsync(guildId, channelId, messageIds).ConfigureAwait(false);
-        return new (new (string.Format(Localization.PrunedMessages, messageIds.Length)));
+        return new Response<Message>(new Message(string.Format(Localization.PrunedMessages, messageIds.Length)));
     }
 }

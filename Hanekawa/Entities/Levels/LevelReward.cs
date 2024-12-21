@@ -11,9 +11,9 @@ public class LevelReward
 
     public ulong? RoleId { get; set; } = null;
     public int? Money { get; set; } = null;
-    
+
     public ulong GuildId { get; set; }
-    
+
     [JsonIgnore]
-    public LevelConfig LevelConfig { get; set; }
+    public LevelConfig? LevelConfig { get; set; }
 }

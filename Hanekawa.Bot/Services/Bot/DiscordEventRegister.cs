@@ -2,6 +2,7 @@
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Hanekawa.Application.Contracts.Discord.Services;
+using Hanekawa.Entities.Discord;
 using MediatR;
 
 namespace Hanekawa.Bot.Services.Bot;
@@ -18,16 +19,16 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
         => await service.GetRequiredService<IMediator>()
             .Send(new UserLeave(e.GuildId, e.MemberId))
             .ConfigureAwait(false);
-    
+
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
     {
         if (e.GuildId is null || e.Member is null) return;
         await service.GetRequiredService<IMediator>()
-            .Send(new MessageReceived(e.GuildId.Value, e.ChannelId, new()
+            .Send(new MessageReceived(e.GuildId.Value, e.ChannelId, new DiscordMember
             {
-                Guild = new() { Id = e.GuildId.Value },
+                Guild = new Guild { GuildId = e.GuildId.Value },
                 Id = e.Member.Id,
-                RoleIds = ConvertRoles(e.Member.RoleIds),
+                RoleIds = ConvertRoles(e.Member.RoleIds.ToArray()),
                 Nickname = e.Member.Nick,
                 IsBot = e.Member.IsBot,
                 Username = e.Member.Name,
@@ -56,9 +57,9 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
 
     protected override async ValueTask OnBanCreated(BanCreatedEventArgs e)
         => await service.GetRequiredService<IMediator>()
-            .Send(new UserBanned(new()
+            .Send(new UserBanned(new DiscordMember
             {
-                Guild = new() { Id = e.GuildId },
+                Guild = new Guild { GuildId = e.GuildId },
                 Id = e.UserId,
                 Username = e.User.Name,
                 IsBot = e.User.IsBot,
@@ -68,9 +69,9 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
 
     protected override async ValueTask OnBanDeleted(BanDeletedEventArgs e)
         => await service.GetRequiredService<IMediator>()
-            .Send(new UserUnbanned(new()
+            .Send(new UserUnbanned(new DiscordMember
             {
-                Guild = new() { Id = e.GuildId },
+                Guild = new Guild { GuildId = e.GuildId },
                 Id = e.UserId,
                 Username = e.User.Name,
                 IsBot = e.User.IsBot,
@@ -114,11 +115,15 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
             .ConfigureAwait(false);
     }
 
-    private static HashSet<ulong> ConvertRoles(IEnumerable<Snowflake> roles)
+    private static ulong[] ConvertRoles(Snowflake[] roles)
     {
-        var toReturn = new HashSet<ulong>();
-        foreach (var role in roles)
-            toReturn.Add(role);
+        var toReturn = new ulong[roles.Length];
+        var spans = roles.AsSpan();
+        for (var i = 0; i < spans.Length; i++)
+        {
+            var role = spans[i];
+            toReturn[i] = role.RawValue;
+        }
         return toReturn;
     }
 }

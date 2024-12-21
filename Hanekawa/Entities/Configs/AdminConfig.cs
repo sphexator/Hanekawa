@@ -9,7 +9,7 @@ public class AdminConfig : IConfig
     [Key]
     public ulong GuildId { get; set; }
     public int MaxWarnings { get; set; }
-    
+
     [JsonIgnore]
-    public GuildConfig GuildConfig { get; set; }
+    public GuildConfig? GuildConfig { get; set; }
 }

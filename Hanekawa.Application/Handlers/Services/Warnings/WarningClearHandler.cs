@@ -18,7 +18,7 @@ public class WarningClearHandler(IDbContext db, ILogger<WarningClearHandler> log
     {
         if (request.All)
         {
-            var warnings = await db.Warnings.Where(x => x.GuildId == request.User.Guild.Id
+            var warnings = await db.Warnings.Where(x => x.GuildId == request.User.Guild.GuildId
                                                          && x.UserId == request.User.Id
                                                          && x.Valid)
                 .ToArrayAsync(cancellationToken: cancellationToken);
@@ -28,23 +28,23 @@ public class WarningClearHandler(IDbContext db, ILogger<WarningClearHandler> log
                 x.Valid = false;
             }
             await db.SaveChangesAsync();
-            return new(new(string.Format(Localization.ClearedAllWarnUserMention, 
+            return new Response<Message>(new Message(string.Format(Localization.ClearedAllWarnUserMention, 
                 request.User.Mention)));
         }
-        var warning = await db.Warnings.FirstOrDefaultAsync(x => x.GuildId == request.User.Guild.Id
+        var warning = await db.Warnings.FirstOrDefaultAsync(x => x.GuildId == request.User.Guild.GuildId
                                                                   && x.UserId == request.User.Id
                                                                   && x.Valid,
             cancellationToken: cancellationToken);
         if (warning is null)
         {
-            return new(new(string.Format(Localization.NoWarningsUserMention, 
+            return new Response<Message>(new Message(string.Format(Localization.NoWarningsUserMention, 
                 request.User.Mention)));
         }
 
         warning.Valid = false;
         db.Warnings.Update(warning);
         await db.SaveChangesAsync();
-        return new(new(string.Format(Localization.ClearedWarningUserMention, 
+        return new Response<Message>(new Message(string.Format(Localization.ClearedWarningUserMention, 
             request.User.Mention)));
     }
 }

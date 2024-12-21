@@ -1,13 +1,10 @@
-﻿namespace Hanekawa.Entities.Users;
+﻿using Hanekawa.Interfaces;
 
-public class User
+namespace Hanekawa.Entities.Users;
+
+public class User : IEntity
 {
-    public User()
-    {
-        GuildUsers = [];
-    }
-    
     public ulong Id { get; set; }
-    public DateTimeOffset? PremiumExpiration { get; set; } = null;
-    public List<GuildUser> GuildUsers { get; set; }
+    public DateTimeOffset? PremiumExpiration { get; set; }
+    public List<GuildUser> GuildUsers { get; set; } = [];
 }

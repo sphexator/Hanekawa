@@ -22,9 +22,9 @@ public class UserUnbannedHandler : IRequestHandler<UserUnbanned, bool>
     public async Task<bool> Handle(UserUnbanned request, CancellationToken cancellationToken)
     {
         var cfg = await _db.GuildConfigs.Include(x => x.LogConfig)
-            .FirstOrDefaultAsync(x => x.GuildId == request.Member.Guild.Id, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(x => x.GuildId == request.Member.Guild.GuildId, cancellationToken: cancellationToken);
         if (cfg is { LogConfig.ModLogChannelId: null }) return false;
-        var channel = _bot.GetChannel(request.Member.Guild.Id, cfg.LogConfig.ModLogChannelId.Value);
+        var channel = _bot.GetChannel(request.Member.Guild.GuildId, cfg.LogConfig.ModLogChannelId.Value);
         if (channel is null)
         {
             cfg.LogConfig.ModLogChannelId = null;
@@ -34,14 +34,14 @@ public class UserUnbannedHandler : IRequestHandler<UserUnbanned, bool>
         
         await _bot.SendMessageAsync(channel.Value, new Embed
         {
-            Title = $"User Banned | Case ID: {request.Member.Id} | ${request.Member.Guild.Id}",
+            Title = $"User Banned | Case ID: {request.Member.Id} | ${request.Member.Guild.GuildId}",
             Color = Color.LimeGreen.ToArgb(),
-            Fields = new()
-            {
-                new("User", $"<@{request.Member.Id}>", false),
-                new("Moderator", "N/A", false),
-                new("Reason", "No reason provided", false),
-            }
+            Fields =
+            [
+                new EmbedField("User", $"<@{request.Member.Id}>", false),
+                new EmbedField("Moderator", "N/A", false),
+                new EmbedField("Reason", "No reason provided", false)
+            ]
         });
         return true;
     }

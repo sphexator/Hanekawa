@@ -8,9 +8,9 @@ namespace Hanekawa.Application.Extensions;
 
 public static class ImageExtensions
 {
-    public static IImageProcessingContext ConvertToAvatar(this IImageProcessingContext processingContext, 
-            Size size, float cornerRadius) =>
-        processingContext.Resize(new ResizeOptions
+    public static IImageProcessingContext ConvertToAvatar(this IImageProcessingContext processingContext,
+        Size size, float cornerRadius)
+        => processingContext.Resize(new ResizeOptions
         {
             Size = size,
             Mode = ResizeMode.Crop
@@ -21,7 +21,7 @@ public static class ImageExtensions
         var size = ctx.GetCurrentSize();
         var corners = BuildCorners(size.Width, size.Height, cornerRadius);
 
-        ctx.SetGraphicsOptions(new GraphicsOptions()
+        ctx.SetGraphicsOptions(new GraphicsOptions
         {
             Antialias = true,
             AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
@@ -37,7 +37,7 @@ public static class ImageExtensions
     private static PathCollection BuildCorners(int imageWidth, int imageHeight, float cornerRadius)
     {
         var rect = new RectangularPolygon(-0.5f, -0.5f, cornerRadius, cornerRadius);
-        
+
         var cornerTopLeft = rect.Clip(
                 new EllipsePolygon(cornerRadius - 0.5f, cornerRadius - 0.5f, cornerRadius));
 
@@ -48,6 +48,6 @@ public static class ImageExtensions
         var cornerBottomLeft = cornerTopLeft.RotateDegree(-90).Translate(0, bottomPos);
         var cornerBottomRight = cornerTopLeft.RotateDegree(180).Translate(rightPos, bottomPos);
 
-        return new(cornerTopLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight);
+        return new PathCollection(cornerTopLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight);
     }
 }

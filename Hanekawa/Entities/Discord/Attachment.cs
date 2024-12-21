@@ -1,9 +1,7 @@
-﻿using System.IO;
-
-namespace Hanekawa.Entities.Discord;
+﻿namespace Hanekawa.Entities.Discord;
 
 public class Attachment
 {
-    public MemoryStream Stream { get; set; }
-    public string FileName { get; set; }
+    public MemoryStream? Stream { get; set; }
+    public string FileName { get; set; } = string.Empty;
 }

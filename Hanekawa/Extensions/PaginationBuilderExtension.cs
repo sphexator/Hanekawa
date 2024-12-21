@@ -52,7 +52,7 @@ public static class PaginationBuilderExtension
         for (var i = 0; i < list.Length; i++)
         {
             var x = list[i];
-            pages[i] = new() { Content = x };
+            pages[i] = new T { Content = x };
         }
         return pages;
     }

@@ -83,7 +83,7 @@ public sealed class Bot : DiscordBot, IBot
     
     /// <inheritdoc />
     public Task ModifyRolesAsync(DiscordMember member, ulong[] modifiedRoles) 
-        => this.ModifyMemberAsync(member.Guild.Id, member.Id, x =>
+        => this.ModifyMemberAsync(member.Guild.GuildId, member.Id, x =>
         {
             x.RoleIds = ConvertToSnowflake(modifiedRoles);
         });
@@ -110,7 +110,7 @@ public sealed class Bot : DiscordBot, IBot
             .WithAllowedMentions(LocalAllowedMentions.None);
         if (attachment is not null) localMsg.WithAttachments(new LocalAttachment(attachment.Stream, attachment.FileName));
         var result = await this.SendMessageAsync(channelId, localMsg).ConfigureAwait(false);
-        return new ()
+        return new RestMessage
         {
             Id = result.Id,
             ChannelId = result.ChannelId,

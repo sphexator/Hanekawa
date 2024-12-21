@@ -1,6 +1,3 @@
 ﻿namespace Hanekawa.Interfaces;
 
-public interface IConfig
-{ 
-    ulong GuildId { get; set; }
-}
+public interface IConfig : IGuildEntity;

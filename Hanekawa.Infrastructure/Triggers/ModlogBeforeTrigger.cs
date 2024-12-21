@@ -17,8 +17,8 @@ internal abstract class ModLogBeforeTrigger(IDbContext dbContext) : IBeforeSaveT
     public async Task BeforeSave(ITriggerContext<GuildModerationLog> context, CancellationToken cancellationToken)
     {
         if(context.ChangeType is not ChangeType.Added) return;
-        
-        context.Entity.Id = 
+
+        context.Entity.Id =
             await dbContext.ModerationLogs.CountAsync(x => x.GuildId == context.Entity.GuildId,
                     cancellationToken: cancellationToken).ConfigureAwait(false) + 1;
     }

@@ -8,15 +8,6 @@ namespace Hanekawa.Application.Interfaces;
 public interface IImageService
 {
     /// <summary>
-    /// Draws an avatar onto the image image
-    /// </summary>
-    /// <param name="avatarUrl"></param>
-    /// <param name="size">Size of avatar</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<Image> CreateAvatarAsync(string avatarUrl, int size, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Creates a welcome image
     /// </summary>
     /// <param name="member">Discord user</param>

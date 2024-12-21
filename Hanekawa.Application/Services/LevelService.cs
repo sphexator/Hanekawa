@@ -1,9 +1,12 @@
-﻿using Hanekawa.Application.Contracts;
+﻿using System.Runtime.InteropServices;
+using Hanekawa.Application.Contracts;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Services;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Discord;
+using Hanekawa.Entities.Levels;
 using Hanekawa.Entities.Users;
+using Hanekawa.Extensions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -17,8 +20,8 @@ public class LevelService : ILevelService
     private readonly IBot _bot;
     private readonly ILogger<LevelService> _logger;
     private readonly IMediator _mediator;
-    
-    public LevelService(IDbContext db, ILogger<LevelService> logger, 
+
+    public LevelService(IDbContext db, ILogger<LevelService> logger,
         IBot bot, IMediator mediator)
     {
         _db = db;
@@ -26,26 +29,26 @@ public class LevelService : ILevelService
         _bot = bot;
         _mediator = mediator;
     }
-    
+
     /// <inheritdoc />
     public async Task<int?> AddExperienceAsync(DiscordMember member, int experience)
     {
         var config = await _db.GuildConfigs.Include(x => x.LevelConfig)
             .ThenInclude(x => x.Rewards)
-            .FirstOrDefaultAsync(x => x.GuildId == member.Guild.Id);
+            .FirstOrDefaultAsync(x => x.GuildId == member.Guild.GuildId);
         if (config?.LevelConfig is null || !config.LevelConfig.LevelEnabled) return null;
-        _logger.LogInformation("Adding {Experience} experience to guild user {User} in guild {Guild}", 
-            experience, member.Id, member.Guild.Id);
+        _logger.LogInformation("Adding {Experience} experience to guild user {User} in guild {Guild}",
+            experience, member.Id, member.Guild.GuildId);
 
-        var user = await _db.Users.FirstOrDefaultAsync(x => x.GuildId == member.Guild.Id && x.UserId == member.Id) 
-                   ?? new GuildUser { GuildId = member.Guild.Id, UserId = member.Id };
+        var user = await _db.Users.FirstOrDefaultAsync(x => x.GuildId == member.Guild.GuildId && x.Id == member.Id)
+                   ?? new GuildUser { GuildId = member.Guild.GuildId, Id = member.Id };
         var nextLevel = await _db.LevelRequirements.FirstOrDefaultAsync(x => x.Level == user.Level + 1);
         if(nextLevel is not null && user.Experience + experience >= nextLevel.Experience)
         {
             user.Level++;
             await AdjustRolesAsync(member, user.Level, config);
-            _logger.LogInformation("User {User} in guild {Guild} has leveled up to level {Level}", 
-                member.Id, member.Guild.Id, user.Level);
+            _logger.LogInformation("User {User} in guild {Guild} has leveled up to level {Level}",
+                member.Id, member.Guild.GuildId, user.Level);
             await _mediator.Send(new LevelUp(member, member.RoleIds, user.Level, config));
         }
 
@@ -54,19 +57,34 @@ public class LevelService : ILevelService
 
         return experience;
     }
-    
     /// <inheritdoc />
     public async Task<DiscordMember> AdjustRolesAsync(DiscordMember member, int level, GuildConfig config)
     {
-        for (var i = 0; i < config.LevelConfig.Rewards.Count; i++)
+        for (var i = 0; i < config.LevelConfig?.Rewards.Count; i++)
         {
-            var x = config.LevelConfig.Rewards[i];
-            if (!x.RoleId.HasValue) continue;
-            if (x.Level <= level && !member.RoleIds.Contains(x.RoleId.Value)) member.RoleIds.Add(x.RoleId.Value);
-            else if (x.Level > level && member.RoleIds.Contains(x.RoleId.Value)) member.RoleIds.Remove(x.RoleId.Value);
+            AdjustRoles(member, level, config.LevelConfig.Rewards[i]);
         }
-        
-        await _bot.ModifyRolesAsync(member, member.RoleIds.ToArray());
+
+        await _bot.ModifyRolesAsync(member, member.RoleIds);
         return member;
+    }
+    private static void AdjustRoles(DiscordMember member, int level, LevelReward x)
+    {
+        if (!x.RoleId.HasValue)
+        {
+            return;
+        }
+        if (x.Level <= level && !member.RoleIds.Contains(x.RoleId.Value))
+        {
+            member.RoleIds.Add(x.RoleId.Value);
+        }
+        else if (x.Level > level && member.RoleIds.Contains(x.RoleId.Value))
+        {
+            member.RoleIds.Remove(x.RoleId.Value);
+            var tempList = new List<ulong>(member.RoleIds);
+            tempList.Remove(x.RoleId.Value);
+            var span = CollectionsMarshal.AsSpan(tempList);
+            member.RoleIds = span.ToArray();
+        }
     }
 }

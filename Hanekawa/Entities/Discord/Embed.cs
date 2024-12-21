@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Hanekawa.Entities.Discord;
+﻿namespace Hanekawa.Entities.Discord;
 
 /// <summary>
 /// Discord embed
@@ -11,7 +8,7 @@ public class Embed
     /// <summary>
     /// Header tuple, First value = Avatar Url, Second value = Content value, Third value = Uri
     /// </summary>
-    public EmbedHeader Header { get; set; } = null;
+    public EmbedHeader? Header { get; set; } = null;
 
     /// <summary>
     /// Title of embed
@@ -34,7 +31,7 @@ public class Embed
     /// <summary>
     /// Fields of tuple. First value = title, second value = content
     /// </summary>
-    public List<EmbedField> Fields { get; set; } = new();
+    public List<EmbedField> Fields { get; set; } = [];
 
     /// <summary>
     /// Icon of the embed
@@ -49,5 +46,5 @@ public class Embed
     /// <summary>
     /// Footer tuple.First value = Avatar url. Second value = text
     /// </summary>
-    public EmbedFooter Footer { get; set; } = null;
+    public EmbedFooter? Footer { get; set; } = null;
 }

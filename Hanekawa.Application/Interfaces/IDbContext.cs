@@ -37,20 +37,21 @@ public interface IDbContext : IAsyncDisposable
     /// Guild moderator store. Ban / Mute / etc
     /// </summary>
     DbSet<GuildModerationLog> ModerationLogs { get; set; }
-    
+
     /// <summary>
     /// Saves changes in current context
     /// </summary>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<int> SaveChangesAsync();
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     /// <summary>
     /// Checks if the database is created
     /// </summary>
     /// <returns></returns>
-    Task<bool> EnsureDatabaseCreated();
+    Task<bool> EnsureDatabaseCreated(CancellationToken cancellationToken = default);
     /// <summary>
     /// Migrates pending migrations to the database
     /// </summary>
     /// <returns></returns>
-    Task MigrateDatabaseAsync();
+    Task MigrateDatabaseAsync(CancellationToken cancellationToken = default);
 }

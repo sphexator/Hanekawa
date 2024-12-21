@@ -4,4 +4,4 @@ using MediatR;
 
 namespace Hanekawa.Application.Contracts;
 
-public record LevelUp(DiscordMember Member, HashSet<ulong> RoleIds, int Level, GuildConfig GuildConfig) : IRequest;
+public record LevelUp(DiscordMember Member, ulong[] RoleIds, int Level, GuildConfig GuildConfig) : IRequest;

@@ -31,7 +31,7 @@ public class AccountCommands(IServiceProvider provider) : DiscordApplicationModu
     {
         var service = provider.GetRequiredService<AccountCommandService>();
         var result = await service.ProfileAsync(
-            Bot.GetMember(Context.GuildId.Value, Context.Author.Id)
+            Bot.GetMember(Context.GuildId!.Value, Context.Author.Id)
                 .ToDiscordMember());
         result.Position = 0;
         return Response(new LocalInteractionMessageResponse()
@@ -39,10 +39,10 @@ public class AccountCommands(IServiceProvider provider) : DiscordApplicationModu
             .WithAllowedMentions(LocalAllowedMentions.None)
             .WithAttachments(
             [
-                new(result, "profile.png")
+                new LocalAttachment(result, "profile.png")
             ]));
     }
-    
+
     [SlashCommand(Metas.Account.Top)]
     [Description("Shows the top users")]
     public Task<DiscordInteractionResponseCommandResult> TopAsync()

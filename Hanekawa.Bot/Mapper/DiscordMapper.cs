@@ -12,32 +12,37 @@ internal static class DiscordExtensions
     {
         var toReturn = new LocalEmbed
         {
-            Author = new LocalEmbedAuthor
+            Author = embed.Header != null ? new LocalEmbedAuthor
             {
                 Name = embed.Header.Name,
                 IconUrl = embed.Header.IconUrl,
                 Url = embed.Header.Url
-            },
+            } : new LocalEmbedAuthor(),
             Title = embed.Title ?? string.Empty,
             ThumbnailUrl = embed.Icon ?? string.Empty,
             Color = new Color(embed.Color),
             Description = embed.Content ?? string.Empty,
             ImageUrl = embed.Attachment ?? string.Empty,
             Timestamp = embed.Timestamp,
-            Footer = new LocalEmbedFooter
+            Footer = embed.Footer != null ? new LocalEmbedFooter
             {
                 IconUrl = embed.Footer.IconUrl,
                 Text = embed.Footer.Text,
-            }
+            } : new LocalEmbedFooter()
         };
         var fields = new List<LocalEmbedField>();
         for (var i = 0; i < embed.Fields.Count; i++)
         {
             var x = embed.Fields[i];
-            fields.Add(new() { Name = x.Name, Value = x.Value, IsInline = x.IsInline });
+            fields.Add(new LocalEmbedField
+            {
+                Name = x.Name,
+                Value = x.Value,
+                IsInline = x.IsInline
+            });
         }
 
-        if (fields.Count is not 0) toReturn.Fields = fields;
+        if (fields is not { Count: 0 }) toReturn.Fields = fields;
         return toReturn;
     }
 
@@ -45,14 +50,14 @@ internal static class DiscordExtensions
     {
         var toReturn = new Embed
         {
-            Header = new (embed.Author!.Name, (embed.Author.IconUrl ?? null)!, (embed.Author.Url ?? null)!),
+            Header = new EmbedHeader(embed.Author!.Name, (embed.Author.IconUrl ?? null)!, (embed.Author.Url ?? null)!),
             Title = embed.Title,
             Icon = embed.Thumbnail!.Url,
             Color = embed.Color!.Value.RawValue,
             Content = embed.Description!,
             Attachment = embed.Image!.Url,
             Timestamp = embed.Timestamp!.Value,
-            Footer = new ((embed.Footer!.Text), (embed.Footer.IconUrl ?? null)!)
+            Footer = new EmbedFooter((embed.Footer!.Text), (embed.Footer.IconUrl ?? null)!)
         };
         return toReturn;
     }
@@ -68,15 +73,18 @@ internal static class DiscordExtensions
             IsNsfw = (channel as ITextChannel)?.IsAgeRestricted ?? true
         };
 
-    internal static DiscordMember ToDiscordMember(this IMember member) =>
-        new()
+    internal static DiscordMember ToDiscordMember(this IMember? member)
+    {
+        if (member is null) return new DiscordMember();
+        return new DiscordMember
         {
             Id = member.Id,
             Username = member.Name,
             AvatarUrl = member.GetAvatarUrl(),
-            Guild = new ()
+            GuildId = member.GetGuild()!.Id,
+            Guild = new Guild
             {
-                Id = member.GetGuild()!.Id,
+                GuildId = member.GetGuild()!.Id,
                 Name = member.GetGuild()!.Name,
                 IconUrl = member.GetGuild()?.GetIconUrl()!,
                 Description = member.GetGuild()?.Description,
@@ -92,14 +100,15 @@ internal static class DiscordExtensions
             },
             Nickname = member.Nick,
             IsBot = member.IsBot,
-            RoleIds = member.RoleIds.Select(x => x.RawValue).ToHashSet(),
+            RoleIds = member.RoleIds.Select(x => x.RawValue).ToArray(),
             VoiceSessionId = member.GetVoiceState()?.SessionId
         };
+    }
 
     internal static Guild ToGuild(this IMember user) =>
         new()
         {
-            Id = user.GetGuild()!.Id,
+            GuildId = user.GetGuild()!.Id,
             Name = user.GetGuild()!.Name,
             IconUrl = user.GetGuild()?.GetIconUrl()!,
             Description = user.GetGuild()?.Description,
@@ -113,14 +122,14 @@ internal static class DiscordExtensions
                     Name = e.Value.Name
                 }).ToArray()
         };
-    
+
     internal static LocalInteractionMessageResponse ToLocalInteractionMessageResponse(this Response<Message> response) =>
         new ()
         {
             Content = response.Data.Content,
             Embeds = new List<LocalEmbed> { response.Data.Embed.ToLocalEmbed() },
             IsTextToSpeech = false,
-            AllowedMentions = response.Data.AllowMentions 
+            AllowedMentions = response.Data.AllowMentions
                 ? LocalAllowedMentions.ExceptEveryone : LocalAllowedMentions.None,
             Components = new List<LocalRowComponent>
             {
@@ -128,7 +137,7 @@ internal static class DiscordExtensions
                 {
                     Components = new List<LocalComponent>
                     {
-                        
+
                     }
                 }
             },
@@ -138,10 +147,11 @@ internal static class DiscordExtensions
     internal static Page[] ToPages(this Response<Pagination<Message>> list)
     {
         var pages = new Page[list.Data.Items.Length / 5 + 1];
-        for (var i = 0; i < list.Data.Items.Length; i++)
+        var spans = list.Data.Items.AsSpan();
+        for (var i = 0; i < spans.Length; i++)
         {
-            var x = list.Data.Items[i];
-            pages[i] = new()
+            var x = spans[i];
+            pages[i] = new Page
             {
                 Content = x.Content
             };

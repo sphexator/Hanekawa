@@ -1,6 +1,7 @@
 ﻿using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Discord;
+using Hanekawa.Entities.Users;
 using Hanekawa.Localize;
 using MediatR;
 
@@ -12,10 +13,10 @@ public class WarningReceivedHandler(IDbContext db) : IRequestHandler<WarningRece
 {
     public async Task<Response<Message>> Handle(WarningReceived request, CancellationToken cancellationToken)
     {
-        await db.Warnings.AddAsync(new()
+        await db.Warnings.AddAsync(new Warning
         {
             Id = Guid.NewGuid(),
-            GuildId = request.User.Guild.Id,
+            GuildId = request.User.Guild.GuildId,
             UserId = request.User.Id,
             ModeratorId = request.ModeratorId,
             Reason = request.Warning,
@@ -24,6 +25,6 @@ public class WarningReceivedHandler(IDbContext db) : IRequestHandler<WarningRece
         }, cancellationToken);
         await db.SaveChangesAsync();
         // Change to mention the user
-        return new(new(string.Format(Localization.WarnedUser, request.User.Mention)));
+        return new Response<Message>(new Message(string.Format(Localization.WarnedUser, request.User.Mention)));
     }
 }

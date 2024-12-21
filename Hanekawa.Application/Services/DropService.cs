@@ -23,7 +23,7 @@ public class DropService : IDropService
         _logger = logger;
         _serviceProvider = serviceProvider;
         _random = Random.Shared;
-        _semaphoreSlim = new (1);
+        _semaphoreSlim = new SemaphoreSlim(1);
     }
     
     public DropService(ILevelService levelService, ILogger<DropService> logger, IServiceProvider serviceProvider, 
@@ -33,7 +33,7 @@ public class DropService : IDropService
         _logger = logger;
         _serviceProvider = serviceProvider;
         _random = random;
-        _semaphoreSlim = new (1);
+        _semaphoreSlim = new SemaphoreSlim(1);
     }
     
     /// <inheritdoc />
@@ -76,7 +76,7 @@ public class DropService : IDropService
     {
         await _semaphoreSlim.WaitAsync(cancellationToken);
         _logger.LogDebug("{UserId}-{GuildId} entered the semaphore for drop claims", 
-            user.Id, user.Guild.Id);
+            user.Id, user.Guild.GuildId);
         
         await using var scope = _serviceProvider.CreateAsyncScope();
         var cache = scope.ServiceProvider.GetRequiredService<ICacheContext>();
@@ -84,12 +84,12 @@ public class DropService : IDropService
         if(value is null) return;
 
         var bot = _serviceProvider.GetRequiredService<IBot>();
-        await bot.DeleteMessageAsync(user.Guild.Id, channelId, msgId);
+        await bot.DeleteMessageAsync(user.Guild.GuildId, channelId, msgId);
         
         var db = scope.ServiceProvider.GetRequiredService<IDbContext>(); 
         var config = await db.GuildConfigs
             .Include(x => x.DropConfig)
-            .FirstOrDefaultAsync(x => x.GuildId == user.Guild.Id, 
+            .FirstOrDefaultAsync(x => x.GuildId == user.Guild.GuildId, 
                 cancellationToken: cancellationToken);
         if (config is null) return;
         
@@ -100,7 +100,7 @@ public class DropService : IDropService
         cache.Remove($"{msgId}-{channelId}-drop");
         _semaphoreSlim.Release();
         _logger.LogDebug("{UserId}-{GuildId} exited the semaphore for drop claims", 
-            user.Id, user.Guild.Id);
+            user.Id, user.Guild.GuildId);
     }
     
     /// <inheritdoc />

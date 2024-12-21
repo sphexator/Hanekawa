@@ -489,6 +489,34 @@
                         "description": "List all level roles"
                     }
                 }
+            },
+            "rank":
+            {
+                "name": "rank",
+                "description": "Shows the rank of a user",
+                "options":
+                {
+                    "user":
+                    {
+                        "name": "user",
+                        "description": "No description."
+                    }
+                }
+            },
+            "wallet":
+            {
+                "name": "wallet",
+                "description": "Shows the wallet of a user"
+            },
+            "top":
+            {
+                "name": "top",
+                "description": "Shows the top users"
+            },
+            "profile":
+            {
+                "name": "profile",
+                "description": "Shows the profile of a user"
             }
         }
     },

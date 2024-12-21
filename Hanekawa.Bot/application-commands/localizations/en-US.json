@@ -489,6 +489,34 @@
                         "description": ""
                     }
                 }
+            },
+            "rank":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "user":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "wallet":
+            {
+                "name": "",
+                "description": ""
+            },
+            "top":
+            {
+                "name": "",
+                "description": ""
+            },
+            "profile":
+            {
+                "name": "",
+                "description": ""
             }
         }
     },

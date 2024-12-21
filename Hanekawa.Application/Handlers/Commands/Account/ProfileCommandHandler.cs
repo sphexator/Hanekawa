@@ -13,6 +13,6 @@ public class ProfileCommandHandler(IImageService imageService, IDbContext db) : 
         CancellationToken cancellationToken)
     {
         var user = await db.Users.FindAsync([request.Member.Guild, request.Member.Id], cancellationToken: cancellationToken);
-        return new(await imageService.DrawProfileAsync(request.Member, user, cancellationToken));
+        return new ProfileCommandResult(await imageService.DrawProfileAsync(request.Member, user, cancellationToken));
     }
 }

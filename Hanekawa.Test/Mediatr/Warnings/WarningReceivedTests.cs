@@ -1,5 +1,6 @@
 ﻿using Hanekawa.Application.Handlers.Services.Warnings;
 using Hanekawa.Application.Interfaces;
+using Hanekawa.Entities.Discord;
 using Moq;
 
 namespace Hanekawa.Test.Mediatr.Warnings;
@@ -13,9 +14,9 @@ public class WarningReceivedTests
     public async Task WarningReceived_Should_Add_Warning()
     {
         // Arrange
-        Mediatr = new(_dbContext.Object);
+        Mediatr = new WarningReceivedHandler(_dbContext.Object);
         var received =
-            new WarningReceived(new() { Guild = new() { Id = ulong.MinValue }, Username = "", },
+            new WarningReceived(new DiscordMember { Guild = new Guild { GuildId = ulong.MinValue }, Username = "", },
                 "", 1);
         // Act
         var result = await Mediatr.Handle(received, CancellationToken.None);

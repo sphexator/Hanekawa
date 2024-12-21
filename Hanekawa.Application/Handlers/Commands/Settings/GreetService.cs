@@ -19,8 +19,8 @@ public class GreetService(IDbContext db, ILogger<GreetService> logger) : IGreetS
             .FirstOrDefaultAsync(e => e.GuildId == guildId);
         if (config?.GreetConfig is null)
         {
-            config ??= new() { GuildId = guildId };
-            config.GreetConfig = new() { GuildId = guildId };
+            config ??= new GuildConfig { GuildId = guildId };
+            config.GreetConfig = new GreetConfig { GuildId = guildId };
             await db.GuildConfigs.AddAsync(config);
         }
 
@@ -37,8 +37,8 @@ public class GreetService(IDbContext db, ILogger<GreetService> logger) : IGreetS
             .FirstOrDefaultAsync(e => e.GuildId == guildId);
         if (config?.GreetConfig is null)
         {
-            config ??= new() { GuildId = guildId };
-            config.GreetConfig = new() { GuildId = guildId };
+            config ??= new GuildConfig { GuildId = guildId };
+            config.GreetConfig = new GreetConfig { GuildId = guildId };
             await db.GuildConfigs.AddAsync(config);
         }
 
@@ -54,12 +54,12 @@ public class GreetService(IDbContext db, ILogger<GreetService> logger) : IGreetS
             .FirstOrDefaultAsync(e => e.GuildId == guildId);
         if (config?.GreetConfig is null)
         {
-            config ??= new() { GuildId = guildId };
-            config.GreetConfig = new() { GuildId = guildId };
+            config ??= new GuildConfig { GuildId = guildId };
+            config.GreetConfig = new GreetConfig { GuildId = guildId };
             await db.GuildConfigs.AddAsync(config);
         }
 
-        config.GreetConfig.Images.Add(new ()
+        config.GreetConfig.Images.Add(new GreetImage
         {
             GuildId = guildId,
             ImageUrl = url,
@@ -109,8 +109,8 @@ public class GreetService(IDbContext db, ILogger<GreetService> logger) : IGreetS
             .FirstOrDefaultAsync(e => e.GuildId == guildId);
         if (config?.GreetConfig == null)
         {
-            config ??= new() { GuildId = guildId };
-            config.GreetConfig = new() { GuildId = guildId };
+            config ??= new GuildConfig { GuildId = guildId };
+            config.GreetConfig = new GreetConfig { GuildId = guildId };
             await db.GuildConfigs.AddAsync(config);
         }
 
