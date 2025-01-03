@@ -3,7 +3,7 @@ using Hanekawa.Entities;
 
 namespace Hanekawa.Application.Contracts.Discord.Common;
 
-public record Ban : ISqs
+public record Ban : IMessageSqs
 {
 	public ulong GuildId { get; init; }
 	public ulong UserId { get; init; }

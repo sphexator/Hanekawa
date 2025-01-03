@@ -3,7 +3,7 @@ using Hanekawa.Entities;
 
 namespace Hanekawa.Application.Contracts.Discord.Common;
 
-public class Unmute : ISqs
+public class Unmute : IMessageSqs
 {
 	public ulong GuildId { get; init; }
 	public ulong UserId { get; init; }

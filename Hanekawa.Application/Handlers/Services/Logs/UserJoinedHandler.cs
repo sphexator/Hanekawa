@@ -4,9 +4,9 @@ using MediatR;
 
 namespace Hanekawa.Application.Handlers.Services.Logs;
 
-public class UserJoinedHandler : IRequestHandler<UserJoin, bool>
+public class UserJoinedHandler : INotificationHandler<UserJoin>
 {
-    public Task<bool> Handle(UserJoin request, CancellationToken cancellationToken)
+    public Task Handle(UserJoin request, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

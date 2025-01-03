@@ -2,4 +2,4 @@
 
 namespace Hanekawa.Application.Contracts.Discord.Services;
 
-public record ReactionCleared(ulong GuildId, ulong ChannelId, ulong MessageId) : ISqs<bool>;
+public record ReactionCleared(ulong GuildId, ulong ChannelId, ulong MessageId) : INotificationSqs;

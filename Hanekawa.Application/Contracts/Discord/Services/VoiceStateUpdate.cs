@@ -2,4 +2,4 @@
 
 namespace Hanekawa.Application.Contracts.Discord.Services;
 
-public record VoiceStateUpdate(ulong GuildId, ulong UserId, ulong? ChannelId, string? SessionId) : ISqs<bool>;
+public record VoiceStateUpdate(ulong GuildId, ulong UserId, ulong? ChannelId, string? SessionId) : IMessageSqs<bool>;

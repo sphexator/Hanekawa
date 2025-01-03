@@ -8,7 +8,7 @@ using Color = System.Drawing.Color;
 
 namespace Hanekawa.Application.Handlers.Services.Logs;
 
-public class UserBannedHandler : IRequestHandler<UserBanned, bool>
+public class UserBannedHandler : INotificationHandler<UserBanned>
 {
     private readonly IBot _bot;
     private readonly IDbContext _db;
@@ -19,19 +19,19 @@ public class UserBannedHandler : IRequestHandler<UserBanned, bool>
         _db = db;
     }
 
-    public async Task<bool> Handle(UserBanned request, CancellationToken cancellationToken)
+    public async Task Handle(UserBanned request, CancellationToken cancellationToken)
     {
         var cfg = await _db.GuildConfigs.Include(x => x.LogConfig)
             .FirstOrDefaultAsync(x => x.GuildId == request.Member.Guild.GuildId, cancellationToken: cancellationToken);
-        if (cfg is { LogConfig.ModLogChannelId: null }) return false;
+        if (cfg is { LogConfig.ModLogChannelId: null }) return;
         var channel = _bot.GetChannel(request.Member.Guild.GuildId, cfg!.LogConfig.ModLogChannelId.Value);
         if (channel is null)
         {
             cfg.LogConfig.ModLogChannelId = null;
-            await _db.SaveChangesAsync();
-            return false;
+            await _db.SaveChangesAsync(cancellationToken);
+            return;
         }
-        
+
         await _bot.SendMessageAsync(channel.Value, new Embed
         {
             Title = $"User Banned | Case ID: {request.Member.Id} | ${request.Member.Guild.GuildId}",
@@ -43,6 +43,6 @@ public class UserBannedHandler : IRequestHandler<UserBanned, bool>
                 new EmbedField("Reason", "No reason provided", false)
             ]
         });
-        return true;
+        return;
     }
 }

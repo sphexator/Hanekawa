@@ -2,5 +2,5 @@
 
 namespace Hanekawa.Application.Contracts.Discord.Services;
 
-public record MessagesDeleted(ulong GuildId, ulong ChannelId, ulong[] AuthorId, 
-    ulong[] MessageIds, string[] MessageContents) : ISqs<bool>;
+public record MessagesDeleted(ulong GuildId, ulong ChannelId, ulong[] AuthorId,
+    ulong[] MessageIds, string[] MessageContents) : INotificationSqs;

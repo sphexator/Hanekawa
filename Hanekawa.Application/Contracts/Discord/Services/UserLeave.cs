@@ -2,4 +2,4 @@
 
 namespace Hanekawa.Application.Contracts.Discord.Services;
 
-public record UserLeave(ulong GuildId, ulong UserId) : ISqs<bool>;
+public record UserLeave(ulong GuildId, ulong UserId) : INotificationSqs;

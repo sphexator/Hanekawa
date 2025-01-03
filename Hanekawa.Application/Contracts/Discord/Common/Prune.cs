@@ -3,7 +3,7 @@ using Hanekawa.Entities;
 
 namespace Hanekawa.Application.Contracts.Discord.Common;
 
-public class Prune : ISqs
+public class Prune : IMessageSqs
 {
 	public ulong GuildId { get; init; }
 	public ulong UserId { get; init; }

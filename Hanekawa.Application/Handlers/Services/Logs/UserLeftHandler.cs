@@ -4,9 +4,9 @@ using MediatR;
 
 namespace Hanekawa.Application.Handlers.Services.Logs;
 
-public class UserLeftHandler : IRequestHandler<UserLeave, bool>
+public class UserLeftHandler : INotificationHandler<UserLeave>
 {
-    public Task<bool> Handle(UserLeave request, CancellationToken cancellationToken)
+    public Task Handle(UserLeave request, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
