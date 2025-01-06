@@ -1,4 +1,5 @@
-﻿using Disqord;
+﻿using System.Runtime.InteropServices;
+using Disqord;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Hanekawa.Application.Contracts.Discord.Services;
@@ -28,7 +29,7 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
             {
                 Guild = new Guild { GuildId = e.GuildId.Value },
                 Id = e.Member.Id,
-                RoleIds = ConvertRoles(e.Member.RoleIds.ToArray()),
+                RoleIds = ConvertRoles(e.Member.RoleIds),
                 Nickname = e.Member.Nick,
                 IsBot = e.Member.IsBot,
                 Username = e.Member.Name,
@@ -115,13 +116,12 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
             .ConfigureAwait(false);
     }
 
-    private static ulong[] ConvertRoles(Snowflake[] roles)
+    private static ulong[] ConvertRoles(IReadOnlyList<Snowflake> roles)
     {
-        var toReturn = new ulong[roles.Length];
-        var spans = roles.AsSpan();
-        for (var i = 0; i < spans.Length; i++)
+        var toReturn = new ulong[roles.Count];
+        for (var i = 0; i < roles.Count; i++)
         {
-            var role = spans[i];
+            var role = roles[i];
             toReturn[i] = role.RawValue;
         }
         return toReturn;
