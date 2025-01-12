@@ -13,36 +13,20 @@ public class GreetService(IDbContext db, ILogger<GreetService> logger) : IGreetS
 {
     public async Task<string> SetChannel(ulong guildId, TextChannel channel)
     {
-        logger.LogInformation("Setting greet channel to {Channel} for guild {Guild}", 
+        logger.LogInformation("Setting greet channel to {Channel} for guild {Guild}",
             channel.Id, guildId);
-        var config = await db.GuildConfigs.Include(e => e.GreetConfig)
-            .FirstOrDefaultAsync(e => e.GuildId == guildId);
-        if (config?.GreetConfig is null)
-        {
-            config ??= new GuildConfig { GuildId = guildId };
-            config.GreetConfig = new GreetConfig { GuildId = guildId };
-            await db.GuildConfigs.AddAsync(config);
-        }
-
-        config.GreetConfig.Channel = channel.Id;
+        var config = await GetOrCreateConfig(guildId);
+        config.GreetConfig!.Channel = channel.Id;
         await db.SaveChangesAsync();
         return $"Set greet channel to {channel.Mention} !";
     }
-    
+
     public async Task<string> SetMessage(ulong guildId, string message)
     {
-        logger.LogInformation("Setting greet message to {Message} for guild {Guild}", 
+        logger.LogInformation("Setting greet message to {Message} for guild {Guild}",
             message, guildId);
-        var config = await db.GuildConfigs.Include(e => e.GreetConfig)
-            .FirstOrDefaultAsync(e => e.GuildId == guildId);
-        if (config?.GreetConfig is null)
-        {
-            config ??= new GuildConfig { GuildId = guildId };
-            config.GreetConfig = new GreetConfig { GuildId = guildId };
-            await db.GuildConfigs.AddAsync(config);
-        }
-
-        config.GreetConfig.Message = message;
+        var config = await GetOrCreateConfig(guildId);
+        config.GreetConfig!.Message = message;
         await db.SaveChangesAsync();
         return "Updated greet message !";
     }
@@ -50,16 +34,9 @@ public class GreetService(IDbContext db, ILogger<GreetService> logger) : IGreetS
     public async Task<string> SetImage(ulong guildId, string url, ulong uploaderId)
     {
         logger.LogInformation("Setting greet image to {Url} for guild {Guild}", url, guildId);
-        var config = await db.GuildConfigs.Include(e => e.GreetConfig)
-            .FirstOrDefaultAsync(e => e.GuildId == guildId);
-        if (config?.GreetConfig is null)
-        {
-            config ??= new GuildConfig { GuildId = guildId };
-            config.GreetConfig = new GreetConfig { GuildId = guildId };
-            await db.GuildConfigs.AddAsync(config);
-        }
+        var config = await GetOrCreateConfig(guildId);
 
-        config.GreetConfig.Images.Add(new GreetImage
+        config.GreetConfig!.Images.Add(new GreetImage
         {
             GuildId = guildId,
             ImageUrl = url,
@@ -79,7 +56,7 @@ public class GreetService(IDbContext db, ILogger<GreetService> logger) : IGreetS
             .FirstOrDefaultAsync(x => x.GuildId == guildId);
 
         if (config?.GreetConfig is null || config.GreetConfig.Images.Count == 0) return new NotFound();
-        
+
         return config.GreetConfig.Images;
     }
 
@@ -102,22 +79,33 @@ public class GreetService(IDbContext db, ILogger<GreetService> logger) : IGreetS
         logger.LogWarning("Could not find greet image {Id} for guild {Guild}", id, guildId);
         return false;
     }
-    
+
     public async Task<string> ToggleImage(ulong guildId)
     {
-        var config = await db.GuildConfigs.Include(e => e.GreetConfig)
-            .FirstOrDefaultAsync(e => e.GuildId == guildId);
-        if (config?.GreetConfig == null)
-        {
-            config ??= new GuildConfig { GuildId = guildId };
-            config.GreetConfig = new GreetConfig { GuildId = guildId };
-            await db.GuildConfigs.AddAsync(config);
-        }
-
+        var config = await GetOrCreateConfig(guildId);
         logger.LogInformation("Toggling greet image for guild {Guild} from {Old} to {New}", guildId,
-            config.GreetConfig.ImageEnabled, !config.GreetConfig.ImageEnabled);
+            config.GreetConfig!.ImageEnabled, !config.GreetConfig.ImageEnabled);
         config.GreetConfig.ImageEnabled = !config.GreetConfig.ImageEnabled;
         await db.SaveChangesAsync();
         return $"{(config.GreetConfig.ImageEnabled ? "Enabled" : "Disabled")} greet image !";
+    }
+
+    private async Task<GuildConfig> GetOrCreateConfig(ulong guildId, CancellationToken cancellationToken = default)
+    {
+        var config = await db.GuildConfigs.Include(e => e.GreetConfig)
+            .FirstOrDefaultAsync(e => e.GuildId == guildId, cancellationToken: cancellationToken);
+        var addToDb = false;
+        if (config is null)
+        {
+            addToDb = true;
+            config ??= new GuildConfig { GuildId = guildId };
+        }
+        config.GreetConfig ??= new GreetConfig { GuildId = guildId };
+        if (addToDb)
+        {
+            await db.GuildConfigs.AddAsync(config, cancellationToken);
+        }
+
+        return config;
     }
 }

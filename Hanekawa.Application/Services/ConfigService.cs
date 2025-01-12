@@ -4,6 +4,7 @@ using Hanekawa.Application.Extensions;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Hanekawa.Application.Services;
@@ -30,7 +31,14 @@ public class ConfigService : IConfigService
                 return cachedConfig;
             }
         }
-        var config = await _db.GetOrCreateConfigAsync(guildId, cancellationToken);
+
+        var config = await _db.GuildConfigs.FirstOrDefaultAsync(x => x.GuildId == guildId, cancellationToken);
+        if (config is null)
+        {
+            config = new GuildConfig { GuildId = guildId };
+            await _db.GuildConfigs.AddAsync(config, cancellationToken);
+            await _db.SaveChangesAsync(cancellationToken);
+        }
 
         await SetAsync(guildId, config, cancellationToken);
         return config;
@@ -53,7 +61,13 @@ public class ConfigService : IConfigService
             }
         }
 
-        var config = await _db.GetOrCreateConfigAsync(guildId, include, cancellationToken);
+        var config = await _db.GuildConfigs.Include(include.Name).FirstOrDefaultAsync(x => x.GuildId == guildId, cancellationToken);
+        if (config is null)
+        {
+            config = new GuildConfig { GuildId = guildId };
+            await _db.GuildConfigs.AddAsync(config, cancellationToken);
+            await _db.SaveChangesAsync(cancellationToken);
+        }
         await SetAsync(guildId, config, cancellationToken);
         return config;
     }

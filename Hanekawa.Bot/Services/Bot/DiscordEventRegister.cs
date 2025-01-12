@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Disqord;
+﻿using Disqord;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Hanekawa.Application.Contracts.Discord.Services;
