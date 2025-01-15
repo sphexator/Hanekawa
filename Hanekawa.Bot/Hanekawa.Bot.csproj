@@ -28,10 +28,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Remove="Data\Template\ProfileTemplate.png" />
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
-      <None Remove="Data\Template\ProfileTemplate.png" />
       <Content Include="Data\Template\ProfileTemplate.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
