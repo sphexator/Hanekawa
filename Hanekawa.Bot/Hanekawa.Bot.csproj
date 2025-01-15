@@ -9,7 +9,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Disqord" Version="1.0.0-alpha5.77" />
         <PackageReference Include="Disqord.Bot" Version="1.0.0-alpha5.77" />
         <PackageReference Include="FluentValidation" Version="11.11.0" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
