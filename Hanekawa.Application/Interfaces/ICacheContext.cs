@@ -1,4 +1,6 @@
-﻿namespace Hanekawa.Application.Interfaces;
+﻿using Hanekawa.Entities.Users;
+
+namespace Hanekawa.Application.Interfaces;
 
 public interface ICacheContext
 {
@@ -32,6 +34,11 @@ public interface ICacheContext
     /// <param name="expiration"></param>
     /// <typeparam name="TEntity"></typeparam>
     void Add<TEntity>(string key, TEntity value, TimeSpan expiration);
-    
+
     bool Remove(string key);
+
+    /// <summary>
+    /// Retrieve a value from cache by its key or create a new one if it doesn't exist
+    ///  </summary>
+    ValueTask<TEntity> GetOrCreateAsync<TEntity>(string key, Func<TEntity> factory);
 }
