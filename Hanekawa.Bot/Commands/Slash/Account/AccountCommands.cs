@@ -15,6 +15,9 @@ public class AccountCommands(IServiceProvider provider) : DiscordApplicationModu
     [Description("Shows the rank of a user")]
     public Task<DiscordInteractionResponseCommandResult> RankAsync(IMember user)
     {
+        var service = provider.GetRequiredService<AccountCommandService>();
+        var result = service.RankAsync(user.ToDiscordMember());
+
         throw new NotImplementedException();
     }
 

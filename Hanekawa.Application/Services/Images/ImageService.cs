@@ -1,4 +1,5 @@
-﻿using Hanekawa.Application.Interfaces;
+﻿using Hanekawa.Application.Extensions;
+using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Discord;
 using Hanekawa.Entities.Settings.Images;
@@ -43,6 +44,14 @@ public class ImageService : IImageService
         CancellationToken cancellationToken = default)
     {
         return new ProfileImageService(_settings.CurrentValue, _httpClientFactory,
+                _dbContext, _fontCollection, _logger, _configService)
+            .DrawAsync(member, userData, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<Stream> DrawRankAsync(DiscordMember member, GuildUser userData, CancellationToken cancellationToken = default)
+    {
+        return new RankImageService(_settings.CurrentValue, _httpClientFactory,
                 _dbContext, _fontCollection, _logger, _configService)
             .DrawAsync(member, userData, cancellationToken);
     }

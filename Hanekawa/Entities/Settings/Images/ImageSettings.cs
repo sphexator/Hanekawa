@@ -6,6 +6,19 @@ public class ImageSettings
 {
     [JsonPropertyName("Profile")]
     public ProfileSettings Profile { get; set; } = new();
+    public RankSettings Rank { get; set; } = new();
+}
+
+public class RankSettings : ImageSize
+{
+    [JsonPropertyName("Avatar")]
+    public AvatarSettings Avatar { get; set; } = new();
+
+    [JsonPropertyName("Font")]
+    public string Font { get; set; } = string.Empty;
+
+    [JsonPropertyName("Texts")]
+    public TextSettings[] Texts { get; set; } = [];
 }
 
 public class ProfileSettings : ImageSize

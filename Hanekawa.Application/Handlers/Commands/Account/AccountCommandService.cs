@@ -7,6 +7,12 @@ namespace Hanekawa.Application.Handlers.Commands.Account;
 
 public class AccountCommandService(IImageService imageService, IDbContext db)
 {
+    public async ValueTask<Stream> RankAsync(DiscordMember member, CancellationToken cancellationToken = default)
+    {
+        var user = await db.GetOrCreateUserAsync(member.Guild.GuildId, member.Id, cancellationToken).ConfigureAwait(false);
+        return await imageService.DrawRankAsync(member, user, cancellationToken);
+    }
+
     public async ValueTask<Stream> ProfileAsync(DiscordMember member, CancellationToken cancellationToken = default)
     {
         var user = await db.GetOrCreateUserAsync(member.Guild.GuildId, member.Id, cancellationToken).ConfigureAwait(false);
