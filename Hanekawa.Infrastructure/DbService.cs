@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Data.Common;
+using System.Threading;
 using System.Threading.Tasks;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities;
@@ -101,4 +102,10 @@ internal class DbService : DbContext, IDbContext
     /// <inheritdoc />
     public async Task MigrateDatabaseAsync(CancellationToken cancellationToken = default)
         => await base.Database.MigrateAsync(cancellationToken: cancellationToken);
+
+    /// <inheritdoc />
+    public DbConnection GetConnection()
+    {
+        return this.Database.GetDbConnection();
+    }
 }

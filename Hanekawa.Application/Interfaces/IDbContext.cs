@@ -1,4 +1,5 @@
-﻿using Hanekawa.Entities;
+﻿using System.Data.Common;
+using Hanekawa.Entities;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Internals;
 using Hanekawa.Entities.Levels;
@@ -54,4 +55,6 @@ public interface IDbContext : IAsyncDisposable
     /// </summary>
     /// <returns></returns>
     Task MigrateDatabaseAsync(CancellationToken cancellationToken = default);
+
+    DbConnection GetConnection();
 }
