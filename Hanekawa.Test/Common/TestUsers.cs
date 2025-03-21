@@ -5,13 +5,13 @@ namespace Hanekawa.Test.Common;
 
 public static class TestUsers
 {
-    public static readonly DiscordMember TestMember = new DiscordMember
-        {
+    public static readonly DiscordMember TestMember = new()
+    {
             Id = 1,
             Username = "Test-User",
             Nickname =  "Test-Nick",
             IsBot = false,
-            RoleIds = [],
+            RoleIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
             AvatarUrl = string.Empty,
             VoiceSessionId = null,
             GuildId = 1,
@@ -19,15 +19,15 @@ public static class TestUsers
             {
                 GuildId = 1,
                 Description = string.Empty,
-                Emotes = [],
+                Emotes = [new Emote {Id = 1, Name = "Test-Emote"}],
                 Name = "Test-Guild",
                 MemberCount = 1,
-                EmoteCount = 0,
+                EmoteCount = 1,
                 IconUrl = string.Empty
             }
         };
 
-     public static readonly GuildUser TestUser = new GuildUser()
+     public static readonly GuildUser TestUser = new()
         {
             Id = 1,
             GuildId = 1,
@@ -45,7 +45,7 @@ public static class TestUsers
                 Id = 1,
                 PremiumExpiration = DateTimeOffset.UtcNow.AddDays(-1),
                 Inventory = [],
-                GuildUsers = []
+                GuildUsers = [TestUser]
             }
-        };   
+        };
 }
