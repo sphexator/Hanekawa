@@ -1,6 +1,8 @@
-﻿using System.Data.Common;
+﻿using System.Data;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
+using Dapper;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Configs;
@@ -107,5 +109,9 @@ internal class DbService : DbContext, IDbContext
     public DbConnection GetConnection()
     {
         return this.Database.GetDbConnection();
+    }
+    public Task<T?> ExecuteQuery<T>(string query, object? param = null, CancellationToken cancellationToken = default)
+    {
+        return Database.GetDbConnection().QueryFirstOrDefaultAsync<T>(query, param, commandType: CommandType.Text);
     }
 }

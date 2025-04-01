@@ -18,6 +18,9 @@ public class GuildUser : IMemberEntity
 
     public ulong GuildId { get; set; }
     public ulong Id { get; set; }
+
+    public bool Inactive { get; set; } = false;
+
     public int Level { get; set; } = 1;
     public long Experience { get; set; } = 0;
     public long NextLevelExperience { get; set; } = 100;

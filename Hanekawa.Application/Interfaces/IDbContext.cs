@@ -57,4 +57,6 @@ public interface IDbContext : IAsyncDisposable
     Task MigrateDatabaseAsync(CancellationToken cancellationToken = default);
 
     DbConnection GetConnection();
+
+    Task<T?> ExecuteQuery<T>(string query, object? param = null, CancellationToken cancellationToken = default);
 }
