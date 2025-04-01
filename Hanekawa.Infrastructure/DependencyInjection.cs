@@ -1,5 +1,6 @@
 ﻿using System;
 using Hanekawa.Application.Interfaces;
+using Hanekawa.Infrastructure.Caches;
 using Hanekawa.Infrastructure.Triggers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -25,6 +26,7 @@ public static class DependencyInjection
             x.ConnectionMultiplexerFactory = async () => await ConnectionMultiplexer.ConnectAsync(cfg["redis"]
                 ?? throw new InvalidOperationException("Redis config is null"));
         });
+        services.RegisterCacheProviders();
         services.AddDbContextPool<IDbContext, DbService>(x =>
         {
             x.UseNpgsql(cfg["connectionString"]);
