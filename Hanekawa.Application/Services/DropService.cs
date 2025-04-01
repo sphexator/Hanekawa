@@ -16,7 +16,7 @@ public class DropService : IDropService
     private readonly SemaphoreSlim _semaphoreSlim;
     private readonly IServiceProvider _serviceProvider;
     private readonly Random _random;
-    
+
     public DropService(ILevelService levelService, ILogger<DropService> logger, IServiceProvider serviceProvider)
     {
         _levelService = levelService;
@@ -25,8 +25,8 @@ public class DropService : IDropService
         _random = Random.Shared;
         _semaphoreSlim = new SemaphoreSlim(1);
     }
-    
-    public DropService(ILevelService levelService, ILogger<DropService> logger, IServiceProvider serviceProvider, 
+
+    public DropService(ILevelService levelService, ILogger<DropService> logger, IServiceProvider serviceProvider,
         Random random)
     {
         _levelService = levelService;
@@ -35,7 +35,7 @@ public class DropService : IDropService
         _random = random;
         _semaphoreSlim = new SemaphoreSlim(1);
     }
-    
+
     /// <inheritdoc />
     public async Task DropAsync(TextChannel channel, DiscordMember user, CancellationToken cancellationToken = default)
     {
@@ -46,7 +46,7 @@ public class DropService : IDropService
         var db = scope.ServiceProvider.GetRequiredService<IDbContext>();
         var config = await db.GuildConfigs
             .Include(x => x.DropConfig)
-            .FirstOrDefaultAsync(x => x.GuildId == channel.GuildId, 
+            .FirstOrDefaultAsync(x => x.GuildId == channel.GuildId,
                 cancellationToken: cancellationToken);
         if (config is null || config.DropConfig.Blacklist.Contains(channel.Id)) return;
 
@@ -58,7 +58,7 @@ public class DropService : IDropService
             .OrderBy(e => _random.Next())
             .Take(3)
             .ToList();
-        
+
         for (var i = 0; i < emotes.Count; i++)
         {
             Start:
@@ -66,7 +66,7 @@ public class DropService : IDropService
             await Task.Delay(1500, cancellationToken);
             if(emote is "") goto Start;
         }
-        
+
         var cache = scope.ServiceProvider.GetRequiredService<ICacheContext>();
         cache.Add($"{msg.ChannelId}-{msg.Id}-drop", user.Id);
     }
@@ -75,9 +75,9 @@ public class DropService : IDropService
     public async Task ClaimAsync(ulong channelId, ulong msgId, DiscordMember user, CancellationToken cancellationToken = default)
     {
         await _semaphoreSlim.WaitAsync(cancellationToken);
-        _logger.LogDebug("{UserId}-{GuildId} entered the semaphore for drop claims", 
+        _logger.LogDebug("{UserId}-{GuildId} entered the semaphore for drop claims",
             user.Id, user.Guild.GuildId);
-        
+
         await using var scope = _serviceProvider.CreateAsyncScope();
         var cache = scope.ServiceProvider.GetRequiredService<ICacheContext>();
         var value = cache.Get<int?>($"{msgId}-{channelId}-drop");
@@ -85,24 +85,24 @@ public class DropService : IDropService
 
         var bot = _serviceProvider.GetRequiredService<IBot>();
         await bot.DeleteMessageAsync(user.Guild.GuildId, channelId, msgId);
-        
-        var db = scope.ServiceProvider.GetRequiredService<IDbContext>(); 
+
+        var db = scope.ServiceProvider.GetRequiredService<IDbContext>();
         var config = await db.GuildConfigs
             .Include(x => x.DropConfig)
-            .FirstOrDefaultAsync(x => x.GuildId == user.Guild.GuildId, 
+            .FirstOrDefaultAsync(x => x.GuildId == user.Guild.GuildId,
                 cancellationToken: cancellationToken);
         if (config is null) return;
-        
+
         var exp = await _levelService.AddExperienceAsync(user, config.DropConfig.ExpReward);
         await bot.SendMessageAsync(channelId,
             $"Rewarded {user.Nickname ?? user.Username} with {exp ?? 0} experience for claiming the drop!");
-        
+
         cache.Remove($"{msgId}-{channelId}-drop");
         _semaphoreSlim.Release();
-        _logger.LogDebug("{UserId}-{GuildId} exited the semaphore for drop claims", 
+        _logger.LogDebug("{UserId}-{GuildId} exited the semaphore for drop claims",
             user.Id, user.Guild.GuildId);
     }
-    
+
     /// <inheritdoc />
     public async Task Configure(Action<DropConfig> action)
     {
@@ -112,7 +112,7 @@ public class DropService : IDropService
         var db = scope.ServiceProvider.GetRequiredService<IDbContext>();
         var cfg = await db.GuildConfigs
             .Include(x => x.DropConfig)
-            .FirstOrDefaultAsync(x => x.GuildId == config.GuildId) 
+            .FirstOrDefaultAsync(x => x.GuildId == config.GuildId)
                   ?? new GuildConfig { GuildId = config.GuildId };
 
         if (cfg.DropConfig is null)
@@ -120,17 +120,17 @@ public class DropService : IDropService
             cfg.DropConfig = config;
             goto Save;
         }
-        
+
         if (config.ExpReward is not 100) cfg.DropConfig.ExpReward = config.ExpReward;
         if (config.Emote is not "") cfg.DropConfig.Emote = config.Emote;
-        
+
         if (config.Blacklist.Length > 0)
         {
             var newBlacklist = new ulong[cfg.DropConfig.Blacklist.Length + config.Blacklist.Length];
             for (var i = 0; i < cfg.DropConfig.Blacklist.Length + config.Blacklist.Length; i++)
             {
-                var x = i >= cfg.DropConfig.Blacklist.Length 
-                    ? config.Blacklist[i - cfg.DropConfig.Blacklist.Length] 
+                var x = i >= cfg.DropConfig.Blacklist.Length
+                    ? config.Blacklist[i - cfg.DropConfig.Blacklist.Length]
                     : cfg.DropConfig.Blacklist[i];
                 newBlacklist[i] = x;
             }

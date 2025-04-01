@@ -43,7 +43,7 @@ public class ProfileImageService
     private static Image<Rgba64> ProfileTemplate => Image.Load<Rgba64>(ProfileTemplatePath);
     private static string ProfileTemplatePath => $"{Directory.GetCurrentDirectory()}/Data/Template/ProfileTemplate.png";
 
-    public async Task<Stream> DrawAsync(DiscordMember member, GuildUser userData, CancellationToken cancellationToken = default)
+    public async ValueTask<Stream> DrawAsync(DiscordMember member, GuildUser userData, CancellationToken cancellationToken = default)
     {
         var toReturn = new MemoryStream();
         using var img = new Image<Rgba64>(_settings.Profile.Width, _settings.Profile.Height);
@@ -82,7 +82,7 @@ public class ProfileImageService
         return toReturn;
     }
 
-    private async Task ApplyText(IImageProcessingContext x, TextSettings[] texts, DiscordMember member,
+    private async ValueTask ApplyText(IImageProcessingContext x, TextSettings[] texts, DiscordMember member,
         GuildUser userData,
         CancellationToken cancellationToken)
     {
@@ -123,7 +123,7 @@ public class ProfileImageService
         }
     }
 
-    private async Task<string> HandleCustomTextAsync(DiscordMember member, GuildUser userData, TextSettings item,
+    private async ValueTask<string> HandleCustomTextAsync(DiscordMember member, GuildUser userData, TextSettings item,
         CancellationToken cancellationToken = default)
     {
         var value = "";
@@ -150,7 +150,7 @@ public class ProfileImageService
         return value;
     }
 
-    private async Task<string> HandleCustomSourceTextAsync(DiscordMember member, GuildUser userData, TextSettings item,
+    private async ValueTask<string> HandleCustomSourceTextAsync(DiscordMember member, GuildUser userData, TextSettings item,
         CancellationToken cancellationToken = default)
     {
         var value = "";

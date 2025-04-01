@@ -22,7 +22,7 @@ public class WelcomeImageService
         _logger = logger;
     }
 
-    public async Task<Stream> DrawAsync(DiscordMember member, GreetConfig cfg, CancellationToken cancellationToken = default)
+    public async ValueTask<Stream> DrawAsync(DiscordMember member, GreetConfig cfg, CancellationToken cancellationToken = default)
     {
         var toReturn = new MemoryStream();
         var dbImage = cfg.Images[Random.Shared.Next(cfg.Images.Count - 1)];

@@ -1,8 +1,8 @@
-﻿using Hanekawa.Entities.Users;
+﻿using Hanekawa.Interfaces;
 
 namespace Hanekawa.Application.Interfaces;
 
-public interface ICacheContext
+public interface ICacheContext<T> where T : ICached
 {
     /// <summary>
     /// Retrieve a value from cache by its key
@@ -35,6 +35,11 @@ public interface ICacheContext
     /// <typeparam name="TEntity"></typeparam>
     void Add<TEntity>(string key, TEntity value, TimeSpan expiration);
 
+    /// <summary>
+    /// Removes a key from cache
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
     bool Remove(string key);
 
     /// <summary>

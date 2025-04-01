@@ -32,7 +32,7 @@ public class ImageService : IImageService
     }
 
     /// <inheritdoc />
-    public Task<Stream> DrawWelcomeAsync(DiscordMember member, GreetConfig cfg,
+    public ValueTask<Stream> DrawWelcomeAsync(DiscordMember member, GreetConfig cfg,
         CancellationToken cancellationToken = default)
     {
         return new WelcomeImageService(_httpClientFactory, _fontCollection, _logger)
@@ -40,7 +40,7 @@ public class ImageService : IImageService
     }
 
     /// <inheritdoc />
-    public Task<Stream> DrawProfileAsync(DiscordMember member, GuildUser userData,
+    public ValueTask<Stream> DrawProfileAsync(DiscordMember member, GuildUser userData,
         CancellationToken cancellationToken = default)
     {
         return new ProfileImageService(_settings.CurrentValue, _httpClientFactory,

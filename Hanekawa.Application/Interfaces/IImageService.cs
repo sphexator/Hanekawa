@@ -26,7 +26,7 @@ public interface IImageService
     /// <param name="cfg"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Stream> DrawWelcomeAsync(DiscordMember member, GreetConfig cfg, CancellationToken cancellationToken = default);
+    ValueTask<Stream> DrawWelcomeAsync(DiscordMember member, GreetConfig cfg, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a profile image
@@ -35,5 +35,5 @@ public interface IImageService
     /// <param name="userData"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Stream> DrawProfileAsync(DiscordMember member, GuildUser userData, CancellationToken cancellationToken = default);
+    ValueTask<Stream> DrawProfileAsync(DiscordMember member, GuildUser userData, CancellationToken cancellationToken = default);
 }

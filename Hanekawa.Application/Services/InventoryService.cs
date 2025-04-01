@@ -5,6 +5,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Application.Services;
 
+public interface IInventoryService
+{
+    ValueTask<GuildUser?> GetInventoryAsync(ulong guildId, ulong userId, CancellationToken cancellationToken = default);
+    ValueTask UpdateInventoryAsync(GuildUser user, Inventory inventory);
+    ValueTask AddItemAsync(GuildUser user, Guid itemId, int amount);
+    ValueTask RemoveItemAsync(GuildUser user, Guid itemId, int amount);
+    ValueTask<bool> HasItemAsync(GuildUser user, Guid itemId);
+    ValueTask<int> GetItemCountAsync(ulong userId, Guid itemId);
+}
+
 public class InventoryService : IInventoryService
 {
     private readonly IDbContext _dbContext;
@@ -16,16 +26,13 @@ public class InventoryService : IInventoryService
         _cache = cache;
     }
 
-    public async ValueTask<GuildUser?> GetInventoryAsync(ulong userId)
+    public async ValueTask<GuildUser?> GetInventoryAsync(ulong guildId, ulong userId,
+        CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users.Include(e => e.User)
-            .ThenInclude(e => e.Inventory)
-            .ThenInclude(e => e.Item)
-            .ThenInclude(e => e.Type)
-            .FirstOrDefaultAsync(x => x.Id == userId);
+        return await GetOrCreateInventoryAsync(guildId, userId, cancellationToken);
     }
 
-    public ValueTask UpdateInventoryAsync(GuildUser user)
+    public ValueTask UpdateInventoryAsync(GuildUser user, Inventory inventory)
     {
         throw new NotImplementedException();
     }
@@ -49,36 +56,29 @@ public class InventoryService : IInventoryService
     {
         var user = await _dbContext.Users.Include(e => e.User)
             .ThenInclude(e => e.Inventory)
-            .ThenInclude(e => e.Item)
-            .ThenInclude(e => e.Type)
+            .Select(e => new
+            {
+                e.Id,
+                e.User.Inventory.FirstOrDefault(x => x.ItemId == itemId)!.Amount
+            })
             .FirstOrDefaultAsync(x => x.Id == userId);
-        return user?.User.Inventory.FirstOrDefault(x => x.ItemId == itemId)?.Amount ?? 0;
+        return user?.Amount ?? 0;
     }
 
-    private async ValueTask<GuildUser> GetInventoryAsync(GuildUser user)
+    private async ValueTask<GuildUser> GetOrCreateInventoryAsync(ulong guildId, ulong userId, CancellationToken cancellationToken = default)
     {
-        return await await _cache.GetOrCreateAsync($"inventory_{user.Id}", async () =>
+        return await await _cache.GetOrCreateAsync($"inventory_{userId}", async () =>
         {
             var userEntity = await _dbContext.Users.Include(e => e.User)
                 .ThenInclude(e => e.Inventory)
                 .ThenInclude(e => e.Item)
                 .ThenInclude(e => e.Type)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(x => x.GuildId == guildId && x.Id == userId, cancellationToken: cancellationToken);
             if (userEntity is null)
             {
-                userEntity = await _dbContext.GetOrCreateUserAsync(user.GuildId, user.Id);
+                userEntity = await _dbContext.GetOrCreateUserAsync(guildId, userId, cancellationToken: cancellationToken);
             }
             return userEntity;
         });
     }
-}
-
-public interface IInventoryService
-{
-    ValueTask<GuildUser?> GetInventoryAsync(ulong userId);
-    ValueTask UpdateInventoryAsync(GuildUser user);
-    ValueTask AddItemAsync(GuildUser user, Guid itemId, int amount);
-    ValueTask RemoveItemAsync(GuildUser user, Guid itemId, int amount);
-    ValueTask<bool> HasItemAsync(GuildUser user, Guid itemId);
-    ValueTask<int> GetItemCountAsync(ulong userId, Guid itemId);
 }
