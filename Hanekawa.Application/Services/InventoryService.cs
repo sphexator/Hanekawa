@@ -67,7 +67,7 @@ public class InventoryService : IInventoryService
 
     private async ValueTask<GuildUser> GetOrCreateInventoryAsync(ulong guildId, ulong userId, CancellationToken cancellationToken = default)
     {
-        return await await _cache.GetOrCreateAsync($"inventory_{userId}", async () =>
+        return await _cache.GetOrCreateAsync($"inventory_{userId}", async () =>
         {
             var userEntity = await _dbContext.Users.Include(e => e.User)
                 .ThenInclude(e => e.Inventory)

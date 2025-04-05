@@ -95,7 +95,11 @@ internal static class DiscordExtensions
                     .Select(e => new Emote
                     {
                         Id = e.Key.RawValue,
-                        Name = e.Value.Name
+                        Name = e.Value.Name,
+                        Format = e.Value.GetReactionFormat(),
+                        IsAnimated = e.Value.IsAnimated,
+                        IsAvailable = e.Value.IsAvailable,
+                        IsManaged = e.Value.IsManaged
                     }).ToArray()
             },
             Nickname = member.Nick,
@@ -119,7 +123,11 @@ internal static class DiscordExtensions
                 .Select(e => new Emote
                 {
                     Id = e.Key.RawValue,
-                    Name = e.Value.Name
+                    Name = e.Value.Name,
+                    Format = e.Value.GetReactionFormat(),
+                    IsAnimated = e.Value.IsAnimated,
+                    IsAvailable = e.Value.IsAvailable,
+                    IsManaged = e.Value.IsManaged
                 }).ToArray()
         };
 

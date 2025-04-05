@@ -2,7 +2,7 @@
 
 namespace Hanekawa.Entities.Users;
 
-public class GuildUser : IMemberEntity
+public class GuildUser : IMemberEntity, ICached
 {
     public GuildUser()
     {

@@ -19,7 +19,25 @@ public static class TestUsers
         {
             GuildId = 1,
             Description = string.Empty,
-            Emotes = [new Emote {Id = 1, Name = "Test-Emote"}],
+            Emotes = [
+                new Emote {
+                    Id = 1,
+                    Name = "Test-Emote",
+                    Format = "",
+                    IsAnimated = false,
+                    IsAvailable = false,
+                    IsManaged = false
+                },
+                new Emote
+                {
+                    Id = 2,
+                    Name = "Test-Emote-2",
+                    Format = "",
+                    IsAnimated = false,
+                    IsAvailable = false,
+                    IsManaged = false
+                }
+            ],
             Name = "Test-Guild",
             MemberCount = 1,
             EmoteCount = 1,

@@ -20,12 +20,13 @@ public class AccountCommandService(IImageService imageService, IDbContext db)
         return await imageService.DrawProfileAsync(member, user, cancellationToken);
     }
 
-    public async Task GetWalletAsync(DiscordMember discordMember, CancellationToken cancellationToken = default)
+    public async Task<Stream> GetWalletAsync(DiscordMember discordMember, CancellationToken cancellationToken = default)
     {
         var user = await db.GetOrCreateUserAsync(discordMember.Guild.GuildId, discordMember.Id, cancellationToken).ConfigureAwait(false);
         var dbConnection = db.GetConnection();
         await dbConnection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
         var userCount = await db.ExecuteQuery<int>("COUNT * FROM Users WHERE GuildId = @Id", new { GuildId = user.GuildId }, cancellationToken);
+        return new MemoryStream(); // TODO: Return wallet
     }
 
     public Task<GuildUser[]> GetTopUsersAsync(ulong guildId)

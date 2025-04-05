@@ -27,7 +27,7 @@ public class AccountCommands(IServiceProvider provider) : DiscordApplicationModu
     public async Task<DiscordInteractionResponseCommandResult> WalletAsync()
     {
         var service = provider.GetRequiredService<AccountCommandService>();
-        await service.GetWalletAsync((Context.Author as IMember).ToDiscordMember());
+        var result = await service.GetWalletAsync((Context.Author as IMember).ToDiscordMember());
 
         return Response(new LocalInteractionMessageResponse()
             .WithContent($"Wallet for {Context.Author.Name}")
@@ -58,31 +58,31 @@ public class AccountCommands(IServiceProvider provider) : DiscordApplicationModu
     public async Task<DiscordInteractionResponseCommandResult> TopAsync()
     {
         var service = provider.GetRequiredService<AccountCommandService>();
-        
+
         // Get top users from the service
         var topUsers = await service.GetTopUsersAsync(Context.GuildId!.Value);
-        
+
         var embed = new LocalEmbed()
             .WithTitle("Top 10 Users")
             .WithDescription("Ranked by experience")
             .WithColor(Color.Purple); // Default to purple as requested
-            
+
         int rank = 1;
         for (int i = 0; i < topUsers.Length; i++)
         {
             var user = topUsers[i];
             var member = Bot.GetMember(Context.GuildId!.Value, user.Id);
             string displayName = member != null ? member.Name : $"User {user.Id}";
-            
-            embed.AddField($"#{rank} {displayName}", 
+
+            embed.AddField($"#{rank} {displayName}",
                 $"Level: {user.Level}\n" +
                 $"Experience: {user.Experience}\n" +
-                $"Currency: {user.Currency}", 
+                $"Currency: {user.Currency}",
                 false);
-            
+
             rank++;
         }
-        
+
         return Response(new LocalInteractionMessageResponse()
             .WithEmbeds(embed)
             .WithAllowedMentions(LocalAllowedMentions.None));

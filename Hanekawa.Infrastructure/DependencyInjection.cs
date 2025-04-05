@@ -26,7 +26,7 @@ public static class DependencyInjection
             x.ConnectionMultiplexerFactory = async () => await ConnectionMultiplexer.ConnectAsync(cfg["redis"]
                 ?? throw new InvalidOperationException("Redis config is null"));
         });
-        services.RegisterCacheProviders();
+        services.AddScoped<CacheService>();
         services.AddDbContextPool<IDbContext, DbService>(x =>
         {
             x.UseNpgsql(cfg["connectionString"]);

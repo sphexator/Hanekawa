@@ -2,6 +2,7 @@
 using Hanekawa.Application.Interfaces.Services;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Discord;
+using Hanekawa.Entities.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -55,20 +56,21 @@ public class DropService : IDropService
                                            $"React with {config.DropConfig.Emote} as it appears to claim it!");
 
         var emotes = user.Guild.Emotes
-            .OrderBy(e => _random.Next())
+            .OrderBy(_ => _random.Next())
             .Take(3)
-            .ToList();
+            .ToArray();
 
-        for (var i = 0; i < emotes.Count; i++)
+        for (var i = 0; i < emotes.Length; i++)
         {
             Start:
-            var emote = "123";
+            // TODO: Drop service emote = 123? properly implement this
+            var emote = emotes[i].Name;
             await Task.Delay(1500, cancellationToken);
             if(emote is "") goto Start;
         }
 
         var cache = scope.ServiceProvider.GetRequiredService<ICacheContext>();
-        cache.Add($"{msg.ChannelId}-{msg.Id}-drop", user.Id);
+        cache.Add<>($"{msg.ChannelId}-{msg.Id}-drop", user.Id);
     }
 
     /// <inheritdoc />
@@ -80,7 +82,7 @@ public class DropService : IDropService
 
         await using var scope = _serviceProvider.CreateAsyncScope();
         var cache = scope.ServiceProvider.GetRequiredService<ICacheContext>();
-        var value = cache.Get<int?>($"{msgId}-{channelId}-drop");
+        var value = cache.Get<GuildUser>($"{msgId}-{channelId}-drop");
         if(value is null) return;
 
         var bot = _serviceProvider.GetRequiredService<IBot>();
@@ -97,7 +99,7 @@ public class DropService : IDropService
         await bot.SendMessageAsync(channelId,
             $"Rewarded {user.Nickname ?? user.Username} with {exp ?? 0} experience for claiming the drop!");
 
-        cache.Remove($"{msgId}-{channelId}-drop");
+        cache.Remove<GuildUser>($"{msgId}-{channelId}-drop");
         _semaphoreSlim.Release();
         _logger.LogDebug("{UserId}-{GuildId} exited the semaphore for drop claims",
             user.Id, user.Guild.GuildId);
