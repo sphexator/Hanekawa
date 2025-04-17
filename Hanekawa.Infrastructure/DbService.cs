@@ -9,6 +9,7 @@ using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Internals;
 using Hanekawa.Entities.Levels;
 using Hanekawa.Entities.Users;
+using Hanekawa.Entities.Club;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Infrastructure;
@@ -29,6 +30,10 @@ internal class DbService : DbContext, IDbContext
     public DbSet<GuildUser> Users { get; set; } = null!;
     /// <inheritdoc />
     public DbSet<LevelRequirement> LevelRequirements { get; set; } = null!;
+    /// <inheritdoc />
+    public DbSet<Club> Clubs { get; set; } = null!;
+    /// <inheritdoc />
+    public DbSet<ClubMember> ClubMembers { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -91,6 +96,27 @@ internal class DbService : DbContext, IDbContext
         modelBuilder.Entity<GuildModerationLog>(x =>
         {
             x.HasKey(e => new { e.GuildId, e.Id });
+        });
+
+        modelBuilder.Entity<Club>(x =>
+        {
+            x.HasKey(e => new { e.GuildId, e.Name });
+            x.HasIndex(e => new { e.GuildId, e.Name }).IsUnique();
+            x.Property(e => e.Name).HasMaxLength(100);
+            x.Property(e => e.Description).HasMaxLength(1000);
+            x.HasMany(e => e.Members)
+                .WithOne(e => e.Club)
+                .HasForeignKey(e => new { e.GuildId, e.ClubName })
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ClubMember>(x =>
+        {
+            x.HasKey(e => new { e.GuildId, e.ClubName, e.UserId });
+            x.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => new { e.GuildId, e.UserId })
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 

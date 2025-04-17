@@ -1,6 +1,7 @@
-﻿using System.Data.Common;
+﻿﻿using System.Data.Common;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Configs;
+using Hanekawa.Entities.Club;
 using Hanekawa.Entities.Internals;
 using Hanekawa.Entities.Levels;
 using Hanekawa.Entities.Users;
@@ -38,25 +39,18 @@ public interface IDbContext : IAsyncDisposable
     /// Guild moderator store. Ban / Mute / etc
     /// </summary>
     DbSet<GuildModerationLog> ModerationLogs { get; set; }
-
     /// <summary>
-    /// Saves changes in current context
+    /// Club store
     /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    DbSet<Club> Clubs { get; set; }
+    /// <summary>
+    /// Club members store
+    /// </summary>
+    DbSet<ClubMember> ClubMembers { get; set; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-    /// <summary>
-    /// Checks if the database is created
-    /// </summary>
-    /// <returns></returns>
     Task<bool> EnsureDatabaseCreated(CancellationToken cancellationToken = default);
-    /// <summary>
-    /// Migrates pending migrations to the database
-    /// </summary>
-    /// <returns></returns>
     Task MigrateDatabaseAsync(CancellationToken cancellationToken = default);
-
     DbConnection GetConnection();
-
     Task<T?> ExecuteQuery<T>(string query, object? param = null, CancellationToken cancellationToken = default);
 }
