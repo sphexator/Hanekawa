@@ -29,10 +29,14 @@ public class AccountCommands(IServiceProvider provider) : DiscordApplicationModu
         var service = provider.GetRequiredService<AccountCommandService>();
         var result = await service.GetWalletAsync((Context.Author as IMember).ToDiscordMember());
 
+        var embed = new LocalEmbed()
+            .WithTitle("Wallet")
+            .WithDescription($"You have **{result}** coins")
+            .WithColor(Color.Gold);
+
         return Response(new LocalInteractionMessageResponse()
-            .WithContent($"Wallet for {Context.Author.Name}")
-            .WithAllowedMentions(LocalAllowedMentions.None)
-            .WithAttachments(new LocalAttachment(result, "wallet.png")));
+            .WithEmbeds(embed)
+            .WithAllowedMentions(LocalAllowedMentions.None));
     }
 
     [SlashCommand(Metas.Account.Profile)]
@@ -47,10 +51,7 @@ public class AccountCommands(IServiceProvider provider) : DiscordApplicationModu
         return Response(new LocalInteractionMessageResponse()
             .WithContent($"Profile for {Context.Author.Name}")
             .WithAllowedMentions(LocalAllowedMentions.None)
-            .WithAttachments(
-            [
-                new LocalAttachment(result, "profile.png")
-            ]));
+            .WithAttachments(new LocalAttachment(result, "profile.png")));
     }
 
     [SlashCommand(Metas.Account.Top)]
@@ -67,18 +68,19 @@ public class AccountCommands(IServiceProvider provider) : DiscordApplicationModu
             .WithDescription("Ranked by experience")
             .WithColor(Color.Purple); // Default to purple as requested
 
-        int rank = 1;
-        for (int i = 0; i < topUsers.Length; i++)
+        var rank = 1;
+        for (var i = 0; i < topUsers.Length; i++)
         {
             var user = topUsers[i];
             var member = Bot.GetMember(Context.GuildId!.Value, user.Id);
-            string displayName = member != null ? member.Name : $"User {user.Id}";
+            var displayName = member != null
+                ? member.Name
+                : $"User {user.Id}";
 
             embed.AddField($"#{rank} {displayName}",
                 $"Level: {user.Level}\n" +
                 $"Experience: {user.Experience}\n" +
-                $"Currency: {user.Currency}",
-                false);
+                $"Currency: {user.Currency}");
 
             rank++;
         }
@@ -86,6 +88,5 @@ public class AccountCommands(IServiceProvider provider) : DiscordApplicationModu
         return Response(new LocalInteractionMessageResponse()
             .WithEmbeds(embed)
             .WithAllowedMentions(LocalAllowedMentions.None));
-        throw new NotImplementedException();
     }
 }

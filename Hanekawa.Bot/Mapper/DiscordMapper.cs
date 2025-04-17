@@ -134,10 +134,10 @@ internal static class DiscordExtensions
     internal static LocalInteractionMessageResponse ToLocalInteractionMessageResponse(this Response<Message> response) =>
         new ()
         {
-            Content = response.Data.Content,
-            Embeds = new List<LocalEmbed> { response.Data.Embed.ToLocalEmbed() },
+            Content = response.Value.Content,
+            Embeds = new List<LocalEmbed> { response.Value.Embed.ToLocalEmbed() },
             IsTextToSpeech = false,
-            AllowedMentions = response.Data.AllowMentions
+            AllowedMentions = response.Value.AllowMentions
                 ? LocalAllowedMentions.ExceptEveryone : LocalAllowedMentions.None,
             Components = new List<LocalRowComponent>
             {
@@ -149,13 +149,13 @@ internal static class DiscordExtensions
                     }
                 }
             },
-            IsEphemeral = response.Data.Emphemeral
+            IsEphemeral = response.Value.Emphemeral
         };
 
     internal static Page[] ToPages(this Response<Pagination<Message>> list)
     {
-        var pages = new Page[list.Data.Items.Length / 5 + 1];
-        var spans = list.Data.Items.AsSpan();
+        var pages = new Page[list.Value.Items.Length / 5 + 1];
+        var spans = list.Value.Items.AsSpan();
         for (var i = 0; i < spans.Length; i++)
         {
             var x = spans[i];
