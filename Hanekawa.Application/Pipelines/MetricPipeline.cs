@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Application.Pipelines;
 
-public class MetricPipeline<TRequest, TResult> : IPipelineBehavior<IMetric, TResult> where TRequest : notnull
+public sealed class MetricPipeline<TRequest, TResult> : IPipelineBehavior<IMetric, TResult> where TRequest : notnull
 {
     private readonly ILogger<MetricPipeline<TRequest, TResult>> _logger;
     private readonly Metrics _metrics;

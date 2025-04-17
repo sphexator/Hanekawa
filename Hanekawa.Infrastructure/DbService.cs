@@ -98,9 +98,11 @@ internal class DbService : DbContext, IDbContext
     /// <inheritdoc />
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await base.SaveChangesAsync(cancellationToken);
+
     /// <inheritdoc />
     public async Task<bool> EnsureDatabaseCreated(CancellationToken cancellationToken = default)
         => await base.Database.EnsureCreatedAsync(cancellationToken);
+
     /// <inheritdoc />
     public async Task MigrateDatabaseAsync(CancellationToken cancellationToken = default)
         => await base.Database.MigrateAsync(cancellationToken: cancellationToken);

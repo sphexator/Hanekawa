@@ -30,7 +30,7 @@ public sealed class Bot : DiscordBot, IBot
         var meter = services.GetRequiredService<IMeterFactory>().Create(MeterName.DiscordCommands);
         _commandsExecutedTotal = meter.CreateCounter<long>(MeterName.DiscordCommands + ".Total");
     }
-    
+
     protected override ValueTask<bool> OnAfterExecuted(IDiscordCommandContext context, IResult result)
     {
         _commandsExecutedTotal.Add(1);
@@ -42,7 +42,7 @@ public sealed class Bot : DiscordBot, IBot
         var start = Stopwatch.GetTimestamp();
         var result = await base.OnBeforeExecuted(context);
         var elapsedTime = Stopwatch.GetElapsedTime(start).Milliseconds;
-        Serilog.Log.Information("Command {Command} executed in {Elapsed}ms", 
+        Serilog.Log.Information("Command {Command} executed in {Elapsed}ms",
             context.Command?.Name, elapsedTime);
         return result;
     }
@@ -50,55 +50,55 @@ public sealed class Bot : DiscordBot, IBot
     /// <inheritdoc />
     public Task BanAsync(ulong guildId, ulong userId, int days, string reason)
         => this.CreateBanAsync(guildId, userId, reason, days, new DefaultRestRequestOptions { Reason = reason });
-    
+
     /// <inheritdoc />
     public Task UnbanAsync(ulong guildId, ulong userId, string reason)
         => this.DeleteBanAsync(guildId, userId, new DefaultRestRequestOptions { Reason = reason });
-    
+
     /// <inheritdoc />
     public Task KickAsync(ulong guildId, ulong userId, string reason)
         => this.KickMemberAsync(guildId, userId, new DefaultRestRequestOptions { Reason = reason});
-    
+
     /// <inheritdoc />
-    public Task MuteAsync(ulong guildId, ulong userId, string reason, TimeSpan duration) 
+    public Task MuteAsync(ulong guildId, ulong userId, string reason, TimeSpan duration)
         => this.ModifyMemberAsync(guildId, userId, x =>
         {
             x.TimedOutUntil = DateTimeOffset.UtcNow.Add(duration);
         }, new DefaultRestRequestOptions{ Reason = reason } );
-    
+
     /// <inheritdoc />
-    public Task UnmuteAsync(ulong guildId, ulong userId, string reason) 
+    public Task UnmuteAsync(ulong guildId, ulong userId, string reason)
         => this.ModifyMemberAsync(guildId, userId, x =>
         {
             x.TimedOutUntil = null;
         }, new DefaultRestRequestOptions{ Reason = reason } );
-    
+
     /// <inheritdoc />
-    public Task AddRoleAsync(ulong guildId, ulong userId, ulong roleId) 
+    public Task AddRoleAsync(ulong guildId, ulong userId, ulong roleId)
         => this.GrantRoleAsync(guildId, userId, roleId);
-    
+
     /// <inheritdoc />
-    public Task RemoveRoleAsync(ulong guildId, ulong userId, ulong roleId) 
+    public Task RemoveRoleAsync(ulong guildId, ulong userId, ulong roleId)
         => this.RevokeRoleAsync(guildId, userId, roleId);
-    
+
     /// <inheritdoc />
-    public Task ModifyRolesAsync(DiscordMember member, ulong[] modifiedRoles) 
+    public Task ModifyRolesAsync(DiscordMember member, ulong[] modifiedRoles)
         => this.ModifyMemberAsync(member.Guild.GuildId, member.Id, x =>
         {
             x.RoleIds = ConvertToSnowflake(modifiedRoles);
         });
-    
+
     /// <inheritdoc />
-    public ulong? GetChannel(ulong guildId, ulong channelId) 
+    public ulong? GetChannel(ulong guildId, ulong channelId)
         => this.GetGuild(guildId)!.GetChannel(channelId)!.Id;
 
     /// <inheritdoc />
-    public Task PruneMessagesAsync(ulong guildId, ulong channelId, ulong[] messageIds) 
+    public Task PruneMessagesAsync(ulong guildId, ulong channelId, ulong[] messageIds)
         => (this.GetGuild(guildId)!.GetChannel(channelId) as ITextChannel)
             !.DeleteMessagesAsync(ConvertToSnowflake(messageIds));
 
     /// <inheritdoc />
-    public Task DeleteMessageAsync(ulong guildId, ulong channelId, ulong messageId) 
+    public Task DeleteMessageAsync(ulong guildId, ulong channelId, ulong messageId)
         => (this.GetGuild(guildId)?.GetChannel(channelId) as ITextChannel)
             !.DeleteMessageAsync(messageId);
 
@@ -115,9 +115,9 @@ public sealed class Bot : DiscordBot, IBot
             Id = result.Id,
             ChannelId = result.ChannelId,
             Content = result.Content,
-            AuthorId = result.Author.Id, 
-            Attachment = result.Attachments.FirstOrDefault()?.Url,
-            Embed = result.Embeds[0].ToEmbed()
+            AuthorId = result.Author.Id,
+            Attachment = result is {Attachments.Count: >0} ? result.Attachments[0].Url : string.Empty,
+            Embed = result is {Embeds.Count: >0} ? result.Embeds[0].ToEmbed() : null
         };
     }
 
@@ -127,7 +127,7 @@ public sealed class Bot : DiscordBot, IBot
         var localMsg = new LocalMessage()
             .WithEmbeds(embedMessage.ToLocalEmbed())
             .WithAllowedMentions(LocalAllowedMentions.None);
-        if (attachment is not null) localMsg.WithAttachments(new LocalAttachment(attachment.Stream, attachment.FileName));
+        if (attachment?.Stream is not null) localMsg.WithAttachments(new LocalAttachment(attachment.Stream, attachment.FileName));
         await this.SendMessageAsync(channelId, localMsg).ConfigureAwait(false);
     }
 
