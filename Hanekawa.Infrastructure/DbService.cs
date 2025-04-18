@@ -34,6 +34,10 @@ internal class DbService : DbContext, IDbContext
     public DbSet<Club> Clubs { get; set; } = null!;
     /// <inheritdoc />
     public DbSet<ClubMember> ClubMembers { get; set; } = null!;
+    /// <inheritdoc />
+    public DbSet<Item> Items { get; set; } = null!;
+    /// <inheritdoc />
+    public DbSet<ItemType> ItemTypes { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -117,6 +121,39 @@ internal class DbService : DbContext, IDbContext
                 .WithMany()
                 .HasForeignKey(e => new { e.GuildId, e.UserId })
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<User>(x =>
+        {
+            x.HasKey(e => e.Id);
+            x.HasMany(e => e.Inventory)
+                .WithOne(e => e.User)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Inventory>(x =>
+        {
+            x.HasKey(e => new { e.UserId, e.ItemId });
+            x.HasOne(e => e.Item)
+                .WithMany()
+                .HasForeignKey(e => e.ItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Item>(x =>
+        {
+            x.HasKey(e => e.Id);
+            x.HasOne(e => e.Type)
+                .WithMany(e => e.Items)
+                .HasForeignKey(e => e.TypeId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ItemType>(x =>
+        {
+            x.HasKey(e => e.Id);
+            x.Property(e => e.Name).HasMaxLength(50);
         });
     }
 

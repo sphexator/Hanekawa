@@ -1,4 +1,4 @@
-﻿﻿using System.Data.Common;
+﻿using System.Data.Common;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Club;
@@ -47,6 +47,8 @@ public interface IDbContext : IAsyncDisposable
     /// Club members store
     /// </summary>
     DbSet<ClubMember> ClubMembers { get; set; }
+    DbSet<Item> Items { get; set; }
+    DbSet<ItemType> ItemTypes { get; set; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<bool> EnsureDatabaseCreated(CancellationToken cancellationToken = default);

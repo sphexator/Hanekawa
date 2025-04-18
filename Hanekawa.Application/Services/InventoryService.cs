@@ -7,7 +7,8 @@ namespace Hanekawa.Application.Services;
 
 public interface IInventoryService
 {
-    ValueTask<GuildUser?> GetInventoryAsync(ulong guildId, ulong userId, CancellationToken cancellationToken = default);
+    ValueTask<GuildUser> GetInventoryAsync(ulong guildId, ulong userId, CancellationToken cancellationToken = default);
+    ValueTask UpdateInventoryAsync(GuildUser user, List<Inventory> inventory);
     ValueTask UpdateInventoryAsync(GuildUser user, Inventory inventory);
     ValueTask AddItemAsync(GuildUser user, Guid itemId, int amount);
     ValueTask RemoveItemAsync(GuildUser user, Guid itemId, int amount);
@@ -26,30 +27,124 @@ public class InventoryService : IInventoryService
         _cache = cache;
     }
 
-    public async ValueTask<GuildUser?> GetInventoryAsync(ulong guildId, ulong userId,
+    public ValueTask<GuildUser> GetInventoryAsync(ulong guildId, ulong userId,
         CancellationToken cancellationToken = default)
     {
-        return await GetOrCreateInventoryAsync(guildId, userId, cancellationToken);
+        return GetOrCreateInventoryAsync(guildId, userId, cancellationToken);
     }
 
-    public ValueTask UpdateInventoryAsync(GuildUser user, Inventory inventory)
+    public async ValueTask UpdateInventoryAsync(GuildUser user, List<Inventory> inventory)
     {
-        throw new NotImplementedException();
+        var existingUser = await _dbContext.Users
+            .Include(e => e.User)
+            .ThenInclude(e => e.Inventory)
+            .FirstOrDefaultAsync(x => x.GuildId == user.GuildId && x.Id == user.Id);
+
+        if (existingUser == null) return;
+
+        // Replace inventory items
+        existingUser.User.Inventory = inventory;
+
+        await _dbContext.SaveChangesAsync();
+        _cache.Remove($"inventory_{user.Id}");
+    }
+    public async ValueTask UpdateInventoryAsync(GuildUser user, Inventory inventory)
+    {
+        var existingUser = await _dbContext.Users
+            .Include(e => e.User)
+            .ThenInclude(e => e.Inventory)
+            .FirstOrDefaultAsync(x => x.GuildId == user.GuildId && x.Id == user.Id);
+
+        if (existingUser == null) return;
+
+        // Replace inventory items
+        var item = existingUser.User.Inventory.FirstOrDefault(e => e.ItemId == inventory.ItemId);
+        if (item is not null)
+        {
+            item.Amount =+ inventory.Amount;
+        }
+        else
+        {
+            existingUser.User.Inventory.Add(inventory);
+        }
+
+        await _dbContext.SaveChangesAsync();
+        _cache.Remove($"inventory_{user.Id}");
     }
 
-    public ValueTask AddItemAsync(GuildUser user, Guid itemId, int amount)
+    public async ValueTask AddItemAsync(GuildUser user, Guid itemId, int amount)
     {
-        throw new NotImplementedException();
+        if (amount <= 0)
+            throw new ArgumentException("Amount must be positive", nameof(amount));
+
+        var existingUser = await _dbContext.Users
+            .Include(e => e.User)
+            .ThenInclude(e => e.Inventory)
+            .FirstOrDefaultAsync(x => x.GuildId == user.GuildId && x.Id == user.Id);
+
+        if (existingUser == null)
+            return;
+
+        var item = existingUser.User.Inventory.FirstOrDefault(x => x.ItemId == itemId);
+        if (item != null)
+        {
+            item.Amount += amount;
+        }
+        else
+        {
+            existingUser.User.Inventory.Add(new Inventory
+            {
+                ItemId = itemId,
+                Amount = amount,
+                UserId = user.Id
+            });
+        }
+
+        await _dbContext.SaveChangesAsync();
+        _cache.Remove($"inventory_{user.Id}");
     }
 
-    public ValueTask RemoveItemAsync(GuildUser user, Guid itemId, int amount)
+    public async ValueTask RemoveItemAsync(GuildUser user, Guid itemId, int amount)
     {
-        throw new NotImplementedException();
+        if (amount <= 0)
+            throw new ArgumentException("Amount must be positive", nameof(amount));
+
+        var existingUser = await _dbContext.Users
+            .Include(e => e.User)
+            .ThenInclude(e => e.Inventory)
+            .FirstOrDefaultAsync(x => x.GuildId == user.GuildId && x.Id == user.Id);
+
+        if (existingUser == null)
+            return;
+
+        var item = existingUser.User.Inventory.FirstOrDefault(x => x.ItemId == itemId);
+        if (item == null)
+            throw new InvalidOperationException("Item not found in inventory");
+
+        if (item.Amount < amount)
+            throw new InvalidOperationException("Not enough items in inventory");
+
+        item.Amount -= amount;
+        if (item.Amount == 0)
+        {
+            existingUser.User.Inventory.Remove(item);
+        }
+
+        await _dbContext.SaveChangesAsync();
+        _cache.Remove($"inventory_{user.Id}");
     }
 
-    public ValueTask<bool> HasItemAsync(GuildUser user, Guid itemId)
+    public async ValueTask<bool> HasItemAsync(GuildUser user, Guid itemId)
     {
-        throw new NotImplementedException();
+        var existingUser = await _dbContext.Users
+            .Include(e => e.User)
+            .ThenInclude(e => e.Inventory)
+            .FirstOrDefaultAsync(x => x.GuildId == user.GuildId && x.Id == user.Id);
+
+        if (existingUser == null)
+            return false;
+
+        return existingUser.User.Inventory.Any(x => x.ItemId == itemId);
     }
 
     public async ValueTask<int> GetItemCountAsync(ulong userId, Guid itemId)
