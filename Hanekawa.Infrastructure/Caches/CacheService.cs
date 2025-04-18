@@ -20,11 +20,10 @@ internal class CacheService : ICacheContext
     }
 
     /// <inheritdoc />
-    public TEntity? Get<TEntity>(string key) where TEntity : ICached
+    public TEntity? Get<TEntity>(string key)
     {
         _logger.LogDebug("Retrieving cache value for key {Key} of type {CacheType}", key, nameof(TEntity));
-        var cacheKey = new CacheKeyProvider<TEntity>();
-        var value = _cache.GetString(cacheKey.GetKey(key));
+        var value = _cache.GetString(key);
         if (value is null)
         {
             _logger.LogDebug("Cache value for key {Key} of type {CacheType} not found", key, nameof(TEntity));
@@ -36,11 +35,10 @@ internal class CacheService : ICacheContext
     }
 
     /// <inheritdoc />
-    public TEntity? Get<TEntity>(string key, TimeSpan expiration) where TEntity : ICached
+    public TEntity? Get<TEntity>(string key, TimeSpan expiration)
     {
         _logger.LogDebug("Retrieving cache value for key {Key} of type {CacheType}", key, nameof(TEntity));
-        var cacheKey = new CacheKeyProvider<TEntity>();
-        var value = _cache.GetString(cacheKey.GetKey(key));
+        var value = _cache.GetString(key);
         if (value is null)
         {
             _logger.LogDebug("Cache value for key {Key} of type {CacheType} not found", key, nameof(TEntity));
@@ -52,37 +50,34 @@ internal class CacheService : ICacheContext
     }
 
     /// <inheritdoc />
-    public void Add<TEntity>(string key, TEntity value) where TEntity : ICached
+    public void Add<TEntity>(string key, TEntity value)
     {
         _logger.LogDebug("Adding cache value for key {Key} of type {CacheType}", key, nameof(TEntity));
-        var cacheKey = new CacheKeyProvider<TEntity>();
         var options = new DistributedCacheEntryOptions();
-        _cache.SetString(cacheKey.GetKey(key), JsonSerializer.Serialize(value), options);
+        _cache.SetString(key, JsonSerializer.Serialize(value), options);
     }
 
     /// <inheritdoc />
-    public void Add<TEntity>(string key, TEntity value, TimeSpan expiration) where TEntity : ICached
+    public void Add<TEntity>(string key, TEntity value, TimeSpan expiration)
     {
         _logger.LogDebug("Adding cache value for key {Key} of type {CacheType}", key, nameof(TEntity));
-        var cacheKey = new CacheKeyProvider<TEntity>();
         var options = new DistributedCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = expiration
         };
-        _cache.SetString(cacheKey.GetKey(key), JsonSerializer.Serialize(value), options);
+        _cache.SetString(key, JsonSerializer.Serialize(value), options);
     }
 
     /// <inheritdoc />
-    public bool Remove<TEntity>(string key) where TEntity : ICached
+    public bool Remove(string key)
     {
-        _logger.LogDebug("Removing cache value for key {Key} of type {CacheType}", key, nameof(TEntity));
-        var cacheKey = new CacheKeyProvider<TEntity>();
-        _cache.Remove(cacheKey.GetKey(key));
+        _logger.LogDebug("Removing cache value for key {Key}", key);
+        _cache.Remove(key);
         return true;
     }
 
     /// <inheritdoc />
-    public async ValueTask<TEntity> GetOrCreateAsync<TEntity>(string key, Func<Task<TEntity>> factory) where TEntity : ICached
+    public async ValueTask<TEntity> GetOrCreateAsync<TEntity>(string key, Func<Task<TEntity>> factory)
     {
         var value = Get<TEntity>(key);
         if (value is not null)

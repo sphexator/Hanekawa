@@ -70,7 +70,7 @@ public class DropService : IDropService
         }
 
         var cache = scope.ServiceProvider.GetRequiredService<ICacheContext>();
-        cache.Add<GuildUser>($"{msg.ChannelId}-{msg.Id}-drop", user.Id);
+        cache.Add($"{msg.ChannelId}-{msg.Id}-drop", user.Id);
     }
 
     /// <inheritdoc />
@@ -99,7 +99,7 @@ public class DropService : IDropService
         await bot.SendMessageAsync(channelId,
             $"Rewarded {user.Nickname ?? user.Username} with {exp ?? 0} experience for claiming the drop!");
 
-        cache.Remove<GuildUser>($"{msgId}-{channelId}-drop");
+        cache.Remove($"{msgId}-{channelId}-drop");
         _semaphoreSlim.Release();
         _logger.LogDebug("{UserId}-{GuildId} exited the semaphore for drop claims",
             user.Id, user.Guild.GuildId);
