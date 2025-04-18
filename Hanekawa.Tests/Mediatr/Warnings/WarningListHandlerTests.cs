@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Test.Mediatr.Warnings;
+﻿namespace Hanekawa.Tests.Mediatr.Warnings;
 
 public class WarningListHandlerTests
 {

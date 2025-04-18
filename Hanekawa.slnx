@@ -6,6 +6,6 @@
     <Project Path="Hanekawa\Hanekawa.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="Hanekawa.Test\Hanekawa.Test.csproj" Type="Classic C#" />
+    <Project Path="Hanekawa.Tests\Hanekawa.Tests.csproj" Type="Classic C#" />
   </Folder>
 </Solution>

@@ -2,12 +2,12 @@ using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Services;
 using Hanekawa.Application.Services.Images;
 using Hanekawa.Entities.Settings.Images;
-using Hanekawa.Test.Common;
+using Hanekawa.Tests.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 
-namespace Hanekawa.Test.ImageServiceTests;
+namespace Hanekawa.Tests.ImageServiceTests;
 
 public class RankPictureTests
 {

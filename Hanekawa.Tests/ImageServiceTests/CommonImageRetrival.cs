@@ -1,6 +1,6 @@
 using SixLabors.Fonts;
 
-namespace Hanekawa.Test.ImageServiceTests;
+namespace Hanekawa.Tests.ImageServiceTests;
 
 public static class CommonImageRetrival
 {

@@ -1,7 +1,7 @@
 using Hanekawa.Entities.Discord;
 using Hanekawa.Entities.Users;
 
-namespace Hanekawa.Test.Common;
+namespace Hanekawa.Tests.Common;
 
 public static class TestUsers
 {

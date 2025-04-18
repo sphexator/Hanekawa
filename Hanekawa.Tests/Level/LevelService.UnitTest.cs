@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 
-namespace Hanekawa.Test.Level;
+namespace Hanekawa.Tests.Level;
 
 public class LevelServiceUnitTest
 {

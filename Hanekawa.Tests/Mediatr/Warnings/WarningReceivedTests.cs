@@ -3,7 +3,7 @@ using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Discord;
 using Moq;
 
-namespace Hanekawa.Test.Mediatr.Warnings;
+namespace Hanekawa.Tests.Mediatr.Warnings;
 
 public class WarningReceivedTests
 {

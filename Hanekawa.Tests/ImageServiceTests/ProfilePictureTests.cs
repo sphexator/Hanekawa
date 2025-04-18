@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SixLabors.Fonts;
 
-namespace Hanekawa.Test.ImageServiceTests;
+namespace Hanekawa.Tests.ImageServiceTests;
 
 public class ProfilePictureTests
 {
