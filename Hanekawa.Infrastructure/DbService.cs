@@ -14,29 +14,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Infrastructure;
 
-/// <inheritdoc cref="Hanekawa.Application.Interfaces.IDbContext" />
 internal class DbService : DbContext, IDbContext
 {
     public DbService(DbContextOptions<DbService> options) : base(options) { }
-    /// <inheritdoc />
+
     public DbSet<Warning> Warnings { get; set; } = null!;
-    /// <inheritdoc />
     public DbSet<Log> Logs { get; set; } = null!;
-    /// <inheritdoc />
     public DbSet<GuildModerationLog> ModerationLogs { get; set; } = null!;
-    /// <inheritdoc />
     public DbSet<GuildConfig> GuildConfigs { get; set; } = null!;
-    /// <inheritdoc />
     public DbSet<GuildUser> Users { get; set; } = null!;
-    /// <inheritdoc />
     public DbSet<LevelRequirement> LevelRequirements { get; set; } = null!;
-    /// <inheritdoc />
     public DbSet<Club> Clubs { get; set; } = null!;
-    /// <inheritdoc />
     public DbSet<ClubMember> ClubMembers { get; set; } = null!;
-    /// <inheritdoc />
     public DbSet<Item> Items { get; set; } = null!;
-    /// <inheritdoc />
     public DbSet<ItemType> ItemTypes { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -157,20 +147,15 @@ internal class DbService : DbContext, IDbContext
         });
     }
 
-    /// <param name="cancellationToken"></param>
-    /// <inheritdoc />
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await base.SaveChangesAsync(cancellationToken);
 
-    /// <inheritdoc />
     public async Task<bool> EnsureDatabaseCreated(CancellationToken cancellationToken = default)
         => await base.Database.EnsureCreatedAsync(cancellationToken);
 
-    /// <inheritdoc />
     public async Task MigrateDatabaseAsync(CancellationToken cancellationToken = default)
         => await base.Database.MigrateAsync(cancellationToken: cancellationToken);
 
-    /// <inheritdoc />
     public DbConnection GetConnection()
     {
         return this.Database.GetDbConnection();

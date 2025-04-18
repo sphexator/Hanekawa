@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Hanekawa.Entities.Users;
 
-namespace Hanekawa.Application.Services;
+namespace Hanekawa.Application.Interfaces;
 
 public interface IItemService
 {

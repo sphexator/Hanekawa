@@ -61,7 +61,7 @@ public class InventoryService : IInventoryService
         var item = existingUser.User.Inventory.FirstOrDefault(e => e.ItemId == inventory.ItemId);
         if (item is not null)
         {
-            item.Amount =+ inventory.Amount;
+            item.Amount += inventory.Amount;
         }
         else
         {
