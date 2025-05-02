@@ -48,7 +48,6 @@
       <Folder Include="Commands\Slash\Advertise\" />
       <Folder Include="Commands\Slash\AutoMessage\" />
       <Folder Include="Commands\Slash\Board\" />
-      <Folder Include="Commands\Slash\Boost\" />
       <Folder Include="Data\Background\" />
       <Folder Include="Extensions\" />
       <Folder Include="Validators\" />
