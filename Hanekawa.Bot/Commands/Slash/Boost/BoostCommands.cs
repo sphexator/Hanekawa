@@ -5,6 +5,7 @@ using Hanekawa.Application.Interfaces;
 using Hanekawa.Bot.Commands.Metas;
 using Hanekawa.Bot.Mapper;
 using Hanekawa.Entities.Discord;
+using Hanekawa.Localize;
 using Qmmands;
 
 namespace Hanekawa.Bot.Commands.Slash.Boost;
@@ -21,13 +22,13 @@ public class BoostCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         var service = scope.ServiceProvider.GetRequiredService<IBoostCommandService>();
         var response = await service.List(Context.GuildId);
 
-        if (response.Count is 0)
+        if (response.Length is 0)
         {
-            return Response("No boost actions found.");
+            return Response(Localization.NoFound_BoostActions);
         }
 
         var fields = new List<EmbedField>();
-        for (int i = 0; i < response.Count; i++)
+        for (var i = 0; i < response.Length; i++)
         {
             var x = response[i];
             fields.Add(new EmbedField(x.Item1, x.Item2.ToString() ?? "NaN", true));
@@ -35,7 +36,7 @@ public class BoostCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
 
         var embed = new Embed
         {
-            Title = "Boost configuration",
+            Title = Localization.BoostConfig,
             Fields = fields
         };
 

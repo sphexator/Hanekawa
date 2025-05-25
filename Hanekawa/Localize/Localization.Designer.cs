@@ -69,6 +69,15 @@ namespace Hanekawa.Localize {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Boost configuration.
+        /// </summary>
+        public static string BoostConfig {
+            get {
+                return ResourceManager.GetString("BoostConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Channel must be a text channel!.
         /// </summary>
         public static string ChannelMustBeTextChannel {
@@ -96,6 +105,15 @@ namespace Hanekawa.Localize {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to List all registered boost actions.
+        /// </summary>
+        public static string Cmd_Desc_ListBoostActions {
+            get {
+                return ResourceManager.GetString("Cmd_Desc_ListBoostActions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Kicked {0} from {1}.
         /// </summary>
         public static string KickedGuildUser {
@@ -110,6 +128,15 @@ namespace Hanekawa.Localize {
         public static string MutedGuildUserDuration {
             get {
                 return ResourceManager.GetString("MutedGuildUserDuration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No boost actions found..
+        /// </summary>
+        public static string NoFound_BoostActions {
+            get {
+                return ResourceManager.GetString("NoFound_BoostActions", resourceCulture);
             }
         }
         

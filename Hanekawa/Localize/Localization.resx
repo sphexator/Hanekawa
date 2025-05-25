@@ -63,4 +63,13 @@
     <data name="NoWarningsUserMention" xml:space="preserve">
         <value>No warnings found for {0}</value>
     </data>
+    <data name="BoostConfig" xml:space="preserve">
+        <value>Boost configuration</value>
+    </data>
+    <data name="NoFound_BoostActions" xml:space="preserve">
+        <value>No boost actions found.</value>
+    </data>
+    <data name="Cmd_Desc_ListBoostActions" xml:space="preserve">
+        <value>List all registered boost actions</value>
+    </data>
 </root>

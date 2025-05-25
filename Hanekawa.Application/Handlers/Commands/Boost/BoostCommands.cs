@@ -1,11 +1,12 @@
-﻿using Hanekawa.Application.Interfaces;
+﻿using System.Runtime.InteropServices;
+using Hanekawa.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Application.Handlers.Commands.Boost;
 
 public interface IBoostCommandService
 {
-    ValueTask<List<(string, object)>> List(ulong guildId);
+    ValueTask<(string, object)[]> List(ulong guildId);
 }
 
 internal class BoostCommands : IBoostCommandService
@@ -17,7 +18,7 @@ internal class BoostCommands : IBoostCommandService
         _context = context;
     }
 
-    public async ValueTask<List<(string, object)>> List(ulong guildId)
+    public async ValueTask<(string, object)[]> List(ulong guildId)
     {
         var config = await _context.GuildConfigs
             .Include(e => e.BoostConfig)
@@ -38,6 +39,6 @@ internal class BoostCommands : IBoostCommandService
             }
         }
 
-        return values;
+        return CollectionsMarshal.AsSpan(values).ToArray();
     }
 }
