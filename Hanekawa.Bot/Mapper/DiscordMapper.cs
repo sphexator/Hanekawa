@@ -12,24 +12,30 @@ internal static class DiscordExtensions
     {
         var toReturn = new LocalEmbed
         {
-            Author = embed.Header != null ? new LocalEmbedAuthor
-            {
-                Name = embed.Header.Name,
-                IconUrl = embed.Header.IconUrl,
-                Url = embed.Header.Url
-            } : new LocalEmbedAuthor(),
             Title = embed.Title ?? string.Empty,
             ThumbnailUrl = embed.Icon ?? string.Empty,
             Color = new Color(embed.Color),
             Description = embed.Content ?? string.Empty,
             ImageUrl = embed.Attachment ?? string.Empty,
-            Timestamp = embed.Timestamp,
-            Footer = embed.Footer != null ? new LocalEmbedFooter
+            Timestamp = embed.Timestamp
+        };
+        if (embed.Header is not null)
+        {
+            toReturn.Author = new LocalEmbedAuthor
+            {
+                Name = embed.Header.Name,
+                IconUrl = embed.Header.IconUrl,
+                Url = embed.Header.Url
+            };
+        }
+        if (embed.Footer is not null)
+        {
+            toReturn.Footer= new LocalEmbedFooter
             {
                 IconUrl = embed.Footer.IconUrl,
                 Text = embed.Footer.Text,
-            } : new LocalEmbedFooter()
-        };
+            };
+        }
         var fields = new List<LocalEmbedField>();
         for (var i = 0; i < embed.Fields.Count; i++)
         {
@@ -59,6 +65,16 @@ internal static class DiscordExtensions
             Timestamp = embed.Timestamp!.Value,
             Footer = new EmbedFooter((embed.Footer!.Text), (embed.Footer.IconUrl ?? null)!)
         };
+        if (embed.Author is not null)
+        {
+            toReturn.Header = new EmbedHeader(embed.Author.Name,
+                embed.Author.IconUrl ?? string.Empty,
+                embed.Author.Url ?? string.Empty);
+        }
+        if (embed.Footer is not null)
+        {
+            toReturn.Footer = new EmbedFooter(embed.Footer.IconUrl ?? string.Empty, embed.Footer.Text);
+        }
         return toReturn;
     }
 
