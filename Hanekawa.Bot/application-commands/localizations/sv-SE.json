@@ -517,6 +517,19 @@
             {
                 "name": "",
                 "description": ""
+            },
+            "boost":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "config":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
             }
         }
     },

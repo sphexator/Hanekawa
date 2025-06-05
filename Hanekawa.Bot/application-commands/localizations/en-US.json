@@ -517,6 +517,19 @@
             {
                 "name": "",
                 "description": ""
+            },
+            "boost":
+            {
+                "name": "boost",
+                "description": "No description.",
+                "options":
+                {
+                    "config":
+                    {
+                        "name": "config",
+                        "description": "List all registered boost actions"
+                    }
+                }
             }
         }
     },

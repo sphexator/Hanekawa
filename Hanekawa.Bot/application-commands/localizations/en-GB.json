@@ -517,6 +517,19 @@
             {
                 "name": "profile",
                 "description": "Shows the profile of a user"
+            },
+            "boost":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "config":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
             }
         }
     },

@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Hanekawa.Application.Handlers.Commands.Account;
 using Hanekawa.Application.Handlers.Commands.Administration;
+using Hanekawa.Application.Handlers.Commands.Boost;
 using Hanekawa.Application.Handlers.Commands.Club;
 using Hanekawa.Application.Handlers.Commands.Settings;
 using Hanekawa.Application.Interfaces;
@@ -9,7 +10,6 @@ using Hanekawa.Application.Interfaces.Services;
 using Hanekawa.Application.Services;
 using Hanekawa.Application.Services.Images;
 using Hanekawa.Entities.Settings.Images;
-using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Prometheus.Client.Collectors;
@@ -33,6 +33,7 @@ public static class DependencyInjection
         serviceCollection.AddScoped<IGreetService, GreetService>();
         serviceCollection.AddScoped<IClubCommandService, ClubCommandService>();
         serviceCollection.AddScoped<ILevelCommandService, LevelCommandService>();
+        serviceCollection.AddScoped<IBoostCommandService, BoostCommands>();
         serviceCollection.AddScoped<AccountCommandService>();
         //serviceCollection.AddScoped<IWarningCommandService>();
 

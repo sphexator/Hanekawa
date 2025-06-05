@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplicationLayer(builder.Configuration);
 builder.Services.AddInfrastructureLayer(builder.Configuration);
+
 builder.Host.ConfigureDiscordBot<Bot>((_, bot) =>
 {
     bot.Token = builder.Configuration["botToken"];
@@ -19,6 +20,7 @@ builder.Host.ConfigureDiscordBot<Bot>((_, bot) =>
     bot.ReadyEventDelayMode = ReadyEventDelayMode.Guilds;
     bot.Intents |= GatewayIntents.All;
 });
+
 builder.Services.AddSingleton<IBot, Bot>();
 builder.Services.AddHttpClient();
 builder.Host.UseDefaultServiceProvider(x =>
