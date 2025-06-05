@@ -6,7 +6,7 @@ namespace Hanekawa.Application.Handlers.Commands.Boost;
 
 public interface IBoostCommandService
 {
-    ValueTask<(string, object)[]> List(ulong guildId);
+    ValueTask<(string, string)[]> ListAsync(ulong guildId);
 }
 
 internal class BoostCommands : IBoostCommandService
@@ -18,7 +18,7 @@ internal class BoostCommands : IBoostCommandService
         _context = context;
     }
 
-    public async ValueTask<(string, object)[]> List(ulong guildId)
+    public async ValueTask<(string, string)[]> ListAsync(ulong guildId)
     {
         var config = await _context.GuildConfigs
             .Include(e => e.BoostConfig)
@@ -29,13 +29,13 @@ internal class BoostCommands : IBoostCommandService
             return [];
         }
 
-        List<(string, object)> values = [];
+        List<(string, string)> values = [];
         foreach (var x in config.BoostConfig.GetType().GetProperties())
         {
             var value = x.GetValue(config.BoostConfig);
             if (value != null)
             {
-                values.Add((x.Name, value));
+                values.Add((x.Name, value.ToString()));
             }
         }
 

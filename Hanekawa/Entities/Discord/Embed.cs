@@ -26,7 +26,7 @@ public class Embed
     /// <summary>
     /// Timestamp put with the footer if provided
     /// </summary>
-    public DateTimeOffset Timestamp { get; set; }
+    public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
     /// Fields of tuple. First value = title, second value = content

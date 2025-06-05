@@ -20,7 +20,7 @@ public class BoostCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         using var _ = metrics.All<BoostCommands>();
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IBoostCommandService>();
-        var response = await service.List(Context.GuildId);
+        var response = await service.ListAsync(Context.GuildId);
 
         if (response.Length is 0)
         {
@@ -31,12 +31,16 @@ public class BoostCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         for (var i = 0; i < response.Length; i++)
         {
             var x = response[i];
-            fields.Add(new EmbedField(x.Item1, x.Item2.ToString() ?? "NaN", true));
+            fields.Add(new EmbedField(x.Item1, string.IsNullOrWhiteSpace(x.Item2)
+                ? "NaN"
+                : x.Item2,
+                true));
         }
 
         var embed = new Embed
         {
             Title = Localization.BoostConfig,
+            Content = string.Empty,
             Fields = fields
         };
 
