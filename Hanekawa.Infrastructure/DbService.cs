@@ -58,6 +58,10 @@ internal class DbService : DbContext, IDbContext
                 .WithOne(e => e.GuildConfig)
                 .HasForeignKey<CurrencyConfig>(f => f.GuildId)
                 .OnDelete(DeleteBehavior.Cascade);
+            x.HasOne(e => e.BoostConfig)
+                .WithOne(e => e.GuildConfig)
+                .HasForeignKey<BoostConfig>(f => f.GuildId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<GuildUser>(x =>
