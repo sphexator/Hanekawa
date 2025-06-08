@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Disqord;
+using Disqord.AuditLogs;
 using Disqord.Bot;
 using Disqord.Bot.Commands;
 using Disqord.Gateway;
@@ -131,10 +132,36 @@ public sealed class Bot : DiscordBot, IBot
         await this.SendMessageAsync(channelId, localMsg).ConfigureAwait(false);
     }
 
+    public async Task GetAuditLogAsync(ulong guildId, AuditLogActionType actionType)
+    {
+        var guild = this.GetGuild(guildId);
+        if (guild is null)
+        {
+            return;
+        }
+
+        var auditLogs = await AuditLogHelper.GetAuditLogsAsync(guild, actionType);
+        foreach (var log in auditLogs)
+        {
+            Serilog.Log.Information("Audit Log: {Action} by {User} at {Timestamp}",
+                log.ActionType, log.UserId, log.Timestamp);
+        }
+    }
+
     public async Task GetAuditLogAsync(ulong guildId)
     {
-        var auditLogs = this.GetGuild(guildId)!.EnumerateAuditLogs(5);
-        var result = await auditLogs.FlattenAsync().ConfigureAwait(false);
+        var guild = this.GetGuild(guildId);
+        if (guild is null)
+        {
+            return;
+        }
+
+        var auditLogs = await AuditLogHelper.GetAllAuditLogsAsync(guild);
+        foreach (var log in auditLogs)
+        {
+            Serilog.Log.Information("Audit Log: {Action} by {User} at {Timestamp}",
+                log.ActionType, log.UserId, log.Timestamp);
+        }
     }
 
     private static Snowflake[] ConvertToSnowflake(ulong[] modifiedRoles)
@@ -145,7 +172,6 @@ public sealed class Bot : DiscordBot, IBot
         {
             result[i] = span[i];
         }
-
         return result;
     }
 }
