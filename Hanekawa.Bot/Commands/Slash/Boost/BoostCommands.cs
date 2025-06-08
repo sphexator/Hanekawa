@@ -21,16 +21,25 @@ public class BoostCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IBoostCommandService>();
         var response = await service.ListAsync(Context.GuildId);
-
-        if (response.Length is 0)
+        if (response is null)
         {
             return Response(Localization.NoFound_BoostActions);
         }
 
-        var fields = new List<EmbedField>();
-        for (var i = 0; i < response.Length; i++)
+        List<(string, string)> values = [];
+        foreach (var x in response.Value.BoostConfig.GetType().GetProperties())
         {
-            var x = response[i];
+            var value = x.GetValue(response.Value.BoostConfig);
+            if (value != null)
+            {
+                values.Add((x.Name, value.ToString()));
+            }
+        }
+
+        var fields = new List<EmbedField>();
+        for (var i = 0; i < values.Count; i++)
+        {
+            var x = values[i];
             fields.Add(new EmbedField(x.Item1, string.IsNullOrWhiteSpace(x.Item2)
                 ? "NaN"
                 : x.Item2,
