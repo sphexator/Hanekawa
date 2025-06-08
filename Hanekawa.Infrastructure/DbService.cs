@@ -166,6 +166,7 @@ internal class DbService : DbContext, IDbContext
     }
     public Task<T?> ExecuteQuery<T>(string query, object? param = null, CancellationToken cancellationToken = default)
     {
-        return Database.GetDbConnection().QueryFirstOrDefaultAsync<T>(query, param, commandType: CommandType.Text);
+        return Database.GetDbConnection()
+            .QueryFirstOrDefaultAsync<T>(query, param, commandType: CommandType.Text);
     }
 }
