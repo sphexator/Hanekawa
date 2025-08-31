@@ -43,7 +43,7 @@ public sealed class Bot : DiscordBot, IBot
         var start = Stopwatch.GetTimestamp();
         var result = await base.OnBeforeExecuted(context);
         var elapsedTime = Stopwatch.GetElapsedTime(start).Milliseconds;
-        Serilog.Log.Information("Command {Command} executed in {Elapsed}ms",
+        Logger.LogInformation("Command {Command} executed in {Elapsed}ms",
             context.Command?.Name, elapsedTime);
         return result;
     }
@@ -143,7 +143,7 @@ public sealed class Bot : DiscordBot, IBot
         var auditLogs = await AuditLogHelper.GetAuditLogsAsync(guild, actionType);
         foreach (var log in auditLogs)
         {
-            Serilog.Log.Information("Audit Log: {Action} by {User} at {Timestamp}",
+            Logger.LogInformation("Audit Log: {Action} by {User} at {Timestamp}",
                 log.ActionType, log.UserId, log.Timestamp);
         }
     }
@@ -159,7 +159,7 @@ public sealed class Bot : DiscordBot, IBot
         var auditLogs = await AuditLogHelper.GetAllAuditLogsAsync(guild);
         foreach (var log in auditLogs)
         {
-            Serilog.Log.Information("Audit Log: {Action} by {User} at {Timestamp}",
+            Logger.LogInformation("Audit Log: {Action} by {User} at {Timestamp}",
                 log.ActionType, log.UserId, log.Timestamp);
         }
     }
