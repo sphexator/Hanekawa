@@ -9,7 +9,7 @@ public class DropConfig : IConfig
 {
     /// <inheritdoc />
     [Key]
-    public ulong GuildId { get; set; }
+    public ulong GuildId { get; init; }
     /// <summary>
     /// Emote used in string format. Either UTF or discord format
     /// </summary>
@@ -22,7 +22,7 @@ public class DropConfig : IConfig
     /// List of blacklisted channels or categories
     /// </summary>
     public ulong[] Blacklist { get; set; } = [];
-    
+
     [JsonIgnore]
     public GuildConfig GuildConfig { get; set; } = null!;
 }

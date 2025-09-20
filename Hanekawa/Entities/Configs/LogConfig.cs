@@ -7,12 +7,12 @@ namespace Hanekawa.Entities.Configs;
 public class LogConfig : IConfig
 {
     [Key]
-    public ulong GuildId { get; set; }
+    public ulong GuildId { get; init; }
     public ulong? JoinLeaveLogChannelId { get; set; }
     public ulong? MessageLogChannelId { get; set; }
     public ulong? ModLogChannelId { get; set; }
     public ulong? VoiceLogChannelId { get; set; }
-    
+
     [JsonIgnore]
     public GuildConfig GuildConfig { get; set; } = null!;
 }

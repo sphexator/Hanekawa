@@ -8,7 +8,7 @@ namespace Hanekawa.Entities.Configs;
 public class LevelConfig : IConfig
 {
     [Key]
-    public ulong GuildId { get; set; }
+    public ulong GuildId { get; init; }
     public bool LevelEnabled { get; set; } = false;
     public bool DecayEnabled { get; set; } = false;
 

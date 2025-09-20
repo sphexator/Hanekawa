@@ -1,11 +1,11 @@
 ﻿namespace Hanekawa.Interfaces;
 
-public interface IMemberEntity : IGuildEntity, IEntity 
+public interface IMemberEntity : IGuildEntity, IEntity
 { }
 
 public interface IGuildEntity
 {
-    public ulong GuildId { get; set; }
+    public ulong GuildId { get; init; }
 }
 
 public interface IEntity

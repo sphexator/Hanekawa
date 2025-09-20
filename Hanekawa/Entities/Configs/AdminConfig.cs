@@ -7,7 +7,7 @@ namespace Hanekawa.Entities.Configs;
 public class AdminConfig : IConfig
 {
     [Key]
-    public ulong GuildId { get; set; }
+    public ulong GuildId { get; init; }
     public int MaxWarnings { get; set; }
 
     [JsonIgnore]

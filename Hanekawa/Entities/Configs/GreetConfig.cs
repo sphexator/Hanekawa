@@ -11,7 +11,7 @@ public class GreetConfig : IConfig
     public GreetConfig(ulong guildId) => GuildId = guildId;
 
     [Key]
-    public ulong GuildId { get; set; }
+    public ulong GuildId { get; init; }
     public string Message { get; set; } = string.Empty;
     public ulong? Channel { get; set; }
 

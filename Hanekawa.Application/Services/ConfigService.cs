@@ -49,7 +49,7 @@ public class ConfigService : IConfigService
         if (value is not null or { Length: 0 })
         {
             var cachedConfig = JsonSerializer.Deserialize<GuildConfig>(value);
-            var includeValue = cachedConfig?.GetType()
+            object? includeValue = cachedConfig?.GetType()
                 .GetProperties()
                 .FirstOrDefault(x => nameof(x.PropertyType) == include.Name)
                 ?.GetValue(cachedConfig);
@@ -73,7 +73,7 @@ public class ConfigService : IConfigService
     public async ValueTask SetAsync<T>(ulong key, T value, CancellationToken cancellationToken = default)
         where T : class, IConfig, new()
     {
-        var json = JsonSerializer.Serialize(value);
+        string json = JsonSerializer.Serialize(value);
         await _cache.SetStringAsync(KeyName<GuildConfig>(key), json,
             new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(5) }, token: cancellationToken);
     }
