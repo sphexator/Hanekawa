@@ -40,7 +40,7 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
 
     protected override async ValueTask OnMessageDeleted(MessageDeletedEventArgs e)
     {
-        if (e.GuildId.HasValue is false || e.Message is null) return;
+        if (!e.GuildId.HasValue || e.Message is null) return;
         await service.GetRequiredService<IMediator>()
             .Publish(new MessageDeleted(e.GuildId.Value, e.ChannelId, e.Message.Author.Id,
                 e.MessageId, e.Message.Content))
@@ -91,7 +91,7 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
 
     protected override async ValueTask OnReactionAdded(ReactionAddedEventArgs e)
     {
-        if (e.GuildId.HasValue is false) return;
+        if (!e.GuildId.HasValue) return;
         await service.GetRequiredService<IMediator>()
             .Publish(new ReactionAdd(e.GuildId.Value, e.ChannelId,
                 e.MessageId, e.UserId, e.Emoji.GetReactionFormat()))
@@ -100,7 +100,7 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
 
     protected override async ValueTask OnReactionRemoved(ReactionRemovedEventArgs e)
     {
-        if (e.GuildId.HasValue is false) return;
+        if (!e.GuildId.HasValue) return;
         await service.GetRequiredService<IMediator>()
             .Publish(new ReactionRemove(e.GuildId.Value, e.ChannelId, e.MessageId, e.UserId,
                 e.Emoji.GetReactionFormat()))
@@ -109,7 +109,7 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
 
     protected override async ValueTask OnReactionsCleared(ReactionsClearedEventArgs e)
     {
-        if (e.GuildId.HasValue is false) return;
+        if (!e.GuildId.HasValue) return;
         await service.GetRequiredService<IMediator>()
             .Publish(new ReactionCleared(e.GuildId.Value, e.ChannelId, e.MessageId))
             .ConfigureAwait(false);
