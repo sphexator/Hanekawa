@@ -9,7 +9,7 @@ public interface IBotService
     ValueTask JoinedGuildAsync(ulong guildId);
 }
 
-internal class BotService : IBotService
+internal sealed class BotService : IBotService
 {
     private readonly IDbContext _db;
 
