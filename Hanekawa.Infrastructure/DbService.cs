@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Dapper;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities;
+using Hanekawa.Entities.Club;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Internals;
 using Hanekawa.Entities.Levels;
 using Hanekawa.Entities.Users;
-using Hanekawa.Entities.Club;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Infrastructure;
@@ -28,6 +28,25 @@ internal class DbService : DbContext, IDbContext
     public DbSet<ClubMember> ClubMembers { get; set; } = null!;
     public DbSet<Item> Items { get; set; } = null!;
     public DbSet<ItemType> ItemTypes { get; set; } = null!;
+
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        => await base.SaveChangesAsync(cancellationToken);
+
+    public async Task<bool> EnsureDatabaseCreated(CancellationToken cancellationToken = default)
+        => await base.Database.EnsureCreatedAsync(cancellationToken);
+
+    public async Task MigrateDatabaseAsync(CancellationToken cancellationToken = default)
+        => await base.Database.MigrateAsync(cancellationToken: cancellationToken);
+
+    public DbConnection GetConnection()
+    {
+        return Database.GetDbConnection();
+    }
+    public Task<T?> ExecuteQuery<T>(string query, object? param = null, CancellationToken cancellationToken = default)
+    {
+        return Database.GetDbConnection()
+            .QueryFirstOrDefaultAsync<T>(query, param, commandType: CommandType.Text);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -151,22 +170,9 @@ internal class DbService : DbContext, IDbContext
         });
     }
 
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        => await base.SaveChangesAsync(cancellationToken);
-
-    public async Task<bool> EnsureDatabaseCreated(CancellationToken cancellationToken = default)
-        => await base.Database.EnsureCreatedAsync(cancellationToken);
-
-    public async Task MigrateDatabaseAsync(CancellationToken cancellationToken = default)
-        => await base.Database.MigrateAsync(cancellationToken: cancellationToken);
-
-    public DbConnection GetConnection()
-    {
-        return this.Database.GetDbConnection();
-    }
-    public Task<T?> ExecuteQuery<T>(string query, object? param = null, CancellationToken cancellationToken = default)
+    public Task<int> ExecuteCommand(string command, object? param = null, CancellationToken cancellationToken = default)
     {
         return Database.GetDbConnection()
-            .QueryFirstOrDefaultAsync<T>(query, param, commandType: CommandType.Text);
+            .ExecuteAsync(command, param, commandType: CommandType.Text);
     }
 }
