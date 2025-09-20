@@ -4,6 +4,7 @@ using Hanekawa.Application.Handlers.Commands.Administration;
 using Hanekawa.Application.Handlers.Commands.Boost;
 using Hanekawa.Application.Handlers.Commands.Club;
 using Hanekawa.Application.Handlers.Commands.Settings;
+using Hanekawa.Application.Handlers.Services.Internal;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Commands;
 using Hanekawa.Application.Interfaces.Services;
@@ -35,6 +36,7 @@ public static class DependencyInjection
         serviceCollection.AddScoped<ILevelCommandService, LevelCommandService>();
         serviceCollection.AddScoped<IBoostCommandService, BoostCommands>();
         serviceCollection.AddScoped<IAccountCommandService, AccountCommandService>();
+        serviceCollection.AddScoped<IBotService, BotService>();
         //serviceCollection.AddScoped<IWarningCommandService>();
 
         var fontCollection = new FontCollection();
