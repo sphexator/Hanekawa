@@ -6,7 +6,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Application.Handlers.Commands.Account;
 
-public class AccountCommandService(IImageService imageService, IDbContext db)
+public interface IAccountCommandService
+{
+    ValueTask<Stream> RankAsync(DiscordMember member, CancellationToken cancellationToken = default);
+    ValueTask<Stream> ProfileAsync(DiscordMember member, CancellationToken cancellationToken = default);
+    Task<long> GetWalletAsync(DiscordMember discordMember, CancellationToken cancellationToken = default);
+    Task<GuildUser[]> GetTopUsersAsync(ulong guildId);
+}
+
+public class AccountCommandService(IImageService imageService, IDbContext db) : IAccountCommandService
 {
     public async ValueTask<Stream> RankAsync(DiscordMember member, CancellationToken cancellationToken = default)
     {

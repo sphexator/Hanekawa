@@ -34,7 +34,7 @@ public static class DependencyInjection
         serviceCollection.AddScoped<IClubCommandService, ClubCommandService>();
         serviceCollection.AddScoped<ILevelCommandService, LevelCommandService>();
         serviceCollection.AddScoped<IBoostCommandService, BoostCommands>();
-        serviceCollection.AddScoped<AccountCommandService>();
+        serviceCollection.AddScoped<IAccountCommandService, AccountCommandService>();
         //serviceCollection.AddScoped<IWarningCommandService>();
 
         var fontCollection = new FontCollection();
