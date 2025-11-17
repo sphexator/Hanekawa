@@ -5,7 +5,7 @@ namespace Hanekawa.Entities.Discord;
 public class DiscordMember : IMemberEntity
 {
     public ulong Id { get; set; }
-    public ulong GuildId { get; set; }
+    public ulong GuildId { get; init; }
     public Guild Guild { get; set; } = null!;
     public ulong[] RoleIds { get; set; } = [];
     public string? Nickname { get; set; } = string.Empty;

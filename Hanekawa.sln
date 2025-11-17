@@ -10,7 +10,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa", "Hanekawa\Haneka
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.Application", "Hanekawa.Application\Hanekawa.Application.csproj", "{94DDA4CF-403D-EFAF-0BCD-9071BD6E8FF8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.Test", "Hanekawa.Test\Hanekawa.Test.csproj", "{A608AE03-147B-194A-82EC-83EF07ABBCA3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.Tests", "Hanekawa.Tests\Hanekawa.Tests.csproj", "{A608AE03-147B-194A-82EC-83EF07ABBCA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

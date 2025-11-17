@@ -16,7 +16,7 @@ public class GuildUser : IMemberEntity, ICached
         User = new User { Id = userId };
     }
 
-    public ulong GuildId { get; set; }
+    public ulong GuildId { get; init; }
     public ulong Id { get; set; }
 
     public bool Inactive { get; set; } = false;
