@@ -1,20 +1,15 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Disqord;
-using Disqord.AuditLogs;
 using Disqord.Bot;
 using Disqord.Bot.Commands;
 using Disqord.Gateway;
 using Disqord.Rest;
-using Disqord.Rest.Pagination;
-using Hanekawa.Application.Handlers.Services.Metrics;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Bot.Mapper;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Discord;
-using MediatR;
 using Microsoft.Extensions.Options;
-using Prometheus.Client;
 using IResult = Qmmands.IResult;
 
 namespace Hanekawa.Bot.Bot;

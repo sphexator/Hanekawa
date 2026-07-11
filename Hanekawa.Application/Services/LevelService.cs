@@ -7,7 +7,6 @@ using Hanekawa.Entities.Discord;
 using Hanekawa.Entities.Levels;
 using Hanekawa.Entities.Users;
 using Hanekawa.Extensions;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -19,15 +18,15 @@ public class LevelService : ILevelService
     private readonly IDbContext _db;
     private readonly IBot _bot;
     private readonly ILogger<LevelService> _logger;
-    private readonly IMediator _mediator;
+    private readonly IRequestDispatcher _dispatcher;
 
     public LevelService(IDbContext db, ILogger<LevelService> logger,
-        IBot bot, IMediator mediator)
+        IBot bot, IRequestDispatcher dispatcher)
     {
         _db = db;
         _logger = logger;
         _bot = bot;
-        _mediator = mediator;
+        _dispatcher = dispatcher;
     }
 
     /// <inheritdoc />
@@ -49,7 +48,7 @@ public class LevelService : ILevelService
             await AdjustRolesAsync(member, user.Level, config);
             _logger.LogInformation("User {User} in guild {Guild} has leveled up to level {Level}",
                 member.Id, member.Guild.GuildId, user.Level);
-            await _mediator.Send(new LevelUp(member, member.RoleIds, user.Level, config));
+            await _dispatcher.SendAsync(new LevelUp(member, member.RoleIds, user.Level, config));
         }
 
         user.Experience += experience;

@@ -1,8 +1,8 @@
 ﻿using Hanekawa.Application.Interfaces;
+using Hanekawa.Decorator;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Discord;
 using Hanekawa.Localize;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +14,7 @@ public record WarningClear(DiscordMember User, ulong ModeratorId, string? Reason
 public class WarningClearHandler(IDbContext db, ILogger<WarningClearHandler> logger) 
     : IRequestHandler<WarningClear, Response<Message>>
 {
-    public async Task<Response<Message>> Handle(WarningClear request, CancellationToken cancellationToken)
+    public async Task<Response<Message>> HandleAsync(WarningClear request, CancellationToken cancellationToken)
     {
         if (request.All)
         {

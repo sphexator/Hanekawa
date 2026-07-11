@@ -1,7 +1,7 @@
 ﻿using Hanekawa.Application.Interfaces;
+using Hanekawa.Decorator;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Application.Handlers.Services.Warnings;
@@ -10,7 +10,7 @@ public record WarningList(ulong GuildId, ulong? UserId) : IRequest<Response<Pagi
 
 public class WarningListHandler(IDbContext db ) : IRequestHandler<WarningList, Response<Pagination<Message>>>
 {
-    public async Task<Response<Pagination<Message>>> Handle(WarningList request, CancellationToken cancellationToken)
+    public async Task<Response<Pagination<Message>>> HandleAsync(WarningList request, CancellationToken cancellationToken)
     {
         var result = await db.Warnings.Where(x => 
                 x.GuildId == request.GuildId && 

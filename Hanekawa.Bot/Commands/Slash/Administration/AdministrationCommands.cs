@@ -7,9 +7,10 @@ using Disqord.Rest;
 using Hanekawa.Application.Handlers.Commands.Administration;
 using Hanekawa.Application.Handlers.Services.Warnings;
 using Hanekawa.Application.Interfaces;
+using Hanekawa.Application.Services;
 using Hanekawa.Bot.Commands.Metas;
 using Hanekawa.Bot.Mapper;
-using MediatR;
+using Hanekawa.Entities;
 using Qmmands;
 
 namespace Hanekawa.Bot.Commands.Slash.Administration;
@@ -91,8 +92,8 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
     {
         using var _ = metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
-        var response = await Bot.Services.GetRequiredService<IMediator>()
-            .Send(new WarningReceived(user.ToDiscordMember(), reason, Context.AuthorId));
+        var response = await Bot.Services.GetRequiredService<IRequestDispatcher>()
+            .SendAsync<WarningReceived, Response<Message>>(new WarningReceived(user.ToDiscordMember(), reason, Context.AuthorId));
         return Response(response.ToLocalInteractionMessageResponse());
     }
     
@@ -103,8 +104,8 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
     {
         using var _ = metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
-        var response = await Bot.Services.GetRequiredService<IMediator>()
-            .Send(new WarningClear(user.ToDiscordMember(), Context.AuthorId, "Voided by moderator"));
+        var response = await Bot.Services.GetRequiredService<IRequestDispatcher>()
+            .SendAsync<WarningClear, Response<Message>>(new WarningClear(user.ToDiscordMember(), Context.AuthorId, "Voided by moderator"));
         return Response(response.ToLocalInteractionMessageResponse());
     }
     
@@ -115,8 +116,8 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
     {
         using var _ = metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
-        var response = await Bot.Services.GetRequiredService<IMediator>()
-            .Send(new WarningList(user.GuildId, user.Id));
+        var response = await Bot.Services.GetRequiredService<IRequestDispatcher>()
+            .SendAsync<WarningList, Response<Pagination<Message>>>(new WarningList(user.GuildId, user.Id));
         return Pages(response.ToPages());
     }
     
@@ -127,8 +128,8 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
     {
         using var _ = metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
-        var response = await Bot.Services.GetRequiredService<IMediator>()
-            .Send(new WarningClear(user.ToDiscordMember(), Context.AuthorId, 
+        var response = await Bot.Services.GetRequiredService<IRequestDispatcher>()
+            .SendAsync<WarningClear, Response<Message>>(new WarningClear(user.ToDiscordMember(), Context.AuthorId, 
                 "Cleared by moderator", true));
         return Response(response.ToLocalInteractionMessageResponse());
     }

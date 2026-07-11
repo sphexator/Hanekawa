@@ -1,6 +1,6 @@
 ﻿using Hanekawa.Application.Contracts.Discord.Common;
 using Hanekawa.Application.Extensions;
-using MediatR;
+using Hanekawa.Decorator;
 
 namespace Hanekawa.Application.Handlers.Commands.Administration;
 
@@ -10,7 +10,7 @@ public class MuteHandler : IRequestHandler<Mute>
 	public MuteHandler(IServiceProvider services)
 		=> _services = services;
 	
-	public Task Handle(Mute request, CancellationToken cancellationToken)
+	public Task HandleAsync(Mute request, CancellationToken cancellationToken)
 	{
 		var bot = request.Source.GetClient(_services);
 		return bot.MuteAsync(request.GuildId,

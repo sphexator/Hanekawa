@@ -4,7 +4,6 @@ using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Discord;
 using Hanekawa.Entities.Levels;
 using Hanekawa.Entities.Users;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
@@ -17,7 +16,7 @@ public class LevelServiceUnitTest
     private readonly Mock<ILogger<LevelService>> _mockLogger = new();
     private readonly Mock<IDbContext> _mockdb = new();
     private readonly Mock<IBot> _mockBot = new();
-    private readonly Mock<IMediator> _mockMediator = new();
+    private readonly Mock<IRequestDispatcher> _mockDispatcher = new();
 
     private readonly DiscordMember _member = new()
         { Id = 1, Guild = new Guild { GuildId = 1 }, Username = "Bob", RoleIds = [ 1, 2, 3 ] };
@@ -60,7 +59,7 @@ public class LevelServiceUnitTest
         TotalVoiceTime = TimeSpan.Zero
     };
 
-    public LevelServiceUnitTest() => _levelService = new LevelService(_mockdb.Object, _mockLogger.Object, _mockBot.Object, _mockMediator.Object);
+    public LevelServiceUnitTest() => _levelService = new LevelService(_mockdb.Object, _mockLogger.Object, _mockBot.Object, _mockDispatcher.Object);
 
     [Fact]
     public async Task LevelService_AddExperienceAsync_Returns_100()

@@ -1,6 +1,6 @@
 ﻿using Hanekawa.Application.Contracts.Discord.Common;
 using Hanekawa.Application.Extensions;
-using MediatR;
+using Hanekawa.Decorator;
 
 namespace Hanekawa.Application.Handlers.Commands.Administration;
 
@@ -11,7 +11,7 @@ public class PruneHandler : IRequestHandler<Prune>
 	public PruneHandler(IServiceProvider services)
 		=> _services = services;
 	
-	public Task Handle(Prune request, CancellationToken cancellationToken)
+	public Task HandleAsync(Prune request, CancellationToken cancellationToken)
 	{
 		var bot = request.Source.GetClient(_services);
 		return bot.PruneMessagesAsync(request.GuildId,

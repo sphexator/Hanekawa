@@ -2,29 +2,29 @@
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Hanekawa.Application.Contracts.Discord.Services;
+using Hanekawa.Application.Services;
 using Hanekawa.Entities.Discord;
-using MediatR;
 
 namespace Hanekawa.Bot.Services.Bot;
 
 public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
 {
     protected override async ValueTask OnMemberJoined(MemberJoinedEventArgs e) =>
-        await service.GetRequiredService<IMediator>()
-            .Publish(new UserJoin(e.GuildId, e.MemberId, e.Member.Name,
+        await service.GetRequiredService<IEventPublisher>()
+            .PublishAsync(new UserJoin(e.GuildId, e.MemberId, e.Member.Name,
                 e.Member.GetGuildAvatarUrl(), e.Member.CreatedAt()))
             .ConfigureAwait(false);
 
     protected override async ValueTask OnMemberLeft(MemberLeftEventArgs e)
-        => await service.GetRequiredService<IMediator>()
-            .Publish(new UserLeave(e.GuildId, e.MemberId))
+        => await service.GetRequiredService<IEventPublisher>()
+            .PublishAsync(new UserLeave(e.GuildId, e.MemberId))
             .ConfigureAwait(false);
 
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
     {
         if (e.GuildId is null || e.Member is null) return;
-        await service.GetRequiredService<IMediator>()
-            .Publish(new MessageReceived(e.GuildId.Value, e.ChannelId, new DiscordMember
+        await service.GetRequiredService<IEventPublisher>()
+            .PublishAsync(new MessageReceived(e.GuildId.Value, e.ChannelId, new DiscordMember
             {
                 Guild = new Guild { GuildId = e.GuildId.Value },
                 Id = e.Member.Id,
@@ -41,23 +41,23 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
     protected override async ValueTask OnMessageDeleted(MessageDeletedEventArgs e)
     {
         if (!e.GuildId.HasValue || e.Message is null) return;
-        await service.GetRequiredService<IMediator>()
-            .Publish(new MessageDeleted(e.GuildId.Value, e.ChannelId, e.Message.Author.Id,
+        await service.GetRequiredService<IEventPublisher>()
+            .PublishAsync(new MessageDeleted(e.GuildId.Value, e.ChannelId, e.Message.Author.Id,
                 e.MessageId, e.Message.Content))
             .ConfigureAwait(false);
     }
 
     protected override async ValueTask OnMessagesDeleted(MessagesDeletedEventArgs e)
-        => await service.GetRequiredService<IMediator>()
-            .Publish(new MessagesDeleted(e.GuildId, e.ChannelId,
+        => await service.GetRequiredService<IEventPublisher>()
+            .PublishAsync(new MessagesDeleted(e.GuildId, e.ChannelId,
                 e.Messages.Select(x => x.Key.RawValue).ToArray(),
                 e.MessageIds.Select(x => x.RawValue).ToArray(),
                 e.Messages.Select(x => x.Value.Content).ToArray()))
             .ConfigureAwait(false);
 
     protected override async ValueTask OnBanCreated(BanCreatedEventArgs e)
-        => await service.GetRequiredService<IMediator>()
-            .Publish(new UserBanned(new DiscordMember
+        => await service.GetRequiredService<IEventPublisher>()
+            .PublishAsync(new UserBanned(new DiscordMember
             {
                 Guild = new Guild { GuildId = e.GuildId },
                 Id = e.UserId,
@@ -68,8 +68,8 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
             .ConfigureAwait(false);
 
     protected override async ValueTask OnBanDeleted(BanDeletedEventArgs e)
-        => await service.GetRequiredService<IMediator>()
-            .Publish(new UserUnbanned(new DiscordMember
+        => await service.GetRequiredService<IEventPublisher>()
+            .PublishAsync(new UserUnbanned(new DiscordMember
             {
                 Guild = new Guild { GuildId = e.GuildId },
                 Id = e.UserId,
@@ -83,8 +83,8 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
 
     protected override async ValueTask OnVoiceStateUpdated(VoiceStateUpdatedEventArgs e)
     {
-        await service.GetRequiredService<IMediator>()
-            .Publish(new VoiceStateUpdate(e.GuildId, e.MemberId, e.NewVoiceState.ChannelId,
+        await service.GetRequiredService<IEventPublisher>()
+            .PublishAsync(new VoiceStateUpdate(e.GuildId, e.MemberId, e.NewVoiceState.ChannelId,
                 e.NewVoiceState.SessionId))
             .ConfigureAwait(false);
     }
@@ -92,8 +92,8 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
     protected override async ValueTask OnReactionAdded(ReactionAddedEventArgs e)
     {
         if (!e.GuildId.HasValue) return;
-        await service.GetRequiredService<IMediator>()
-            .Publish(new ReactionAdd(e.GuildId.Value, e.ChannelId,
+        await service.GetRequiredService<IEventPublisher>()
+            .PublishAsync(new ReactionAdd(e.GuildId.Value, e.ChannelId,
                 e.MessageId, e.UserId, e.Emoji.GetReactionFormat()))
             .ConfigureAwait(false);
     }
@@ -101,8 +101,8 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
     protected override async ValueTask OnReactionRemoved(ReactionRemovedEventArgs e)
     {
         if (!e.GuildId.HasValue) return;
-        await service.GetRequiredService<IMediator>()
-            .Publish(new ReactionRemove(e.GuildId.Value, e.ChannelId, e.MessageId, e.UserId,
+        await service.GetRequiredService<IEventPublisher>()
+            .PublishAsync(new ReactionRemove(e.GuildId.Value, e.ChannelId, e.MessageId, e.UserId,
                 e.Emoji.GetReactionFormat()))
             .ConfigureAwait(false);
     }
@@ -110,8 +110,8 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
     protected override async ValueTask OnReactionsCleared(ReactionsClearedEventArgs e)
     {
         if (!e.GuildId.HasValue) return;
-        await service.GetRequiredService<IMediator>()
-            .Publish(new ReactionCleared(e.GuildId.Value, e.ChannelId, e.MessageId))
+        await service.GetRequiredService<IEventPublisher>()
+            .PublishAsync(new ReactionCleared(e.GuildId.Value, e.ChannelId, e.MessageId))
             .ConfigureAwait(false);
     }
 

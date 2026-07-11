@@ -1,7 +1,6 @@
-﻿using Hanekawa.Application.Contracts.Discord;
-using Hanekawa.Application.Contracts.Discord.Services;
+﻿using Hanekawa.Application.Contracts.Discord.Services;
 using Hanekawa.Application.Interfaces.Services;
-using MediatR;
+using Hanekawa.Decorator;
 using Microsoft.Extensions.Configuration;
 
 namespace Hanekawa.Application.Handlers.Services.Levels;
@@ -17,9 +16,9 @@ public class MessageReceivedExperienceHandler: INotificationHandler<MessageRecei
         _configuration = configuration;
     }
 
-    public async Task Handle(MessageReceived request, CancellationToken cancellationToken)
+    public async Task HandleAsync(MessageReceived notification, CancellationToken cancellationToken)
     {
-        await _levelService.AddExperienceAsync(request.Member,
+        await _levelService.AddExperienceAsync(notification.Member,
             Random.Shared.Next(Convert.ToInt32(_configuration["expLower"]),
                 Convert.ToInt32(_configuration["expUpper"])));
     }

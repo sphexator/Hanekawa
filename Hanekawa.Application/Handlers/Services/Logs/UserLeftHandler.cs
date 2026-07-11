@@ -1,12 +1,11 @@
-﻿using Hanekawa.Application.Contracts.Discord;
-using Hanekawa.Application.Contracts.Discord.Services;
-using MediatR;
+﻿using Hanekawa.Application.Contracts.Discord.Services;
+using Hanekawa.Decorator;
 
 namespace Hanekawa.Application.Handlers.Services.Logs;
 
 public class UserLeftHandler : INotificationHandler<UserLeave>
 {
-    public Task Handle(UserLeave request, CancellationToken cancellationToken)
+    public Task HandleAsync(UserLeave notification, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

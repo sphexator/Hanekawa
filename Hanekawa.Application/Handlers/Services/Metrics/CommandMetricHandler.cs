@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Hanekawa.Decorator;
 
 namespace Hanekawa.Application.Handlers.Services.Metrics;
 
@@ -6,7 +6,7 @@ public record CommandMetric(ulong GuildId, ulong UserId, string Command, DateTim
 
 public class CommandMetricHandler : IRequestHandler<CommandMetric>
 {
-    public Task Handle(CommandMetric request, CancellationToken cancellationToken)
+    public Task HandleAsync(CommandMetric request, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

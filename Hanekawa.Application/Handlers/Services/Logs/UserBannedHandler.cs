@@ -1,8 +1,7 @@
-﻿using Hanekawa.Application.Contracts.Discord;
-using Hanekawa.Application.Contracts.Discord.Services;
+﻿using Hanekawa.Application.Contracts.Discord.Services;
 using Hanekawa.Application.Interfaces;
+using Hanekawa.Decorator;
 using Hanekawa.Entities.Discord;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Color = System.Drawing.Color;
 
@@ -19,12 +18,12 @@ public class UserBannedHandler : INotificationHandler<UserBanned>
         _db = db;
     }
 
-    public async Task Handle(UserBanned request, CancellationToken cancellationToken)
+    public async Task HandleAsync(UserBanned notification, CancellationToken cancellationToken)
     {
         var cfg = await _db.GuildConfigs.Include(x => x.LogConfig)
-            .FirstOrDefaultAsync(x => x.GuildId == request.Member.Guild.GuildId, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(x => x.GuildId == notification.Member.Guild.GuildId, cancellationToken: cancellationToken);
         if (cfg is { LogConfig.ModLogChannelId: null }) return;
-        var channel = _bot.GetChannel(request.Member.Guild.GuildId, cfg!.LogConfig.ModLogChannelId.Value);
+        var channel = _bot.GetChannel(notification.Member.Guild.GuildId, cfg!.LogConfig.ModLogChannelId.Value);
         if (channel is null)
         {
             cfg.LogConfig.ModLogChannelId = null;
@@ -34,11 +33,11 @@ public class UserBannedHandler : INotificationHandler<UserBanned>
 
         await _bot.SendMessageAsync(channel.Value, new Embed
         {
-            Title = $"User Banned | Case ID: {request.Member.Id} | ${request.Member.Guild.GuildId}",
+            Title = $"User Banned | Case ID: {notification.Member.Id} | ${notification.Member.Guild.GuildId}",
             Color = Color.Red.ToArgb(),
             Fields =
             [
-                new EmbedField("User", $"<@{request.Member.Id}>", false),
+                new EmbedField("User", $"<@{notification.Member.Id}>", false),
                 new EmbedField("Moderator", "N/A", false),
                 new EmbedField("Reason", "No reason provided", false)
             ]

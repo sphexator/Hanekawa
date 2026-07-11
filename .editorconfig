@@ -1,8 +1,8 @@
 
 [*.cs]
-indent_style = space
+indent_style = tab
 indent_size = 4
-tab_width = 2
+tab_width = 4
 
 [*]
 

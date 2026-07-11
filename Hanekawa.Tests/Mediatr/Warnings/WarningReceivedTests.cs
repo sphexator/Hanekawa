@@ -19,7 +19,7 @@ public class WarningReceivedTests
             new WarningReceived(new DiscordMember { Guild = new Guild { GuildId = ulong.MinValue }, Username = "", },
                 "", 1);
         // Act
-        var result = await Mediatr.Handle(received, CancellationToken.None);
+        var result = await Mediatr.HandleAsync(received, CancellationToken.None);
         // Assert
     }
     

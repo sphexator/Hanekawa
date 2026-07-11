@@ -1,6 +1,6 @@
 ﻿using Hanekawa.Application.Contracts.Discord.Common;
 using Hanekawa.Application.Extensions;
-using MediatR;
+using Hanekawa.Decorator;
 
 namespace Hanekawa.Application.Handlers.Commands.Administration;
 
@@ -11,7 +11,7 @@ public class UnbanHandler : IRequestHandler<Unban>
 	public UnbanHandler(IServiceProvider services)
 		=> _services = services;
 
-	public Task Handle(Unban request, CancellationToken cancellationToken)
+	public Task HandleAsync(Unban request, CancellationToken cancellationToken)
 	{
 		var bot = request.Source.GetClient(_services);
 		return bot.UnbanAsync(request.GuildId,

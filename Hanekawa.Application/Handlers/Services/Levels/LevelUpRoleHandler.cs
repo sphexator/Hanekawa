@@ -1,6 +1,6 @@
 ﻿using Hanekawa.Application.Contracts;
 using Hanekawa.Application.Interfaces.Services;
-using MediatR;
+using Hanekawa.Decorator;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Application.Handlers.Services.Levels;
@@ -22,7 +22,7 @@ public class LevelUpRoleHandler : IRequestHandler<LevelUp>
     /// <param name="request">User information containing the new level of user</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task Handle(LevelUp request, CancellationToken cancellationToken)
+    public async Task HandleAsync(LevelUp request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("handing out roles for user {UserId} in guild {GuildId} for level {Level}", 
             request.Member.Id, request.Member.Guild.GuildId, request.Level);

@@ -1,6 +1,6 @@
 ﻿using Hanekawa.Application.Contracts.Discord.Common;
 using Hanekawa.Application.Extensions;
-using MediatR;
+using Hanekawa.Decorator;
 
 namespace Hanekawa.Application.Handlers.Commands.Administration;
 
@@ -13,7 +13,7 @@ public class KickHandler : IRequestHandler<Kick>
 		_service = service;
 	}
 
-	public Task Handle(Kick request, CancellationToken cancellationToken)
+	public Task HandleAsync(Kick request, CancellationToken cancellationToken)
 	{
 		var bot = request.Source.GetClient(_service);
 		return bot.KickAsync(request.GuildId, 

@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Hanekawa.Decorator;
 
 namespace Hanekawa.Application.Interfaces;
 
