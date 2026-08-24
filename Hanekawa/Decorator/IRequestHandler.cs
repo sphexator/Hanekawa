@@ -10,9 +10,8 @@ public interface IRequestHandler<in TRequest, TResponse>
     Task<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken = default);
 }
 
-public interface IPipelineHandler<in TRequest, TResponse>
+public interface IPipelineHandler<in TRequest, TResponse> : IRequestHandler<TRequest, TResponse>
 {
-    Task<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken = default);
 }
 
 public interface IRequest

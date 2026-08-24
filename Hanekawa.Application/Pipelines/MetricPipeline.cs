@@ -1,13 +1,14 @@
 ﻿using System.Diagnostics;
-using Microsoft.Extensions.Logging;
+using Hanekawa.Application.Interfaces;
 using Hanekawa.Decorator;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Application.Pipelines;
 
 public sealed class MetricPipeline<TRequest, TResponse>(
     IRequestHandler<TRequest, TResponse> inner,
     ILogger<MetricPipeline<TRequest, TResponse>> logger,
-    Metrics metrics)
+    IMetrics metrics)
     : IRequestHandler<TRequest, TResponse>
 {
 
@@ -30,7 +31,7 @@ public sealed class MetricPipeline<TRequest, TResponse>(
 public sealed class MetricPipeline<TRequest>(
     IRequestHandler<TRequest> inner,
     ILogger<MetricPipeline<TRequest>> logger,
-    Metrics metrics)
+    IMetrics metrics)
     : IRequestHandler<TRequest>
 {
     public async Task HandleAsync(TRequest request, CancellationToken cancellationToken = default)
