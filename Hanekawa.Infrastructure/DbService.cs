@@ -4,22 +4,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using Hanekawa.Application.Interfaces;
-using Hanekawa.Application.Services;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Club;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Internals;
 using Hanekawa.Entities.Levels;
 using Hanekawa.Entities.Users;
-using Hanekawa.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Infrastructure;
 
-internal class DbService(DbContextOptions<DbService> options, TenantService tenantService) 
-    : DbContext(options), IDbContext
+internal class DbService : DbContext, IDbContext
 {
-    private TenantService TenantService { get; set; } = tenantService;
+    public DbService(DbContextOptions<DbService> options) : base(options) { }
 
     public DbSet<Warning> Warnings { get; set; } = null!;
     public DbSet<Log> Logs { get; set; } = null!;
@@ -53,8 +50,6 @@ internal class DbService(DbContextOptions<DbService> options, TenantService tena
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<IGuildEntity>().HasQueryFilter(e => e.GuildId == TenantService.GuildId);
-        
         modelBuilder.Entity<GuildConfig>(x =>
         {
             x.HasKey(e => e.GuildId);

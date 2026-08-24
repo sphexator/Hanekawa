@@ -1,3 +1,4 @@
+using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Pipelines;
 using Hanekawa.Decorator;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +21,7 @@ public static class IRequestHandlerRegistrationExtensions
 
             handler = new MetricPipeline<TRequest>(handler,
                 provider.GetRequiredService<ILogger<MetricPipeline<TRequest>>>(),
-                provider.GetRequiredService<Metrics>());
+                provider.GetRequiredService<IMetrics>());
 
             return handler;
         });
@@ -47,7 +48,7 @@ public static class IRequestHandlerRegistrationExtensions
 
             handler = new MetricPipeline<TRequest>(handler,
                 provider.GetRequiredService<ILogger<MetricPipeline<TRequest>>>(),
-                provider.GetRequiredService<Metrics>());
+                provider.GetRequiredService<IMetrics>());
 
             foreach (var pipelineType in pipelineTypes)
             {
@@ -74,7 +75,7 @@ public static class IRequestHandlerRegistrationExtensions
 
             handler = new MetricPipeline<TRequest, TResponse>(handler,
                 provider.GetRequiredService<ILogger<MetricPipeline<TRequest, TResponse>>>(),
-                provider.GetRequiredService<Metrics>());
+                provider.GetRequiredService<IMetrics>());
 
             return handler;
         });
@@ -101,7 +102,7 @@ public static class IRequestHandlerRegistrationExtensions
 
             handler = new MetricPipeline<TRequest, TResponse>(handler,
                 provider.GetRequiredService<ILogger<MetricPipeline<TRequest, TResponse>>>(),
-                provider.GetRequiredService<Metrics>());
+                provider.GetRequiredService<IMetrics>());
 
             foreach (var pipelineType in pipelineTypes)
             {
