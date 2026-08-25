@@ -55,8 +55,8 @@ public static class DependencyInjection
         fontCollection.AddSystemFonts();
         serviceCollection.AddSingleton(fontCollection);
 
-        serviceCollection.AddScoped<IRequestDispatcher, RequestDispatcher>();
-        serviceCollection.AddScoped<IEventPublisher, EventPublisher>();
+        serviceCollection.AddSingleton<IRequestDispatcher, RequestDispatcher>();
+        serviceCollection.AddSingleton<IEventPublisher, EventPublisher>();
 
         // Request handlers
         serviceCollection.AddDecoratedRequestHandler<Ban, BanHandler>();

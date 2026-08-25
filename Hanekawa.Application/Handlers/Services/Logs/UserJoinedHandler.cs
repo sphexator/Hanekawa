@@ -6,7 +6,5 @@ namespace Hanekawa.Application.Handlers.Services.Logs;
 public class UserJoinedHandler : INotificationHandler<UserJoin>
 {
     public Task HandleAsync(UserJoin notification, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+        => Task.CompletedTask;
 }

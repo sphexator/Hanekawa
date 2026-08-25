@@ -9,13 +9,14 @@ using Qmmands;
 namespace Hanekawa.Bot.Commands.Slash.Account;
 
 [Name("Account")]
-public class AccountCommands(IServiceProvider provider) : DiscordApplicationModuleBase
+public class AccountCommands : DiscordApplicationModuleBase
 {
     [SlashCommand(Metas.Account.Rank)]
     [Description("Shows the rank of a user")]
     public async Task<DiscordInteractionResponseCommandResult> RankAsync(IMember user)
     {
-        var service = provider.GetRequiredService<AccountCommandService>();
+        await using var scope = Bot.Services.CreateAsyncScope();
+        var service = scope.ServiceProvider.GetRequiredService<IAccountCommandService>();
         var result = await service.RankAsync(user.ToDiscordMember());
 
         var response = new LocalInteractionMessageResponse().WithAttachments(new LocalAttachment(result, "rank.png"));
@@ -26,7 +27,8 @@ public class AccountCommands(IServiceProvider provider) : DiscordApplicationModu
     [Description("Shows the wallet of a user")]
     public async Task<DiscordInteractionResponseCommandResult> WalletAsync()
     {
-        var service = provider.GetRequiredService<AccountCommandService>();
+        await using var scope = Bot.Services.CreateAsyncScope();
+        var service = scope.ServiceProvider.GetRequiredService<IAccountCommandService>();
         var result = await service.GetWalletAsync((Context.Author as IMember).ToDiscordMember());
 
         var embed = new LocalEmbed()
@@ -43,7 +45,8 @@ public class AccountCommands(IServiceProvider provider) : DiscordApplicationModu
     [Description("Shows the profile of a user")]
     public async Task<DiscordInteractionResponseCommandResult> ProfileAsync()
     {
-        var service = provider.GetRequiredService<AccountCommandService>();
+        await using var scope = Bot.Services.CreateAsyncScope();
+        var service = scope.ServiceProvider.GetRequiredService<IAccountCommandService>();
         var result = await service.ProfileAsync(
             Bot.GetMember(Context.GuildId!.Value, Context.Author.Id)
                 .ToDiscordMember());
@@ -58,7 +61,8 @@ public class AccountCommands(IServiceProvider provider) : DiscordApplicationModu
     [Description("Shows the top users")]
     public async Task<DiscordInteractionResponseCommandResult> TopAsync()
     {
-        var service = provider.GetRequiredService<AccountCommandService>();
+        await using var scope = Bot.Services.CreateAsyncScope();
+        var service = scope.ServiceProvider.GetRequiredService<IAccountCommandService>();
 
         // Get top users from the service
         var topUsers = await service.GetTopUsersAsync(Context.GuildId!.Value);

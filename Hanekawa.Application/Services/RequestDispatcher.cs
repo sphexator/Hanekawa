@@ -12,19 +12,21 @@ public interface IRequestDispatcher
         where TRequest : notnull;
 }
 
-public sealed class RequestDispatcher(IServiceProvider serviceProvider) : IRequestDispatcher
+public sealed class RequestDispatcher(IServiceScopeFactory scopeFactory) : IRequestDispatcher
 {
-    public Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
+    public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : notnull
     {
-        var handler = serviceProvider.GetRequiredService<IRequestHandler<TRequest, TResponse>>();
-        return handler.HandleAsync(request, cancellationToken);
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler<TRequest, TResponse>>();
+        return await handler.HandleAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
-    public Task SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
+    public async Task SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : notnull
     {
-        var handler = serviceProvider.GetRequiredService<IRequestHandler<TRequest>>();
-        return handler.HandleAsync(request, cancellationToken);
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler<TRequest>>();
+        await handler.HandleAsync(request, cancellationToken).ConfigureAwait(false);
     }
 }
