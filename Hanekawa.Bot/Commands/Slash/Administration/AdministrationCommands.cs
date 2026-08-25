@@ -4,9 +4,9 @@ using Disqord.Bot.Commands.Application;
 using Disqord.Bot.Commands.Interaction;
 using Disqord.Gateway;
 using Disqord.Rest;
-using Hanekawa.Application.Handlers.Commands.Administration;
 using Hanekawa.Application.Handlers.Services.Warnings;
 using Hanekawa.Application.Interfaces;
+using Hanekawa.Application.Interfaces.Commands;
 using Hanekawa.Application.Services;
 using Hanekawa.Bot.Commands.Metas;
 using Hanekawa.Bot.Mapper;
@@ -27,7 +27,8 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
     {
         using var _ = metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
-        var result = await Bot.Services.GetRequiredService<AdministrationCommandService>()
+        await using var scope = Bot.Services.CreateAsyncScope();
+        var result = await scope.ServiceProvider.GetRequiredService<IAdministrationCommandService>()
             .BanUserAsync(user.ToDiscordMember(), Context.AuthorId, reason);
         return Response(result.ToLocalInteractionMessageResponse());
     }
@@ -40,7 +41,8 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
     {
         using var _ = metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
-        var result = await Bot.Services.GetRequiredService<AdministrationCommandService>()
+        await using var scope = Bot.Services.CreateAsyncScope();
+        var result = await scope.ServiceProvider.GetRequiredService<IAdministrationCommandService>()
             .UnbanUserAsync(user.ToGuild(),user.Id, Context.AuthorId.RawValue, reason);
         return Response(result.ToLocalInteractionMessageResponse());
     }
@@ -53,7 +55,8 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
     {
         using var _ = metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
-        var result = await Bot.Services.GetRequiredService<AdministrationCommandService>()
+        await using var scope = Bot.Services.CreateAsyncScope();
+        var result = await scope.ServiceProvider.GetRequiredService<IAdministrationCommandService>()
             .KickUserAsync(user.ToDiscordMember(), Context.AuthorId, reason);
         return Response(result.ToLocalInteractionMessageResponse());
     }
@@ -67,7 +70,8 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
     {
         using var _ = metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
-        var result = await Bot.Services.GetRequiredService<AdministrationCommandService>()
+        await using var scope = Bot.Services.CreateAsyncScope();
+        var result = await scope.ServiceProvider.GetRequiredService<IAdministrationCommandService>()
             .MuteUserAsync(user.ToDiscordMember(), Context.AuthorId, reason, duration);
         return Response(result.ToLocalInteractionMessageResponse());
     }
@@ -80,7 +84,8 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
     {
         using var _ = metrics.All<AdministrationCommands>();
         var user = member.Argument.Value;
-        var result = await Bot.Services.GetRequiredService<AdministrationCommandService>()
+        await using var scope = Bot.Services.CreateAsyncScope();
+        var result = await scope.ServiceProvider.GetRequiredService<IAdministrationCommandService>()
             .UnmuteUserAsync(user.ToDiscordMember(), Context.AuthorId, reason);
         return Response(result.ToLocalInteractionMessageResponse());
     }
@@ -153,7 +158,8 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
             messageIds[i] = msg.Id.RawValue;
         }
 
-        var result= await Bot.Services.GetRequiredService<AdministrationCommandService>()
+        await using var scope = Bot.Services.CreateAsyncScope();
+        var result= await scope.ServiceProvider.GetRequiredService<IAdministrationCommandService>()
             .PruneAsync(Context.GuildId, Context.ChannelId, 
                 messageIds, Context.AuthorId,
                 "");
