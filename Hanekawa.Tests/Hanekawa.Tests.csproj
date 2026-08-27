@@ -28,6 +28,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Hanekawa.Application\Hanekawa.Application.csproj" />
+      <ProjectReference Include="..\Hanekawa.Bot\Hanekawa.Bot.csproj" />
     </ItemGroup>
 
 </Project>

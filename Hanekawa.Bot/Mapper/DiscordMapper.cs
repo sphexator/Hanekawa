@@ -147,37 +147,43 @@ internal static class DiscordExtensions
                 }).ToArray()
         };
 
-    internal static LocalInteractionMessageResponse ToLocalInteractionMessageResponse(this Response<Message> response) =>
-        new ()
+    internal static LocalInteractionMessageResponse ToLocalInteractionMessageResponse(this Response<Message> response)
+    {
+        var local = new LocalInteractionMessageResponse
         {
             Content = response.Value.Content,
-            Embeds = new List<LocalEmbed> { response.Value.Embed.ToLocalEmbed() },
             IsTextToSpeech = false,
             AllowedMentions = response.Value.AllowMentions
                 ? LocalAllowedMentions.ExceptEveryone : LocalAllowedMentions.None,
             Components = new List<LocalRowComponent>
             {
-                new ()
+                new()
                 {
-                    Components = new List<LocalComponent>
-                    {
-
-                    }
+                    Components = new List<LocalComponent>()
                 }
             },
             IsEphemeral = response.Value.Emphemeral
         };
 
+        // Text-only command replies (ban/warn/club/etc.) leave Embed null.
+        // Mapping it unconditionally NullRef'd after the action already succeeded.
+        if (response.Value.Embed is not null)
+        {
+            local.Embeds = new List<LocalEmbed> { response.Value.Embed.ToLocalEmbed() };
+        }
+
+        return local;
+    }
+
     internal static Page[] ToPages(this Response<Pagination<Message>> list)
     {
-        var pages = new Page[list.Value.Items.Length / 5 + 1];
-        var spans = list.Value.Items.AsSpan();
-        for (var i = 0; i < spans.Length; i++)
+        var items = list.Value.Items;
+        var pages = new Page[items.Length];
+        for (var i = 0; i < items.Length; i++)
         {
-            var x = spans[i];
             pages[i] = new Page
             {
-                Content = x.Content
+                Content = items[i].Content
             };
         }
         return pages;

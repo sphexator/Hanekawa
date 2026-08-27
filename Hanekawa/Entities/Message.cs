@@ -27,7 +27,7 @@ public class Message
     }
     
     public string Content { get; set; } = null!;
-    public Embed Embed { get; set; } = null!;
+    public Embed? Embed { get; set; }
     public bool AllowMentions { get; set; } = false;
     public bool Emphemeral { get; set; } = true;
 }

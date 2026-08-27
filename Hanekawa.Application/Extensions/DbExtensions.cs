@@ -13,20 +13,23 @@ public static class DbExtensions
             .Include(e => e.User)
             .FirstOrDefaultAsync(x => x.GuildId == guildId && x.Id == userId, cancellationToken);
 
-        if (user is null)
+        if (user is not null) return user;
+
+        // User is global (PK = Discord snowflake). Reuse it when this person
+        // already exists in another guild so we don't insert a duplicate row.
+        var existingGlobalUser = await dbContext.Users
+            .Where(x => x.Id == userId)
+            .Select(x => x.User)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        user = new GuildUser
         {
-            user = new GuildUser
-            {
-                GuildId = guildId,
-                Id = userId,
-                User = new User
-                {
-                    Id = userId,
-                }
-            };
-            await dbContext.Users.AddAsync(user, cancellationToken);
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }
+            GuildId = guildId,
+            Id = userId,
+            User = existingGlobalUser ?? new User { Id = userId },
+        };
+        await dbContext.Users.AddAsync(user, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return user;
     }
