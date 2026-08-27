@@ -1,5 +1,5 @@
-﻿using System.Runtime.InteropServices;
-using Hanekawa.Application.Contracts;
+﻿using Hanekawa.Application.Contracts;
+using Hanekawa.Application.Extensions;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Services;
 using Hanekawa.Entities.Configs;
@@ -39,8 +39,7 @@ public class LevelService : ILevelService
         _logger.LogInformation("Adding {Experience} experience to guild user {User} in guild {Guild}",
             experience, member.Id, member.Guild.GuildId);
 
-        var user = await _db.Users.FirstOrDefaultAsync(x => x.GuildId == member.Guild.GuildId && x.Id == member.Id)
-                   ?? new GuildUser { GuildId = member.Guild.GuildId, Id = member.Id };
+        var user = await _db.GetOrCreateUserAsync(member.Guild.GuildId, member.Id);
         var nextLevel = await _db.LevelRequirements.FirstOrDefaultAsync(x => x.Level == user.Level + 1);
         if(nextLevel is not null && user.Experience + experience >= nextLevel.Experience)
         {
@@ -75,15 +74,11 @@ public class LevelService : ILevelService
         }
         if (x.Level <= level && !member.RoleIds.Contains(x.RoleId.Value))
         {
-            member.RoleIds.Add(x.RoleId.Value);
+            member.RoleIds = member.RoleIds.Add(x.RoleId.Value);
         }
         else if (x.Level > level && member.RoleIds.Contains(x.RoleId.Value))
         {
-            member.RoleIds.Remove(x.RoleId.Value);
-            var tempList = new List<ulong>(member.RoleIds);
-            tempList.Remove(x.RoleId.Value);
-            var span = CollectionsMarshal.AsSpan(tempList);
-            member.RoleIds = span.ToArray();
+            member.RoleIds = member.RoleIds.Remove(x.RoleId.Value);
         }
     }
 }

@@ -48,11 +48,10 @@ public static class PaginationBuilderExtension
     
     public static T[] Paginate<T> (this Span<string> list) where T : Message, new()
     {
-        var pages = new T[list.Length / 5 + 1];
+        var pages = new T[list.Length];
         for (var i = 0; i < list.Length; i++)
         {
-            var x = list[i];
-            pages[i] = new T { Content = x };
+            pages[i] = new T { Content = list[i] };
         }
         return pages;
     }

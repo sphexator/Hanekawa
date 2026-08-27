@@ -112,7 +112,7 @@ public class LevelServiceUnitTest
         // Assert
         Assert.Equal(expected, actual);
         Assert.Equal(2, _user.Level);
-        Assert.Equal(_member.RoleIds, new List<ulong> { 1, 2, 3, 4 });
+        Assert.Equal(new ulong[] { 1, 2, 3, 4 }, _member.RoleIds);
     }
 
     [Fact]
