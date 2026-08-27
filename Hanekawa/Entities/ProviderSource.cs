@@ -2,5 +2,5 @@
 
 public enum ProviderSource
 {
-	Discord = 0,
+	Discord = 0
 }

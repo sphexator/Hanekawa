@@ -5,7 +5,6 @@ using Hanekawa.Application.Interfaces.Services;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Discord;
 using Hanekawa.Entities.Levels;
-using Hanekawa.Entities.Users;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

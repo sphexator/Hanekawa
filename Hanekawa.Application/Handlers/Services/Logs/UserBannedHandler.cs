@@ -20,7 +20,8 @@ public class UserBannedHandler : INotificationHandler<UserBanned>
 
     public async Task HandleAsync(UserBanned notification, CancellationToken cancellationToken)
     {
-        var cfg = await _db.GuildConfigs.Include(x => x.LogConfig)
+        var cfg = await _db.GuildConfigs
+	        .Include(x => x.LogConfig)
             .FirstOrDefaultAsync(x => x.GuildId == notification.Member.Guild.GuildId, cancellationToken: cancellationToken);
         if (cfg is { LogConfig.ModLogChannelId: null }) return;
         var channel = _bot.GetChannel(notification.Member.Guild.GuildId, cfg!.LogConfig.ModLogChannelId.Value);
@@ -42,6 +43,5 @@ public class UserBannedHandler : INotificationHandler<UserBanned>
                 new EmbedField("Reason", "No reason provided", false)
             ]
         });
-        return;
     }
 }
