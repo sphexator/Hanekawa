@@ -6,8 +6,10 @@ using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Commands;
+using Hanekawa.Bot.Commands.Checks;
 using Hanekawa.Bot.Commands.Metas;
 using Hanekawa.Bot.Mapper;
+using Hanekawa.Entities;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Localize;
 using Qmmands;
@@ -17,6 +19,7 @@ namespace Hanekawa.Bot.Commands.Slash.Setting;
 
 [SlashGroup(SlashGroupName.Greet)]
 [RequireAuthorPermissions(Permissions.ManageChannels)]
+[RequireModule(ModuleName.Greet)]
 public class GreetCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
 {
     [SlashCommand(Greet.Channel)]

@@ -28,6 +28,7 @@ internal class DbService : DbContext, IDbContext
     public DbSet<ClubMember> ClubMembers { get; set; } = null!;
     public DbSet<Item> Items { get; set; } = null!;
     public DbSet<ItemType> ItemTypes { get; set; } = null!;
+    public DbSet<Module> Modules { get; set; } = null!;
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await base.SaveChangesAsync(cancellationToken);
@@ -166,6 +167,12 @@ internal class DbService : DbContext, IDbContext
         modelBuilder.Entity<ItemType>(x =>
         {
             x.HasKey(e => e.Id);
+            x.Property(e => e.Name).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Module>(x =>
+        {
+            x.HasKey(e => new { e.GuildId, e.Name });
             x.Property(e => e.Name).HasMaxLength(50);
         });
     }

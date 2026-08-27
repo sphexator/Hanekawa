@@ -7,6 +7,7 @@ public static class SlashGroupName
     public const string Club = "Club";
     public const string Level = "Level";
     public const string Boost = "Boost";
+    public const string Module = "Module";
 }
 
 public static class Account
@@ -64,4 +65,11 @@ public static class Boost
     public const string Config = "config";
     public const string Add = "add";
     public const string Remove = "remove";
+}
+
+public static class ModuleCommandName
+{
+    public const string List = "list";
+    public const string Enable = "enable";
+    public const string Disable = "disable";
 }

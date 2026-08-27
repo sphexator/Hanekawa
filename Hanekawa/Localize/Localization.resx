@@ -72,4 +72,16 @@
     <data name="Cmd_Desc_ListBoostActions" xml:space="preserve">
         <value>List all registered boost actions</value>
     </data>
+    <data name="ModuleEnabled" xml:space="preserve">
+        <value>Module {0} has been enabled.</value>
+    </data>
+    <data name="ModuleDisabled" xml:space="preserve">
+        <value>Module {0} has been disabled.</value>
+    </data>
+    <data name="ModuleUnknown" xml:space="preserve">
+        <value>Unknown module: {0}.</value>
+    </data>
+    <data name="ModuleListTitle" xml:space="preserve">
+        <value>Module states</value>
+    </data>
 </root>

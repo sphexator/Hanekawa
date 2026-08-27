@@ -2,8 +2,10 @@
 using Disqord.Bot.Commands.Interaction;
 using Hanekawa.Application.Handlers.Commands.Boost;
 using Hanekawa.Application.Interfaces;
+using Hanekawa.Bot.Commands.Checks;
 using Hanekawa.Bot.Commands.Metas;
 using Hanekawa.Bot.Mapper;
+using Hanekawa.Entities;
 using Hanekawa.Entities.Discord;
 using Hanekawa.Localize;
 using Qmmands;
@@ -11,6 +13,7 @@ using Qmmands;
 namespace Hanekawa.Bot.Commands.Slash.Boost;
 
 [SlashGroup(SlashGroupName.Boost)]
+[RequireModule(ModuleName.Boost)]
 public class BoostCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
 {
     [SlashCommand(Metas.Boost.Config)]

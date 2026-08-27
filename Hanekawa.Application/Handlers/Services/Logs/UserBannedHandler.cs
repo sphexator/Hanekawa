@@ -1,6 +1,8 @@
 ﻿using Hanekawa.Application.Contracts.Discord.Services;
 using Hanekawa.Application.Interfaces;
+using Hanekawa.Application.Interfaces.Services;
 using Hanekawa.Decorator;
+using Hanekawa.Entities;
 using Hanekawa.Entities.Discord;
 using Microsoft.EntityFrameworkCore;
 using Color = System.Drawing.Color;
@@ -11,15 +13,20 @@ public class UserBannedHandler : INotificationHandler<UserBanned>
 {
     private readonly IBot _bot;
     private readonly IDbContext _db;
+    private readonly IModuleService _moduleService;
 
-    public UserBannedHandler(IBot bot, IDbContext db)
+    public UserBannedHandler(IBot bot, IDbContext db, IModuleService moduleService)
     {
         _bot = bot;
         _db = db;
+        _moduleService = moduleService;
     }
 
     public async Task HandleAsync(UserBanned notification, CancellationToken cancellationToken)
     {
+        if (!await _moduleService.IsEnabledAsync(notification.Member.Guild.GuildId, ModuleName.Logging, cancellationToken))
+            return;
+
         var cfg = await _db.GuildConfigs
 	        .Include(x => x.LogConfig)
             .FirstOrDefaultAsync(x => x.GuildId == notification.Member.Guild.GuildId, cancellationToken: cancellationToken);

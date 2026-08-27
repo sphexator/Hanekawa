@@ -130,7 +130,43 @@ namespace Hanekawa.Localize {
                 return ResourceManager.GetString("MutedGuildUserDuration", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Module {0} has been disabled..
+        /// </summary>
+        public static string ModuleDisabled {
+            get {
+                return ResourceManager.GetString("ModuleDisabled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Module {0} has been enabled..
+        /// </summary>
+        public static string ModuleEnabled {
+            get {
+                return ResourceManager.GetString("ModuleEnabled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Module states.
+        /// </summary>
+        public static string ModuleListTitle {
+            get {
+                return ResourceManager.GetString("ModuleListTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown module: {0}..
+        /// </summary>
+        public static string ModuleUnknown {
+            get {
+                return ResourceManager.GetString("ModuleUnknown", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to No boost actions found..
         /// </summary>

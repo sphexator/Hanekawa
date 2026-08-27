@@ -3,12 +3,15 @@ using Disqord.Bot.Commands.Application;
 using Disqord.Bot.Commands.Interaction;
 using Disqord.Gateway;
 using Hanekawa.Application.Handlers.Commands.Account;
+using Hanekawa.Bot.Commands.Checks;
 using Hanekawa.Bot.Mapper;
+using Hanekawa.Entities;
 using Qmmands;
 
 namespace Hanekawa.Bot.Commands.Slash.Account;
 
 [Name("Account")]
+[RequireModule(ModuleName.Account)]
 public class AccountCommands : DiscordApplicationModuleBase
 {
     [SlashCommand(Metas.Account.Rank)]

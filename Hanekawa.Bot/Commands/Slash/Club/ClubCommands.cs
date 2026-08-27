@@ -4,13 +4,16 @@ using Disqord.Bot.Commands.Application;
 using Disqord.Bot.Commands.Interaction;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Commands;
+using Hanekawa.Bot.Commands.Checks;
 using Hanekawa.Bot.Commands.Metas;
 using Hanekawa.Bot.Mapper;
+using Hanekawa.Entities;
 using Qmmands;
 
 namespace Hanekawa.Bot.Commands.Slash.Club;
 
 [SlashGroup(SlashGroupName.Club)]
+[RequireModule(ModuleName.Club)]
 public class ClubCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
 {
     [SlashCommand(Metas.Club.Create)]

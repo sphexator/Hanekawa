@@ -49,6 +49,10 @@ public interface IDbContext : IAsyncDisposable
     DbSet<ClubMember> ClubMembers { get; set; }
     DbSet<Item> Items { get; set; }
     DbSet<ItemType> ItemTypes { get; set; }
+    /// <summary>
+    /// Guild module toggle store
+    /// </summary>
+    DbSet<Module> Modules { get; set; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<bool> EnsureDatabaseCreated(CancellationToken cancellationToken = default);

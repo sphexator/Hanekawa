@@ -8,6 +8,7 @@ using Hanekawa.Application.Handlers.Services.Warnings;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Commands;
 using Hanekawa.Application.Services;
+using Hanekawa.Bot.Commands.Checks;
 using Hanekawa.Bot.Commands.Metas;
 using Hanekawa.Bot.Mapper;
 using Hanekawa.Entities;
@@ -17,6 +18,7 @@ namespace Hanekawa.Bot.Commands.Slash.Administration;
 
 [Name("Administration")]
 [Description("Administration commands")]
+[RequireModule(ModuleName.Administration)]
 public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
 {
     [SlashCommand(Admin.Ban)]

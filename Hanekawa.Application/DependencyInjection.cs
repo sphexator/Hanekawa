@@ -38,6 +38,7 @@ public static class DependencyInjection
         serviceCollection.AddScoped<IDropService, DropService>();
         serviceCollection.AddScoped<IImageService, ImageService>();
         serviceCollection.AddScoped<IConfigService, ConfigService>();
+        serviceCollection.AddScoped<IModuleService, ModuleService>();
 
         serviceCollection.AddScoped<IAdministrationCommandService, AdministrationCommandService>();
         serviceCollection.AddScoped<ILogService, LogSettingService>();

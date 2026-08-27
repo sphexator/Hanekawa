@@ -7,7 +7,9 @@ using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Commands;
+using Hanekawa.Bot.Commands.Checks;
 using Hanekawa.Bot.Commands.Metas;
+using Hanekawa.Entities;
 using Hanekawa.Entities.Levels;
 using Hanekawa.Localize;
 using Qmmands;
@@ -16,6 +18,7 @@ namespace Hanekawa.Bot.Commands.Slash.Setting;
 
 [SlashGroup(SlashGroupName.Level)]
 [RequireAuthorPermissions(Permissions.ManageGuild)]
+[RequireModule(ModuleName.Level)]
 public class LevelCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
 {
     [SlashCommand(LevelName.Add)]
