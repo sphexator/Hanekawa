@@ -114,4 +114,30 @@ public class LevelServiceUnitTest
         Assert.Equal(2, _user.Level);
         Assert.Equal(_member.RoleIds, new List<ulong> { 1, 2, 3, 4 });
     }
+
+    [Fact]
+    public async Task AddExperienceAsync_ReturnsNull_WhenLevelingIsDisabled()
+    {
+        _config.LevelConfig!.LevelEnabled = false;
+        var configDbSet = new List<GuildConfig> { _config }.AsQueryable().BuildMockDbSet();
+        _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
+
+        var actual = await _levelService.AddExperienceAsync(_member, 100);
+
+        Assert.Null(actual);
+        _mockdb.Verify(e => e.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AddExperienceAsync_ReturnsNull_WhenLevelConfigIsMissing()
+    {
+        _config.LevelConfig = null;
+        var configDbSet = new List<GuildConfig> { _config }.AsQueryable().BuildMockDbSet();
+        _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
+
+        var actual = await _levelService.AddExperienceAsync(_member, 100);
+
+        Assert.Null(actual);
+        _mockdb.Verify(e => e.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
 }
