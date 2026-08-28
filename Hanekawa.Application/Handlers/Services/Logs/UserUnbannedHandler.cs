@@ -29,7 +29,7 @@ public class UserUnbannedHandler : INotificationHandler<UserUnbanned>
 
         var cfg = await _db.GuildConfigs.Include(x => x.LogConfig)
             .FirstOrDefaultAsync(x => x.GuildId == notification.Member.Guild.GuildId, cancellationToken: cancellationToken);
-        if (cfg is { LogConfig.ModLogChannelId: null }) return;
+        if (cfg?.LogConfig?.ModLogChannelId is null) return;
         var channel = _bot.GetChannel(notification.Member.Guild.GuildId, cfg.LogConfig.ModLogChannelId.Value);
         if (channel is null)
         {

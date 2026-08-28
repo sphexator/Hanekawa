@@ -28,7 +28,8 @@ public class ModuleService : IModuleService
         CancellationToken cancellationToken = default)
     {
         var states = await GetStatesAsync(guildId, cancellationToken);
-        return states.TryGetValue(module, out var enabled) && enabled;
+        // Missing rows stay enabled so existing guilds keep working after deploy.
+        return states.GetValueOrDefault(module, true);
     }
 
     /// <inheritdoc />
@@ -62,8 +63,12 @@ public class ModuleService : IModuleService
         var result = new List<Module>(ModuleName.All.Length);
         foreach (var name in ModuleName.All)
         {
-            states.TryGetValue(name, out var enabled);
-            result.Add(new Module { GuildId = guildId, Name = name, Enabled = enabled });
+            result.Add(new Module
+            {
+                GuildId = guildId,
+                Name = name,
+                Enabled = states.GetValueOrDefault(name, true)
+            });
         }
         return result;
     }
