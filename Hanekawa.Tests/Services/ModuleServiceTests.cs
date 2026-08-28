@@ -13,7 +13,7 @@ namespace Hanekawa.Tests.Services;
 public class ModuleServiceTests
 {
     [Fact]
-    public async Task IsEnabledAsync_ReturnsTrue_WhenNoRowExists()
+    public async Task IsEnabledAsync_ReturnsFalse_WhenNoRowExists()
     {
         var db = new Mock<IDbContext>();
         db.Setup(x => x.Modules).ReturnsDbSet(new List<Module>());
@@ -21,7 +21,7 @@ public class ModuleServiceTests
 
         var result = await sut.IsEnabledAsync(1, ModuleName.Level);
 
-        Assert.True(result);
+        Assert.False(result);
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public class ModuleServiceTests
 
         Assert.Equal(ModuleName.All.Length, result.Count);
         Assert.True(result.Single(x => x.Name == ModuleName.Level).Enabled);
-        Assert.True(result.Single(x => x.Name == ModuleName.Club).Enabled);
+        Assert.False(result.Single(x => x.Name == ModuleName.Club).Enabled);
     }
 
     [Fact]
@@ -138,6 +138,6 @@ public class ModuleServiceTests
         var result = await sut.GetModulesAsync(1);
 
         Assert.False(result.Single(x => x.Name == ModuleName.Club).Enabled);
-        Assert.True(result.Single(x => x.Name == ModuleName.Level).Enabled);
+        Assert.False(result.Single(x => x.Name == ModuleName.Level).Enabled);
     }
 }
