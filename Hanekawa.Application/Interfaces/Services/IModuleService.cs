@@ -5,7 +5,7 @@ namespace Hanekawa.Application.Interfaces.Services;
 public interface IModuleService
 {
     /// <summary>
-    /// Checks whether a module is enabled for a guild. Modules without a stored row are enabled by default.
+    /// Checks whether a module is enabled for a guild. Modules without a stored row are disabled by default.
     /// </summary>
     ValueTask<bool> IsEnabledAsync(ulong guildId, string module, CancellationToken cancellationToken = default);
     /// <summary>
