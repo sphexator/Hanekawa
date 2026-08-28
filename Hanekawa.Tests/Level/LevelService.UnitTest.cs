@@ -140,4 +140,31 @@ public class LevelServiceUnitTest
         Assert.Null(actual);
         _mockdb.Verify(e => e.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    [Fact]
+    public async Task AddExperienceAsync_PersistsExperience_WhenUserIsCreated()
+    {
+        GuildUser? created = null;
+        var configDbSet = new List<GuildConfig> { _config }.AsQueryable().BuildMockDbSet();
+        var levelDbSet = new List<LevelRequirement> { new() { Level = 2, Experience = 400 } }
+            .AsQueryable().BuildMockDbSet();
+        var userDbSet = new List<GuildUser>().AsQueryable().BuildMockDbSet();
+        userDbSet.Setup(x => x.AddAsync(It.IsAny<GuildUser>(), It.IsAny<CancellationToken>()))
+            .Callback<GuildUser, CancellationToken>((user, _) => created = user)
+            .Returns(ValueTask.FromResult<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<GuildUser>>(null!));
+
+        _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
+        _mockdb.Setup(e => e.LevelRequirements).Returns(levelDbSet.Object);
+        _mockdb.Setup(e => e.Users).Returns(userDbSet.Object);
+        _mockdb.Setup(e => e.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        var actual = await _levelService.AddExperienceAsync(_member, 100);
+
+        Assert.Equal(100, actual);
+        Assert.NotNull(created);
+        Assert.Equal(100, created.Experience);
+        Assert.Equal(1ul, created.GuildId);
+        Assert.Equal(1ul, created.Id);
+        _mockdb.Verify(e => e.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+    }
 }
