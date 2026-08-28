@@ -123,4 +123,21 @@ public class ModuleServiceTests
         Assert.True(result.Single(x => x.Name == ModuleName.Level).Enabled);
         Assert.False(result.Single(x => x.Name == ModuleName.Club).Enabled);
     }
+
+    [Fact]
+    public async Task GetModulesAsync_ShowsDisabled_WhenRowIsExplicitlyOff()
+    {
+        var modules = new List<Module>
+        {
+            new() { GuildId = 1, Name = ModuleName.Club, Enabled = false }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Modules).ReturnsDbSet(modules);
+        var sut = new ModuleService(new Mock<IDistributedCache>().Object, db.Object);
+
+        var result = await sut.GetModulesAsync(1);
+
+        Assert.False(result.Single(x => x.Name == ModuleName.Club).Enabled);
+        Assert.False(result.Single(x => x.Name == ModuleName.Level).Enabled);
+    }
 }
