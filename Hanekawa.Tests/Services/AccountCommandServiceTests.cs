@@ -69,4 +69,53 @@ public class AccountCommandServiceTests
         Assert.DoesNotContain(top, x => x.GuildId != 1);
         Assert.Equal(top.OrderByDescending(x => x.Experience).Select(x => x.Id), top.Select(x => x.Id));
     }
+
+    [Fact]
+    public async Task RankAsync_DrawsRankForExistingUser()
+    {
+        var users = new List<GuildUser>
+        {
+            new() { GuildId = 1, Id = 10, User = new User { Id = 10 } }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Users).ReturnsDbSet(users);
+        var stream = new MemoryStream();
+        var images = new Mock<IImageService>();
+        images.Setup(x => x.DrawRankAsync(_member, It.IsAny<GuildUser>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(stream);
+        var sut = new AccountCommandService(images.Object, db.Object);
+
+        var result = await sut.RankAsync(_member);
+
+        Assert.Same(stream, result);
+        images.Verify(x => x.DrawRankAsync(
+            _member,
+            It.Is<GuildUser>(u => u.Id == 10 && u.GuildId == 1),
+            It.IsAny<CancellationToken>()), Times.Once);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ProfileAsync_DrawsProfileForExistingUser()
+    {
+        var users = new List<GuildUser>
+        {
+            new() { GuildId = 1, Id = 10, User = new User { Id = 10 } }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Users).ReturnsDbSet(users);
+        var stream = new MemoryStream();
+        var images = new Mock<IImageService>();
+        images.Setup(x => x.DrawProfileAsync(_member, It.IsAny<GuildUser>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(stream);
+        var sut = new AccountCommandService(images.Object, db.Object);
+
+        var result = await sut.ProfileAsync(_member);
+
+        Assert.Same(stream, result);
+        images.Verify(x => x.DrawProfileAsync(
+            _member,
+            It.Is<GuildUser>(u => u.Id == 10 && u.GuildId == 1),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

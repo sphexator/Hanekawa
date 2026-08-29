@@ -1,336 +1,267 @@
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Services;
 using Hanekawa.Entities.Users;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using MockQueryable.Moq;
 using Moq;
+using Moq.EntityFrameworkCore;
 
 namespace Hanekawa.Tests.Services;
 
 public class InventoryServiceTests
 {
-    private readonly Mock<IDbContext> _mockDbContext;
-    private readonly Mock<ICacheContext> _mockCache;
-    private readonly IInventoryService _inventoryService;
-    private readonly Mock<DbSet<GuildUser>> _mockUserDbSet;
-
-    public InventoryServiceTests()
-    {
-        _mockDbContext = new Mock<IDbContext>();
-        _mockCache = new Mock<ICacheContext>();
-        _mockUserDbSet = new Mock<DbSet<GuildUser>>();
-
-        _mockDbContext.Setup(db => db.Users).Returns(_mockUserDbSet.Object);
-
-        _inventoryService = new InventoryService(_mockDbContext.Object, _mockCache.Object);
-    }
+    private const ulong GuildId = 123;
+    private const ulong UserId = 456;
 
     [Fact]
-    public async Task GetInventoryAsync_CallsCache_ReturnsUser()
+    public async Task GetInventoryAsync_ReturnsCachedUser()
     {
-        // Arrange
-        const ulong guildId = 123;
-        const ulong userId = 456;
-        var user = new GuildUser { GuildId = guildId, Id = userId };
-
-        _mockCache.Setup(c => c.GetOrCreateAsync($"inventory_{userId}", It.IsAny<Func<Task<GuildUser>>>()))
+        var user = CreateUser();
+        var cache = new Mock<ICacheContext>();
+        cache.Setup(x => x.GetOrCreateAsync($"inventory_{UserId}", It.IsAny<Func<Task<GuildUser>>>()))
             .ReturnsAsync(user);
+        var db = new Mock<IDbContext>(MockBehavior.Strict);
+        var sut = new InventoryService(db.Object, cache.Object);
 
-        // Act
-        var result = await _inventoryService.GetInventoryAsync(guildId, userId);
+        var result = await sut.GetInventoryAsync(GuildId, UserId);
 
-        // Assert
-        Assert.Equal(userId, result.Id);
-        Assert.Equal(guildId, result.GuildId);
-        _mockCache.Verify(c => c.GetOrCreateAsync($"inventory_{userId}", It.IsAny<Func<Task<GuildUser>>>()), Times.Once);
+        Assert.Same(user, result);
+        db.Verify(x => x.Users, Times.Never);
     }
 
     [Fact]
-    public async Task UpdateInventoryAsync_WithList_UpdatesUserInventory()
+    public async Task GetInventoryAsync_LoadsExistingUser_OnCacheMiss()
     {
-        // Arrange
-        const ulong guildId = 123;
-        const ulong userId = 456;
-        var user = new GuildUser { GuildId = guildId, Id = userId };
-        var appUser = new User { Id = userId, Inventory = new List<Inventory>() };
-        var existingUser = new GuildUser { GuildId = guildId, Id = userId, User = appUser };
+        var user = CreateUser();
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Users).ReturnsDbSet(new List<GuildUser> { user });
+        var sut = new InventoryService(db.Object, CreateFactoryCache());
 
-        var inventory = new List<Inventory>
+        var result = await sut.GetInventoryAsync(GuildId, UserId);
+
+        Assert.Same(user, result);
+    }
+
+    [Fact]
+    public async Task GetInventoryAsync_CreatesUser_WhenMissing()
+    {
+        GuildUser? added = null;
+        var users = new List<GuildUser>().AsQueryable().BuildMockDbSet();
+        users.Setup(x => x.AddAsync(It.IsAny<GuildUser>(), It.IsAny<CancellationToken>()))
+            .Callback<GuildUser, CancellationToken>((user, _) => added = user)
+            .Returns(ValueTask.FromResult<EntityEntry<GuildUser>>(null!));
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Users).Returns(users.Object);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var sut = new InventoryService(db.Object, CreateFactoryCache());
+
+        var result = await sut.GetInventoryAsync(GuildId, UserId);
+
+        Assert.Same(added, result);
+        Assert.Equal(GuildId, result.GuildId);
+        Assert.Equal(UserId, result.Id);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateInventoryAsync_WithList_ReplacesInventory()
+    {
+        var existing = CreateUser();
+        var inventory = new List<Inventory> { new() { ItemId = Guid.NewGuid(), Amount = 5, UserId = UserId } };
+        var (sut, db, cache) = CreateMutatingSut(existing);
+
+        await sut.UpdateInventoryAsync(existing, inventory);
+
+        Assert.Same(inventory, existing.User.Inventory);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        cache.Verify(x => x.Remove($"inventory_{UserId}"), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateInventoryAsync_WithList_DoesNothing_WhenUserMissing()
+    {
+        var (sut, db, cache) = CreateMutatingSut([]);
+
+        await sut.UpdateInventoryAsync(CreateUser(), [new Inventory { ItemId = Guid.NewGuid(), Amount = 1 }]);
+
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        cache.Verify(x => x.Remove(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateInventoryAsync_WithSingleItem_AddsWhenMissing_AndIncrementsWhenPresent()
+    {
+        var itemId = Guid.NewGuid();
+        var existing = CreateUser(new Inventory { ItemId = itemId, Amount = 2, UserId = UserId });
+        var (sut, _, _) = CreateMutatingSut(existing);
+
+        await sut.UpdateInventoryAsync(existing, new Inventory { ItemId = itemId, Amount = 3, UserId = UserId });
+        await sut.UpdateInventoryAsync(existing, new Inventory { ItemId = Guid.NewGuid(), Amount = 1, UserId = UserId });
+
+        Assert.Equal(5, existing.User.Inventory.Single(x => x.ItemId == itemId).Amount);
+        Assert.Equal(2, existing.User.Inventory.Count);
+    }
+
+    [Fact]
+    public async Task AddItemAsync_IncreasesAmount_WhenItemExists()
+    {
+        var itemId = Guid.NewGuid();
+        var existing = CreateUser(new Inventory { ItemId = itemId, Amount = 2, UserId = UserId });
+        var (sut, db, cache) = CreateMutatingSut(existing);
+
+        await sut.AddItemAsync(existing, itemId, 3);
+
+        Assert.Equal(5, existing.User.Inventory.Single().Amount);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        cache.Verify(x => x.Remove($"inventory_{UserId}"), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddItemAsync_AddsNewRow_WhenItemMissing()
+    {
+        var itemId = Guid.NewGuid();
+        var existing = CreateUser();
+        var (sut, _, _) = CreateMutatingSut(existing);
+
+        await sut.AddItemAsync(existing, itemId, 3);
+
+        var added = Assert.Single(existing.User.Inventory);
+        Assert.Equal(itemId, added.ItemId);
+        Assert.Equal(3, added.Amount);
+        Assert.Equal(UserId, added.UserId);
+    }
+
+    [Fact]
+    public async Task AddItemAsync_Throws_WhenAmountIsNotPositive()
+    {
+        var (sut, db, _) = CreateMutatingSut(CreateUser());
+
+        await Assert.ThrowsAsync<ArgumentException>(() => sut.AddItemAsync(CreateUser(), Guid.NewGuid(), 0).AsTask());
+        await Assert.ThrowsAsync<ArgumentException>(() => sut.AddItemAsync(CreateUser(), Guid.NewGuid(), -1).AsTask());
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AddItemAsync_DoesNothing_WhenUserMissing()
+    {
+        var (sut, db, cache) = CreateMutatingSut([]);
+
+        await sut.AddItemAsync(CreateUser(), Guid.NewGuid(), 1);
+
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        cache.Verify(x => x.Remove(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RemoveItemAsync_DecreasesAmount_AndRemovesRowWhenZero()
+    {
+        var itemId = Guid.NewGuid();
+        var existing = CreateUser(new Inventory { ItemId = itemId, Amount = 5, UserId = UserId });
+        var (sut, db, cache) = CreateMutatingSut(existing);
+
+        await sut.RemoveItemAsync(existing, itemId, 3);
+        Assert.Equal(2, existing.User.Inventory.Single().Amount);
+
+        await sut.RemoveItemAsync(existing, itemId, 2);
+        Assert.Empty(existing.User.Inventory);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        cache.Verify(x => x.Remove($"inventory_{UserId}"), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task RemoveItemAsync_Throws_WhenAmountIsNotPositive()
+    {
+        var (sut, _, _) = CreateMutatingSut(CreateUser());
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            sut.RemoveItemAsync(CreateUser(), Guid.NewGuid(), 0).AsTask());
+    }
+
+    [Fact]
+    public async Task RemoveItemAsync_Throws_WhenItemIsMissing()
+    {
+        var existing = CreateUser();
+        var (sut, _, _) = CreateMutatingSut(existing);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            sut.RemoveItemAsync(existing, Guid.NewGuid(), 1).AsTask());
+    }
+
+    [Fact]
+    public async Task RemoveItemAsync_Throws_WhenAmountExceedsStock()
+    {
+        var itemId = Guid.NewGuid();
+        var existing = CreateUser(new Inventory { ItemId = itemId, Amount = 2, UserId = UserId });
+        var (sut, _, _) = CreateMutatingSut(existing);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            sut.RemoveItemAsync(existing, itemId, 3).AsTask());
+    }
+
+    [Fact]
+    public async Task HasItemAsync_ReturnsTrue_WhenPresent_OtherwiseFalse()
+    {
+        var itemId = Guid.NewGuid();
+        var existing = CreateUser(new Inventory { ItemId = itemId, Amount = 2, UserId = UserId });
+        var (sut, _, _) = CreateMutatingSut(existing);
+
+        Assert.True(await sut.HasItemAsync(existing, itemId));
+        Assert.False(await sut.HasItemAsync(existing, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task HasItemAsync_ReturnsFalse_WhenUserMissing()
+    {
+        var (sut, _, _) = CreateMutatingSut([]);
+
+        Assert.False(await sut.HasItemAsync(CreateUser(), Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetItemCountAsync_ReturnsAmount_WhenPresent()
+    {
+        var itemId = Guid.NewGuid();
+        var existing = CreateUser(new Inventory { ItemId = itemId, Amount = 5, UserId = UserId });
+        var (sut, _, _) = CreateMutatingSut(existing);
+
+        Assert.Equal(5, await sut.GetItemCountAsync(UserId, itemId));
+    }
+
+    [Fact]
+    public async Task GetItemCountAsync_ReturnsZero_WhenUserMissing()
+    {
+        var (sut, _, _) = CreateMutatingSut([]);
+
+        Assert.Equal(0, await sut.GetItemCountAsync(UserId, Guid.NewGuid()));
+    }
+
+    private static GuildUser CreateUser(params Inventory[] inventory)
+        => new()
         {
-            new() { ItemId = Guid.NewGuid(), Amount = 5, UserId = userId }
+            GuildId = GuildId,
+            Id = UserId,
+            User = new User { Id = UserId, Inventory = [.. inventory] }
         };
 
-        SetupMockDbContextForUser(existingUser);
-
-        // Act
-        await _inventoryService.UpdateInventoryAsync(user, inventory);
-
-        // Assert
-        _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _mockCache.Verify(c => c.Remove($"inventory_{userId}"), Times.Once);
-        Assert.Same(inventory, existingUser.User.Inventory);
+    private static ICacheContext CreateFactoryCache()
+    {
+        var cache = new Mock<ICacheContext>();
+        cache.Setup(x => x.GetOrCreateAsync(It.IsAny<string>(), It.IsAny<Func<Task<GuildUser>>>()))
+            .Returns((string _, Func<Task<GuildUser>> factory) => new ValueTask<GuildUser>(factory()));
+        return cache.Object;
     }
 
-    [Fact]
-    public async Task UpdateInventoryAsync_WithSingleItem_UpdatesUserInventory()
+    private static (InventoryService Sut, Mock<IDbContext> Db, Mock<ICacheContext> Cache)
+        CreateMutatingSut(GuildUser existing)
+        => CreateMutatingSut([existing]);
+
+    private static (InventoryService Sut, Mock<IDbContext> Db, Mock<ICacheContext> Cache)
+        CreateMutatingSut(List<GuildUser> users)
     {
-        // Arrange
-        const ulong guildId = 123;
-        const ulong userId = 456;
-        var itemId = Guid.NewGuid();
-        var user = new GuildUser { GuildId = guildId, Id = userId };
-        var appUser = new User { Id = userId, Inventory = new List<Inventory>() };
-        var existingUser = new GuildUser { GuildId = guildId, Id = userId, User = appUser };
-
-        var inventoryItem = new Inventory { ItemId = itemId, Amount = 5, UserId = userId };
-
-        SetupMockDbContextForUser(existingUser);
-
-        // Act
-        await _inventoryService.UpdateInventoryAsync(user, inventoryItem);
-
-        // Assert
-        _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _mockCache.Verify(c => c.Remove($"inventory_{userId}"), Times.Once);
-        Assert.Contains(existingUser.User.Inventory, i => i.ItemId == itemId);
-    }
-
-    [Fact]
-    public async Task AddItemAsync_ExistingItem_IncreasesAmount()
-    {
-        // Arrange
-        const ulong guildId = 123;
-        const ulong userId = 456;
-        var itemId = Guid.NewGuid();
-        var user = new GuildUser { GuildId = guildId, Id = userId };
-
-        var existingInventory = new List<Inventory>
-        {
-            new() { ItemId = itemId, Amount = 2, UserId = userId }
-        };
-        var appUser = new User { Id = userId, Inventory = existingInventory };
-        var existingUser = new GuildUser { GuildId = guildId, Id = userId, User = appUser };
-
-        SetupMockDbContextForUser(existingUser);
-
-        // Act
-        await _inventoryService.AddItemAsync(user, itemId, 3);
-
-        // Assert
-        _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _mockCache.Verify(c => c.Remove($"inventory_{userId}"), Times.Once);
-
-        var updatedItem = existingUser.User.Inventory.FirstOrDefault(i => i.ItemId == itemId);
-        Assert.NotNull(updatedItem);
-        Assert.Equal(5, updatedItem.Amount); // 2 + 3 = 5
-    }
-
-    [Fact]
-    public async Task AddItemAsync_NewItem_AddsToInventory()
-    {
-        // Arrange
-        const ulong guildId = 123;
-        const ulong userId = 456;
-        var itemId = Guid.NewGuid();
-        var user = new GuildUser { GuildId = guildId, Id = userId };
-
-        var appUser = new User { Id = userId, Inventory = new List<Inventory>() };
-        var existingUser = new GuildUser { GuildId = guildId, Id = userId, User = appUser };
-
-        SetupMockDbContextForUser(existingUser);
-
-        // Act
-        await _inventoryService.AddItemAsync(user, itemId, 3);
-
-        // Assert
-        _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _mockCache.Verify(c => c.Remove($"inventory_{userId}"), Times.Once);
-
-        var addedItem = existingUser.User.Inventory.FirstOrDefault(i => i.ItemId == itemId);
-        Assert.NotNull(addedItem);
-        Assert.Equal(3, addedItem.Amount);
-    }
-
-    [Fact]
-    public async Task RemoveItemAsync_SufficientAmount_DecreasesAmount()
-    {
-        // Arrange
-        const ulong guildId = 123;
-        const ulong userId = 456;
-        var itemId = Guid.NewGuid();
-        var user = new GuildUser { GuildId = guildId, Id = userId };
-
-        var existingInventory = new List<Inventory>
-        {
-            new() { ItemId = itemId, Amount = 5, UserId = userId }
-        };
-        var appUser = new User { Id = userId, Inventory = existingInventory };
-        var existingUser = new GuildUser { GuildId = guildId, Id = userId, User = appUser };
-
-        SetupMockDbContextForUser(existingUser);
-
-        // Act
-        await _inventoryService.RemoveItemAsync(user, itemId, 3);
-
-        // Assert
-        _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _mockCache.Verify(c => c.Remove($"inventory_{userId}"), Times.Once);
-
-        var updatedItem = existingUser.User.Inventory.FirstOrDefault(i => i.ItemId == itemId);
-        Assert.NotNull(updatedItem);
-        Assert.Equal(2, updatedItem.Amount); // 5 - 3 = 2
-    }
-
-    [Fact]
-    public async Task RemoveItemAsync_RemoveAll_RemovesItemFromInventory()
-    {
-        // Arrange
-        const ulong guildId = 123;
-        const ulong userId = 456;
-        var itemId = Guid.NewGuid();
-        var user = new GuildUser { GuildId = guildId, Id = userId };
-
-        var existingInventory = new List<Inventory>
-        {
-            new() { ItemId = itemId, Amount = 3, UserId = userId }
-        };
-        var appUser = new User { Id = userId, Inventory = existingInventory };
-        var existingUser = new GuildUser { GuildId = guildId, Id = userId, User = appUser };
-
-        SetupMockDbContextForUser(existingUser);
-
-        // Act
-        await _inventoryService.RemoveItemAsync(user, itemId, 3);
-
-        // Assert
-        _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _mockCache.Verify(c => c.Remove($"inventory_{userId}"), Times.Once);
-
-        Assert.Empty(existingUser.User.Inventory);
-    }
-
-    [Fact]
-    public async Task RemoveItemAsync_InsufficientAmount_ThrowsException()
-    {
-        // Arrange
-        const ulong guildId = 123;
-        const ulong userId = 456;
-        var itemId = Guid.NewGuid();
-        var user = new GuildUser { GuildId = guildId, Id = userId };
-
-        var existingInventory = new List<Inventory>
-        {
-            new() { ItemId = itemId, Amount = 2, UserId = userId }
-        };
-        var appUser = new User { Id = userId, Inventory = existingInventory };
-        var existingUser = new GuildUser { GuildId = guildId, Id = userId, User = appUser };
-
-        SetupMockDbContextForUser(existingUser);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await _inventoryService.RemoveItemAsync(user, itemId, 3));
-    }
-
-    [Fact]
-    public async Task HasItemAsync_ItemExists_ReturnsTrue()
-    {
-        // Arrange
-        const ulong guildId = 123;
-        const ulong userId = 456;
-        var itemId = Guid.NewGuid();
-        var user = new GuildUser { GuildId = guildId, Id = userId };
-
-        var existingInventory = new List<Inventory>
-        {
-            new() { ItemId = itemId, Amount = 2, UserId = userId }
-        };
-        var appUser = new User { Id = userId, Inventory = existingInventory };
-        var existingUser = new GuildUser { GuildId = guildId, Id = userId, User = appUser };
-
-        SetupMockDbContextForUser(existingUser);
-
-        // Act
-        var result = await _inventoryService.HasItemAsync(user, itemId);
-
-        // Assert
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task HasItemAsync_ItemDoesNotExist_ReturnsFalse()
-    {
-        // Arrange
-        const ulong guildId = 123;
-        const ulong userId = 456;
-        var itemId = Guid.NewGuid();
-        var user = new GuildUser { GuildId = guildId, Id = userId };
-
-        var appUser = new User { Id = userId, Inventory = new List<Inventory>() };
-        var existingUser = new GuildUser { GuildId = guildId, Id = userId, User = appUser };
-
-        SetupMockDbContextForUser(existingUser);
-
-        // Act
-        var result = await _inventoryService.HasItemAsync(user, itemId);
-
-        // Assert
-        Assert.False(result);
-    }
-
-    [Fact]
-    public async Task GetItemCountAsync_ItemExists_ReturnsAmount()
-    {
-        // Arrange
-        const ulong userId = 456;
-        var itemId = Guid.NewGuid();
-        const int expectedAmount = 5;
-
-        var queryable = new List<GuildUser>
-        {
-            new()
-            {
-                Id = userId,
-                User = new User
-                {
-                    Id = userId,
-                    Inventory = new List<Inventory>
-                    {
-                        new() { ItemId = itemId, Amount = expectedAmount, UserId = userId }
-                    }
-                }
-            }
-        }.AsQueryable();
-
-        var mockQueryable = queryable.BuildMockDbSet();
-        _mockUserDbSet.Setup(m => m.Include(It.IsAny<string>())).Returns(mockQueryable.Object);
-
-        // Act
-        var result = await _inventoryService.GetItemCountAsync(userId, itemId);
-
-        // Assert
-        Assert.Equal(expectedAmount, result);
-    }
-
-    // Helper method to set up the mock DbContext for user-related operations
-    private void SetupMockDbContextForUser(GuildUser existingUser)
-    {
-        var queryable = new List<GuildUser> { existingUser }.AsQueryable();
-        var mockQueryable = queryable.BuildMockDbSet();
-        _mockUserDbSet.Setup(m => m.Include(It.IsAny<string>())).Returns(mockQueryable.Object);
-    }
-}
-
-// Extension method to help build mock DbSets
-public static class MockExtensions
-{
-    public static Mock<DbSet<T>> BuildMockDbSet<T>(this IQueryable<T> queryable) where T : class
-    {
-        var mockSet = new Mock<DbSet<T>>();
-        mockSet.As<IQueryable<T>>().Setup(m => m.Provider).Returns(queryable.Provider);
-        mockSet.As<IQueryable<T>>().Setup(m => m.Expression).Returns(queryable.Expression);
-        mockSet.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(queryable.ElementType);
-        mockSet.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(queryable.GetEnumerator());
-
-        return mockSet;
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Users).ReturnsDbSet(users);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var cache = new Mock<ICacheContext>();
+        return (new InventoryService(db.Object, cache.Object), db, cache);
     }
 }

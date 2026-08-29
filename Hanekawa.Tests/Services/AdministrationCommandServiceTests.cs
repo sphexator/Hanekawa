@@ -32,6 +32,10 @@ public class AdministrationCommandServiceTests
             .Returns(Task.CompletedTask);
         _bot.Setup(x => x.PruneMessagesAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong[]>()))
             .Returns(Task.CompletedTask);
+        _bot.Setup(x => x.AddRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()))
+            .Returns(Task.CompletedTask);
+        _bot.Setup(x => x.RemoveRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()))
+            .Returns(Task.CompletedTask);
 
         _sut = new AdministrationCommandService(_bot.Object, NullLogger<AdministrationCommandService>.Instance);
     }
@@ -93,5 +97,23 @@ public class AdministrationCommandServiceTests
 
         _bot.Verify(x => x.PruneMessagesAsync(1, 99, messageIds), Times.Once);
         Assert.Equal(string.Format(Localization.PrunedMessages, 3), result.Value.Content);
+    }
+
+    [Fact]
+    public async Task AddRoleAsync_AddsRoleThroughBot()
+    {
+        var result = await _sut.AddRoleAsync(_user, 42, 7);
+
+        _bot.Verify(x => x.AddRoleAsync(1, 10, 7), Times.Once);
+        Assert.Equal("", result.Value.Content);
+    }
+
+    [Fact]
+    public async Task RemoveRoleAsync_RemovesRoleThroughBot()
+    {
+        var result = await _sut.RemoveRoleAsync(_user, 42, 7);
+
+        _bot.Verify(x => x.RemoveRoleAsync(1, 10, 7), Times.Once);
+        Assert.Equal("", result.Value.Content);
     }
 }
