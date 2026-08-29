@@ -55,6 +55,26 @@ public class GreetServiceTests
     }
 
     [Fact]
+    public async Task SetImage_AppendsImageToExistingConfig()
+    {
+        var greet = new GreetConfig { GuildId = GuildId, Images = [] };
+        var configs = new List<GuildConfig> { new() { GuildId = GuildId, GreetConfig = greet } };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var sut = new GreetService(db.Object, NullLogger<GreetService>.Instance);
+
+        var result = await sut.SetImage(GuildId, "https://img/welcome.png", 42);
+
+        Assert.Equal("Updated greet image !", result);
+        var image = Assert.Single(greet.Images);
+        Assert.Equal("https://img/welcome.png", image.ImageUrl);
+        Assert.Equal(42ul, image.Uploader);
+        Assert.Equal(GuildId, image.GuildId);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task ListImages_ReturnsNotFound_WhenNoImagesExist()
     {
         var configs = new List<GuildConfig>

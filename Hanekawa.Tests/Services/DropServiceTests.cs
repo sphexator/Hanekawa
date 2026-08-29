@@ -122,6 +122,68 @@ public class DropServiceTests
         cache.Verify(x => x.Remove($"{MessageId}-{ChannelId}-drop"), Times.Once);
     }
 
+    [Fact]
+    public async Task ClaimAsync_DeletesMessageWithoutReward_WhenConfigIsMissing()
+    {
+        var (sut, bot, cache, levels) = CreateSut([], new FixedRandom(0));
+        cache.Setup(x => x.Get<GuildUser>($"{MessageId}-{ChannelId}-drop"))
+            .Returns(new GuildUser { Id = UserId, GuildId = GuildId });
+        bot.Setup(x => x.DeleteMessageAsync(GuildId, ChannelId, MessageId)).Returns(Task.CompletedTask);
+
+        await sut.ClaimAsync(ChannelId, MessageId, CreateMember());
+
+        bot.Verify(x => x.DeleteMessageAsync(GuildId, ChannelId, MessageId), Times.Once);
+        levels.Verify(x => x.AddExperienceAsync(It.IsAny<DiscordMember>(), It.IsAny<int>()), Times.Never);
+        cache.Verify(x => x.Remove(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Configure_AssignsDropConfig_WhenExistingGuildHasNone()
+    {
+        var configs = new List<GuildConfig> { new() { GuildId = 0, DropConfig = null } };
+        var (sut, _, _, _) = CreateSut(configs, new FixedRandom(0));
+
+        await sut.Configure(cfg =>
+        {
+            cfg.ExpReward = 40;
+            cfg.Emote = "🎉";
+        });
+
+        Assert.NotNull(configs[0].DropConfig);
+        Assert.Equal(40, configs[0].DropConfig!.ExpReward);
+        Assert.Equal("🎉", configs[0].DropConfig.Emote);
+    }
+
+    [Fact]
+    public async Task Configure_UpdatesExpRewardAndEmote_WhenNotDefaults()
+    {
+        var drop = new DropConfig { GuildId = 0, ExpReward = 10, Emote = "⭐" };
+        var configs = new List<GuildConfig> { new() { GuildId = 0, DropConfig = drop } };
+        var (sut, _, _, _) = CreateSut(configs, new FixedRandom(0));
+
+        await sut.Configure(cfg =>
+        {
+            cfg.ExpReward = 75;
+            cfg.Emote = "🎁";
+        });
+
+        Assert.Equal(75, drop.ExpReward);
+        Assert.Equal("🎁", drop.Emote);
+    }
+
+    [Fact]
+    public async Task Configure_DoesNotOverwrite_WhenExpRewardAndEmoteAreDefaults()
+    {
+        var drop = new DropConfig { GuildId = 0, ExpReward = 40, Emote = "⭐" };
+        var configs = new List<GuildConfig> { new() { GuildId = 0, DropConfig = drop } };
+        var (sut, _, _, _) = CreateSut(configs, new FixedRandom(0));
+
+        await sut.Configure(_ => { });
+
+        Assert.Equal(40, drop.ExpReward);
+        Assert.Equal("⭐", drop.Emote);
+    }
+
     private static (DropService Sut, Mock<IBot> Bot, Mock<ICacheContext> Cache, Mock<ILevelService> Levels)
         CreateSut(List<GuildConfig> configs, Random random)
     {

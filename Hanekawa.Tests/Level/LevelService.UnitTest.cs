@@ -167,4 +167,57 @@ public class LevelServiceUnitTest
         Assert.Equal(1ul, created.Id);
         _mockdb.Verify(e => e.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
     }
+
+    [Fact]
+    public async Task AdjustRolesAsync_AddsMissingRoles_RemovesHigherLevelRoles_AndSkipsNullRoleIds()
+    {
+        var member = new DiscordMember
+        {
+            Id = 1,
+            Guild = new Guild { GuildId = 1 },
+            Username = "Bob",
+            RoleIds = [1, 10]
+        };
+        var config = new GuildConfig
+        {
+            GuildId = 1,
+            LevelConfig = new LevelConfig
+            {
+                GuildId = 1,
+                Rewards =
+                [
+                    new LevelReward { GuildId = 1, Level = 1, RoleId = 1 },
+                    new LevelReward { GuildId = 1, Level = 2, RoleId = 2 },
+                    new LevelReward { GuildId = 1, Level = 5, RoleId = 10 },
+                    new LevelReward { GuildId = 1, Level = 3, RoleId = null, Money = 50 }
+                ]
+            }
+        };
+        _mockBot.Setup(x => x.ModifyRolesAsync(member, It.IsAny<ulong[]>())).Returns(Task.CompletedTask);
+
+        var result = await _levelService.AdjustRolesAsync(member, 3, config);
+
+        Assert.Same(member, result);
+        Assert.Equal(new ulong[] { 1, 2 }, member.RoleIds);
+        _mockBot.Verify(x => x.ModifyRolesAsync(member, member.RoleIds), Times.Once);
+    }
+
+    [Fact]
+    public async Task AdjustRolesAsync_StillAppliesCurrentRoles_WhenLevelConfigIsMissing()
+    {
+        var member = new DiscordMember
+        {
+            Id = 1,
+            Guild = new Guild { GuildId = 1 },
+            Username = "Bob",
+            RoleIds = [1, 2]
+        };
+        var config = new GuildConfig { GuildId = 1, LevelConfig = null };
+        _mockBot.Setup(x => x.ModifyRolesAsync(member, It.IsAny<ulong[]>())).Returns(Task.CompletedTask);
+
+        await _levelService.AdjustRolesAsync(member, 3, config);
+
+        Assert.Equal(new ulong[] { 1, 2 }, member.RoleIds);
+        _mockBot.Verify(x => x.ModifyRolesAsync(member, member.RoleIds), Times.Once);
+    }
 }
