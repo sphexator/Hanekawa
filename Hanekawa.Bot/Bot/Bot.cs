@@ -86,7 +86,10 @@ public sealed class Bot : DiscordBot, IBot
 
     /// <inheritdoc />
     public ulong? GetChannel(ulong guildId, ulong channelId)
-        => this.GetGuild(guildId)!.GetChannel(channelId)!.Id;
+    {
+        var channel = this.GetGuild(guildId)?.GetChannel(channelId);
+        return channel is null ? null : channel.Id;
+    }
 
     /// <inheritdoc />
     public Task PruneMessagesAsync(ulong guildId, ulong channelId, ulong[] messageIds)
