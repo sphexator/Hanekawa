@@ -23,10 +23,12 @@ public sealed class WarningAdded(
                                                              && x.Valid
                                                              && x.CreatedAt > DateTimeOffset.UtcNow.AddDays(-7), cancellationToken);
 
-        // TODO: Add a warning threshold to the guild configuration
-        if (warningCount >= config?.AdminConfig?.MaxWarnings)
+        // MaxWarnings defaults to 0, and GuildConfig initializes AdminConfig to new(),
+        // so EF Include will not replace it with null when no row exists. Treat 0 as unset.
+        var maxWarnings = config?.AdminConfig?.MaxWarnings ?? 0;
+        if (maxWarnings > 0 && warningCount >= maxWarnings)
             await bot.MuteAsync(request.User.Guild.GuildId, request.User.Id,
-                $"Auto-mod warning threshold reached ({config.AdminConfig.MaxWarnings})",
+                $"Auto-mod warning threshold reached ({maxWarnings})",
                 TimeSpan.FromHours(2 * Convert.ToDouble(warningCount / 3)));
         return result;
     }

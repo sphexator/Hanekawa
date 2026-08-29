@@ -124,6 +124,20 @@ public class WarningPipelineTests
     }
 
     [Fact]
+    public async Task WarningAdded_DoesNotMute_WhenMaxWarningsIsUnset()
+    {
+        var (sut, bot, request) = CreateSutWithWarnings(
+            maxWarnings: 0,
+            validRecentCount: 3);
+
+        await sut.HandleAsync(request, CancellationToken.None);
+
+        bot.Verify(x => x.MuteAsync(
+            It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<string>(), It.IsAny<TimeSpan>()),
+            Times.Never);
+    }
+
+    [Fact]
     public async Task WarningAdded_DoesNotMute_WhenAdminConfigIsMissing()
     {
         var inner = new Mock<IRequestHandler<WarningReceived, Response<Message>>>();

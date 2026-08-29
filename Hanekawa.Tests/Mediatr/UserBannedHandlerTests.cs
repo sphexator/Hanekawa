@@ -87,6 +87,21 @@ public class UserBannedHandlerTests
     }
 
     [Fact]
+    public async Task UserUnbanned_ClearsChannel_WhenBotCannotResolveIt()
+    {
+        var logConfig = new LogConfig { GuildId = GuildId, ModLogChannelId = ChannelId };
+        var configs = new List<GuildConfig> { new() { GuildId = GuildId, LogConfig = logConfig } };
+        var (handler, bot, db) = CreateUnbannedHandler(enabled: true, configs);
+        bot.Setup(x => x.GetChannel(GuildId, ChannelId)).Returns((ulong?)null);
+
+        await handler.HandleAsync(CreateUnbanned(), CancellationToken.None);
+
+        Assert.Null(logConfig.ModLogChannelId);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        bot.Verify(x => x.SendMessageAsync(It.IsAny<ulong>(), It.IsAny<Embed>(), It.IsAny<Attachment>()), Times.Never);
+    }
+
+    [Fact]
     public async Task UserUnbanned_DoesNotSend_WhenModLogChannelIsNull()
     {
         var configs = new List<GuildConfig>
