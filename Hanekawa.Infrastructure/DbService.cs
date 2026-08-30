@@ -30,7 +30,7 @@ internal class DbService : DbContext, IDbContext
     public DbSet<ItemType> ItemTypes { get; set; } = null!;
     public DbSet<Module> Modules { get; set; } = null!;
 
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public new async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await base.SaveChangesAsync(cancellationToken);
 
     public async Task<bool> EnsureDatabaseCreated(CancellationToken cancellationToken = default)
@@ -43,6 +43,7 @@ internal class DbService : DbContext, IDbContext
     {
         return Database.GetDbConnection();
     }
+    
     public Task<T?> ExecuteQuery<T>(string query, object? param = null, CancellationToken cancellationToken = default)
     {
         return Database.GetDbConnection()

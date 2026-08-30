@@ -3,3 +3,5 @@
 namespace Hanekawa.Application.Contracts.Discord.Services;
 
 public record ReactionCleared(ulong GuildId, ulong ChannelId, ulong MessageId) : INotificationSqs;
+
+public record MemberUpdated(ulong GuildId, ulong UserId, ulong RoleId) : INotificationSqs;
