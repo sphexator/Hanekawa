@@ -1,4 +1,5 @@
-﻿using Hanekawa.Application.Interfaces;
+﻿using Hanekawa.Application.Contracts;
+using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Services;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Discord;
@@ -113,6 +114,56 @@ public class LevelServiceUnitTest
         Assert.Equal(expected, actual);
         Assert.Equal(2, _user.Level);
         Assert.Equal(new ulong[] { 1, 2, 3, 4 }, _member.RoleIds);
+    }
+
+    [Fact]
+    public async Task LevelService_AddExperienceAsync_DispatchesLevelUp_OnlyWhenLevelIncreases()
+    {
+        // Arrange
+        _user.Experience = 300;
+
+        var configDbSet = new List<GuildConfig> { _config }
+            .AsQueryable().BuildMockDbSet();
+        var levelDbSet = new List<LevelRequirement> { new() { Level = 2, Experience = 400 } }
+            .AsQueryable().BuildMockDbSet();
+        var userDbSet = new List<GuildUser> { _user }
+            .AsQueryable().BuildMockDbSet();
+
+        _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
+        _mockdb.Setup(e => e.LevelRequirements).Returns(levelDbSet.Object);
+        _mockdb.Setup(e => e.Users).Returns(userDbSet.Object);
+        _mockBot.Setup(x => x.ModifyRolesAsync(_member, It.IsAny<ulong[]>())).Returns(Task.CompletedTask);
+
+        // Act
+        await _levelService.AddExperienceAsync(_member, 200);
+
+        // Assert
+        _mockDispatcher.Verify(x => x.SendAsync(
+            It.Is<LevelUp>(e => e.Member == _member && e.Level == 2 && e.GuildConfig == _config),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task LevelService_AddExperienceAsync_DoesNotDispatchLevelUp_WhenLevelDoesNotIncrease()
+    {
+        // Arrange
+        var configDbSet = new List<GuildConfig> { _config }
+            .AsQueryable().BuildMockDbSet();
+        var levelDbSet = new List<LevelRequirement> { new() { Level = 2, Experience = 400 } }
+            .AsQueryable().BuildMockDbSet();
+        var userDbSet = new List<GuildUser> { _user }
+            .AsQueryable().BuildMockDbSet();
+
+        _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
+        _mockdb.Setup(e => e.LevelRequirements).Returns(levelDbSet.Object);
+        _mockdb.Setup(e => e.Users).Returns(userDbSet.Object);
+
+        // Act
+        await _levelService.AddExperienceAsync(_member, 100);
+
+        // Assert
+        _mockDispatcher.Verify(x => x.SendAsync(
+            It.IsAny<LevelUp>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
