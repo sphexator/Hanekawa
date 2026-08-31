@@ -29,7 +29,7 @@ public sealed class WarningAdded(
         if (maxWarnings > 0 && warningCount >= maxWarnings)
             await bot.MuteAsync(request.User.Guild.GuildId, request.User.Id,
                 $"Auto-mod warning threshold reached ({maxWarnings})",
-                TimeSpan.FromHours(2 * Convert.ToDouble(warningCount / 3)));
+                TimeSpan.FromHours(2 * (warningCount / 3.0)));
         return result;
     }
 }
