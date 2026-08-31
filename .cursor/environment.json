@@ -1,0 +1,11 @@
+{
+  "name": "Hanekawa",
+  "user": "ubuntu",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "install": "dotnet restore Hanekawa.sln && dotnet build Hanekawa.sln -c Release --no-restore",
+  "start": "bash .cursor/start-services.sh",
+  "ports": [8080, 8081]
+}
