@@ -79,6 +79,33 @@ public class WarningPipelineTests
             Times.Once);
     }
 
+    [Theory]
+    [InlineData(1, 1)]
+    [InlineData(2, 2)]
+    [InlineData(4, 2)]
+    [InlineData(5, 2)]
+    [InlineData(7, 3)]
+    public async Task WarningAdded_MutesWithFractionalDuration_WhenWarningCountIsNotDivisibleByThree(
+        int validRecentCount, int maxWarnings)
+    {
+        // Regression test: `warningCount / 3` must use floating-point division. Integer
+        // division silently truncated the result to 0 for any warningCount of 1 or 2,
+        // producing a zero-length (no-op) mute and, more generally, a shorter-than-configured
+        // auto-mute duration for any warningCount not evenly divisible by 3.
+        var (sut, bot, request) = CreateSutWithWarnings(maxWarnings, validRecentCount);
+        var expectedDuration = TimeSpan.FromHours(2 * (validRecentCount / 3.0));
+
+        await sut.HandleAsync(request, CancellationToken.None);
+
+        Assert.True(expectedDuration > TimeSpan.Zero);
+        bot.Verify(x => x.MuteAsync(
+                request.User.Guild.GuildId,
+                request.User.Id,
+                $"Auto-mod warning threshold reached ({maxWarnings})",
+                expectedDuration),
+            Times.Once);
+    }
+
     [Fact]
     public async Task WarningAdded_IgnoresInvalidAndOldWarnings_WhenCountingTowardMute()
     {
