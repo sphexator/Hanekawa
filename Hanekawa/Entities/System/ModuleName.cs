@@ -12,6 +12,7 @@ public static class ModuleName
 	public const string Boost = "Boost";
 	public const string Greet = "Greet";
 	public const string Logging = "Logging";
+	public const string Streaming = "Streaming";
 
 	public static readonly string[] All =
 	[
@@ -21,6 +22,7 @@ public static class ModuleName
 		Club,
 		Boost,
 		Greet,
-		Logging
+		Logging,
+		Streaming
 	];
 }

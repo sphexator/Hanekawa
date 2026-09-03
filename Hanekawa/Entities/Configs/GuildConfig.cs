@@ -21,4 +21,5 @@ public class GuildConfig : IConfig
     public DropConfig? DropConfig { get; set; } = new();
     public CurrencyConfig? CurrencyConfig { get; set; } = new();
     public BoostConfig? BoostConfig { get; set; } = new();
+    public StreamConfig? StreamConfig { get; set; } = new();
 }
