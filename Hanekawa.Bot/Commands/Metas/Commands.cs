@@ -8,6 +8,7 @@ public static class SlashGroupName
     public const string Level = "Level";
     public const string Boost = "Boost";
     public const string Module = "Module";
+    public const string Stream = "Stream";
 }
 
 public static class Account
@@ -72,4 +73,13 @@ public static class ModuleCommandName
     public const string List = "list";
     public const string Enable = "enable";
     public const string Disable = "disable";
+}
+
+public static class Stream
+{
+    public const string Channel = "channel";
+    public const string Publish = "publish";
+    public const string Add = "add";
+    public const string Remove = "remove";
+    public const string List = "list";
 }

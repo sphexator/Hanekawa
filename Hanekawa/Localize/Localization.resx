@@ -84,4 +84,13 @@
     <data name="ModuleListTitle" xml:space="preserve">
         <value>Module states</value>
     </data>
+    <data name="StreamUserRemoved" xml:space="preserve">
+        <value>Removed stream user.</value>
+    </data>
+    <data name="StreamUserNotFound" xml:space="preserve">
+        <value>That user is not configured for streaming.</value>
+    </data>
+    <data name="StreamNoUsersFound" xml:space="preserve">
+        <value>No stream users configured.</value>
+    </data>
 </root>

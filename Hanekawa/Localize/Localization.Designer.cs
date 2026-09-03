@@ -231,6 +231,33 @@ namespace Hanekawa.Localize {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No stream users configured.
+        /// </summary>
+        public static string StreamNoUsersFound {
+            get {
+                return ResourceManager.GetString("StreamNoUsersFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to That user is not configured for streaming.
+        /// </summary>
+        public static string StreamUserNotFound {
+            get {
+                return ResourceManager.GetString("StreamUserNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Removed stream user.
+        /// </summary>
+        public static string StreamUserRemoved {
+            get {
+                return ResourceManager.GetString("StreamUserRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unbanned {0} from {1}.
         /// </summary>
         public static string UnbannedGuildUser {

@@ -43,6 +43,7 @@ public static class DependencyInjection
         serviceCollection.AddScoped<IAdministrationCommandService, AdministrationCommandService>();
         serviceCollection.AddScoped<ILogService, LogSettingService>();
         serviceCollection.AddScoped<IGreetService, GreetService>();
+        serviceCollection.AddScoped<IStreamService, StreamService>();
         serviceCollection.AddScoped<IClubCommandService, ClubCommandService>();
         serviceCollection.AddScoped<ILevelCommandService, LevelCommandService>();
         serviceCollection.AddScoped<IBoostCommandService, BoostCommands>();

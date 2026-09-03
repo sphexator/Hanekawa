@@ -83,6 +83,10 @@ internal class DbService : DbContext, IDbContext
                 .WithOne(e => e.GuildConfig)
                 .HasForeignKey<BoostConfig>(f => f.GuildId)
                 .OnDelete(DeleteBehavior.Cascade);
+            x.HasOne(e => e.StreamConfig)
+                .WithOne(e => e.GuildConfig)
+                .HasForeignKey<StreamConfig>(f => f.GuildId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<GuildUser>(x =>
@@ -107,6 +111,21 @@ internal class DbService : DbContext, IDbContext
                 .WithOne(e => e.LevelConfig)
                 .HasForeignKey(e => e.GuildId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<StreamConfig>(x =>
+        {
+            x.HasMany(e => e.Users)
+                .WithOne(e => e.StreamConfig)
+                .HasForeignKey(e => e.GuildId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<StreamUser>(x =>
+        {
+            x.HasKey(e => e.Id);
+            x.HasIndex(e => new { e.GuildId, e.DiscordUserId }).IsUnique();
+            x.HasIndex(e => new { e.GuildId, e.TwitchLogin }).IsUnique();
+            x.Property(e => e.TwitchLogin).HasMaxLength(25);
+            x.Property(e => e.TwitchUserId).HasMaxLength(32);
         });
         modelBuilder.Entity<LevelRequirement>(x =>
         {
