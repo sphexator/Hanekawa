@@ -5,13 +5,13 @@ namespace Hanekawa.Application.Services;
 
 public interface IEventPublisher
 {
-    Task PublishAsync<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
+    ValueTask PublishAsync<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
         where TNotification : notnull;
 }
 
 public sealed class EventPublisher(IServiceScopeFactory scopeFactory) : IEventPublisher
 {
-    public async Task PublishAsync<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
+    public async ValueTask PublishAsync<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
         where TNotification : notnull
     {
         await using var scope = scopeFactory.CreateAsyncScope();
