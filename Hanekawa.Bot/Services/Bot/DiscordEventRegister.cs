@@ -7,7 +7,7 @@ using Hanekawa.Entities.Discord;
 
 namespace Hanekawa.Bot.Services.Bot;
 
-public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
+internal sealed class DiscordEventRegister(IServiceProvider service) : DiscordBotService
 {
     protected override ValueTask OnMemberJoined(MemberJoinedEventArgs e) =>
         service.GetRequiredService<IEventPublisher>()
@@ -68,9 +68,7 @@ public class DiscordEventRegister(IServiceProvider service) : DiscordBotService
                 IsBot = e.User.IsBot,
                 AvatarUrl = e.User.GetAvatarUrl()
             }));
-
-    protected override ValueTask OnVoiceServerUpdated(VoiceServerUpdatedEventArgs e) => base.OnVoiceServerUpdated(e);
-
+    
     protected override ValueTask OnVoiceStateUpdated(VoiceStateUpdatedEventArgs e)
     {
         return service.GetRequiredService<IEventPublisher>()
