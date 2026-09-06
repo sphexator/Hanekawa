@@ -4,25 +4,28 @@
     build:
       context: .
       dockerfile: Hanekawa.Bot/Dockerfile
+    depends_on:
+      - postgres
+      - redis
   postgres:
     image: postgres:latest
-    container_name: hanekawa-postgres
+    container_name: hanekawa-postgres-instance
     environment:
-      POSTGRES_DB: hanekawa
       POSTGRES_USER: hanekawa
       POSTGRES_PASSWORD: hanekawa
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_instance:/var/lib/postgresql
+
   redis:
     image: redis:latest
-    container_name: hanekawa-redis
+    container_name: hanekawa-redis-instance
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - redis_data_instance:/data
 
 volumes:
-  postgres_data:
-  redis_data:
+  postgres_data_instance:
+  redis_data_instance:

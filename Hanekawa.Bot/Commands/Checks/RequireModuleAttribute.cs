@@ -1,6 +1,5 @@
 using Disqord.Bot.Commands;
 using Hanekawa.Application.Interfaces.Services;
-using Qmmands;
 using IResult = Qmmands.IResult;
 
 namespace Hanekawa.Bot.Commands.Checks;
@@ -12,6 +11,11 @@ public class RequireModuleAttribute(string module) : DiscordGuildCheckAttribute
 {
     public override async ValueTask<IResult> CheckAsync(IDiscordGuildCommandContext context)
     {
+	    if (context.Bot.OwnerIds.Contains(context.AuthorId))
+	    {
+		    return Qmmands.Results.Success;
+	    }
+	    
         await using var scope = context.Services.CreateAsyncScope();
         var modules = scope.ServiceProvider.GetRequiredService<IModuleService>();
         var enabled = await modules.IsEnabledAsync(context.GuildId.RawValue, module, context.CancellationToken);
