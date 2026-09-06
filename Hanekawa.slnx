@@ -1,11 +1,14 @@
 ﻿<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="compose.yaml" />
+  </Folder>
   <Folder Name="/src/">
-    <Project Path="Hanekawa.Application\Hanekawa.Application.csproj" Type="Classic C#" />
-    <Project Path="Hanekawa.Bot\Hanekawa.Bot.csproj" Type="Classic C#" />
+    <Project Path="Hanekawa.Application\Hanekawa.Application.csproj" Type="C#" />
+    <Project Path="Hanekawa.Bot\Hanekawa.Bot.csproj" Type="C#" />
     <Project Path="Hanekawa.Infrastructure\Hanekawa.Infrastructure.csproj" />
     <Project Path="Hanekawa\Hanekawa.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="Hanekawa.Tests\Hanekawa.Tests.csproj" Type="Classic C#" />
+    <Project Path="Hanekawa.Tests\Hanekawa.Tests.csproj" Type="C#" />
   </Folder>
 </Solution>
