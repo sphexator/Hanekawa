@@ -28,7 +28,7 @@ builder.Host.ConfigureDiscordBot<Bot>((_, bot) =>
     bot.ApplicationId = new Snowflake(ulong.Parse(builder.Configuration["applicationId"]!));
     bot.UseMentionPrefix = true;
     bot.ReadyEventDelayMode = ReadyEventDelayMode.Guilds;
-    bot.Intents = GatewayIntents.Unprivileged;
+    bot.Intents = BotGatewayIntentConfiguration.Configure(bot.Intents);
     bot.OwnerIds = [111123736660324352];
 });
 
