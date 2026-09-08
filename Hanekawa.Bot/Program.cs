@@ -8,7 +8,6 @@ using Hanekawa.Infrastructure;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddJsonFile("config.json", optional: true, reloadOnChange: true);
 
 builder.Services.AddApplicationLayer(builder.Configuration);
 builder.Services.AddInfrastructureLayer(builder.Configuration);
