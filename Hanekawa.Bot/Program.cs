@@ -1,7 +1,6 @@
 using Disqord;
 using Disqord.Bot.Commands.Application.Default;
 using Disqord.Bot.Hosting;
-using Disqord.Gateway;
 using Hanekawa.Application;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Bot.Bot;
@@ -28,7 +27,7 @@ builder.Host.ConfigureDiscordBot<Bot>((_, bot) =>
     bot.ApplicationId = new Snowflake(ulong.Parse(builder.Configuration["applicationId"]!));
     bot.UseMentionPrefix = true;
     bot.ReadyEventDelayMode = ReadyEventDelayMode.Guilds;
-    bot.Intents = GatewayIntents.Unprivileged;
+    bot.Intents = BotGatewayIntentConfiguration.FromConfiguration(builder.Configuration);
     bot.OwnerIds = [111123736660324352];
 });
 
