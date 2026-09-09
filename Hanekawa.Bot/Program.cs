@@ -14,11 +14,11 @@ builder.Services.AddInfrastructureLayer(builder.Configuration);
 
 builder.Services.Configure<DefaultApplicationCommandCacheProviderConfiguration>(options =>
 {
-    options.DirectoryPath = Path.Combine(Path.GetTempPath(), "hanekawa", "cache");
+    options.DirectoryPath = ApplicationCommandPaths.CacheDirectory;
 });
 builder.Services.Configure<DefaultApplicationCommandLocalizerConfiguration>(options =>
 {
-    options.DirectoryPath = Path.Combine(Path.GetTempPath(), "hanekawa", "localizations");
+    options.DirectoryPath = ApplicationCommandPaths.LocalizationDirectory;
 });
 
 builder.Host.ConfigureDiscordBot<Bot>((_, bot) =>
