@@ -1,5 +1,7 @@
+using System.Text;
 using Disqord.Gateway;
 using Hanekawa.Bot.Bot;
+using Microsoft.Extensions.Configuration;
 
 namespace Hanekawa.Tests.Bot;
 
@@ -48,6 +50,107 @@ public class BotGatewayIntentConfigurationTests
     {
         var ex = Assert.Throws<InvalidOperationException>(
             () => BotGatewayIntentConfiguration.Parse(["NotAnIntent"]));
+        Assert.Contains("NotAnIntent", ex.Message);
+    }
+
+    [Fact]
+    public void FromConfiguration_MissingSection_DefaultsToAll()
+    {
+        var configuration = new ConfigurationBuilder().Build();
+
+        Assert.Equal(GatewayIntents.All, BotGatewayIntentConfiguration.FromConfiguration(configuration));
+    }
+
+    [Fact]
+    public void FromConfiguration_ArrayBinding_IncludesPrivilegedIntentsRequiredByEventHandlers()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Discord:Intents:0"] = "All"
+            })
+            .Build();
+
+        var intents = BotGatewayIntentConfiguration.FromConfiguration(configuration);
+
+        Assert.True(intents.HasFlag(GatewayIntents.Members));
+        Assert.True(intents.HasFlag(GatewayIntents.MessageContent));
+        Assert.True(intents.HasFlag(GatewayIntents.Presences));
+    }
+
+    [Fact]
+    public void FromConfiguration_JsonArrayBinding_MatchesAppsettingsShape()
+    {
+        const string json = """
+            {
+              "Discord": {
+                "Intents": [ "All" ]
+              }
+            }
+            """;
+
+        var configuration = new ConfigurationBuilder()
+            .AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            .Build();
+
+        var intents = BotGatewayIntentConfiguration.FromConfiguration(configuration);
+
+        Assert.Equal(GatewayIntents.All, intents);
+    }
+
+    [Fact]
+    public void FromConfiguration_ScalarValue_IncludesPrivilegedIntents()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Discord:Intents"] = "All"
+            })
+            .Build();
+
+        var intents = BotGatewayIntentConfiguration.FromConfiguration(configuration);
+
+        Assert.Equal(GatewayIntents.All, intents);
+    }
+
+    [Fact]
+    public void FromConfiguration_EmptyArrayOrWhitespace_DefaultsToAll()
+    {
+        const string emptyArrayJson = """
+            {
+              "Discord": {
+                "Intents": []
+              }
+            }
+            """;
+
+        var emptyArray = new ConfigurationBuilder()
+            .AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(emptyArrayJson)))
+            .Build();
+
+        var whitespaceOnly = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Discord:Intents:0"] = "  "
+            })
+            .Build();
+
+        Assert.Equal(GatewayIntents.All, BotGatewayIntentConfiguration.FromConfiguration(emptyArray));
+        Assert.Equal(GatewayIntents.All, BotGatewayIntentConfiguration.FromConfiguration(whitespaceOnly));
+    }
+
+    [Fact]
+    public void FromConfiguration_UnknownIntent_Throws()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Discord:Intents:0"] = "NotAnIntent"
+            })
+            .Build();
+
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => BotGatewayIntentConfiguration.FromConfiguration(configuration));
         Assert.Contains("NotAnIntent", ex.Message);
     }
 }
