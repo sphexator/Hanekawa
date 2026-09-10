@@ -53,4 +53,36 @@ public class ExperienceHandlerModuleTests
         levelService.Verify(x => x.AddExperienceAsync(It.IsAny<Hanekawa.Entities.Discord.DiscordMember>(),
             It.IsAny<int>()), Times.Once);
     }
+
+    [Fact]
+    public async Task HandleAsync_UsesConfiguredExperienceBounds_WhenModuleEnabled()
+    {
+        const int lower = 10;
+        const int upper = 20;
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["expLower"] = lower.ToString(),
+                ["expUpper"] = upper.ToString()
+            })
+            .Build();
+        var captured = new List<int>();
+        var levelService = new Mock<ILevelService>();
+        levelService.Setup(x => x.AddExperienceAsync(
+                It.IsAny<Hanekawa.Entities.Discord.DiscordMember>(), It.IsAny<int>()))
+            .Callback<Hanekawa.Entities.Discord.DiscordMember, int>((_, experience) => captured.Add(experience))
+            .ReturnsAsync((Hanekawa.Entities.Discord.DiscordMember _, int experience) => experience);
+        var moduleService = new Mock<IModuleService>();
+        moduleService.Setup(x => x.IsEnabledAsync(1, ModuleName.Level, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        var sut = new MessageReceivedExperienceHandler(levelService.Object, configuration, moduleService.Object);
+
+        for (var i = 0; i < 40; i++)
+        {
+            await sut.HandleAsync(CreateNotification(), CancellationToken.None);
+        }
+
+        Assert.Equal(40, captured.Count);
+        Assert.All(captured, experience => Assert.InRange(experience, lower, upper - 1));
+    }
 }
