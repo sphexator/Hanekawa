@@ -153,4 +153,22 @@ public class BotGatewayIntentConfigurationTests
             () => BotGatewayIntentConfiguration.FromConfiguration(configuration));
         Assert.Contains("NotAnIntent", ex.Message);
     }
+
+    [Fact]
+    public void ShippedAppsettings_BindsDiscordIntentsWithPrivilegedFlagsRequiredByEventHandlers()
+    {
+        var appsettingsPath = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory, "..", "..", "..", "..", "Hanekawa.Bot", "appsettings.json"));
+        Assert.True(File.Exists(appsettingsPath), $"Expected shipped appsettings at {appsettingsPath}");
+
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile(appsettingsPath)
+            .Build();
+
+        var intents = BotGatewayIntentConfiguration.FromConfiguration(configuration);
+
+        Assert.True(intents.HasFlag(GatewayIntents.Members));
+        Assert.True(intents.HasFlag(GatewayIntents.MessageContent));
+        Assert.True(intents.HasFlag(GatewayIntents.Presences));
+    }
 }

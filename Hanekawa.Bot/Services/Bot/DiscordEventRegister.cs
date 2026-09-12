@@ -3,6 +3,7 @@ using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Hanekawa.Application.Contracts.Discord.Services;
 using Hanekawa.Application.Services;
+using Hanekawa.Bot.Mapper;
 using Hanekawa.Entities.Discord;
 
 namespace Hanekawa.Bot.Services.Bot;
@@ -106,24 +107,13 @@ internal sealed class DiscordEventRegister(IServiceProvider service) : DiscordBo
             .PublishAsync(new ReactionCleared(e.GuildId.Value, e.ChannelId, e.MessageId));
     }
 
-    private static ulong[] ConvertRoles(IReadOnlyList<Snowflake> roles)
-    {
-        var toReturn = new ulong[roles.Count];
-        for (var i = 0; i < roles.Count; i++)
-        {
-            var role = roles[i];
-            toReturn[i] = role.RawValue;
-        }
-        return toReturn;
-    }
-    
     private static DiscordMember ConvertToMember(IMember member)
     {
         return new DiscordMember
         {
 	        Guild = new Guild { GuildId = member.GuildId },
 	        Id = member.Id,
-	        RoleIds = ConvertRoles(member.RoleIds),
+	        RoleIds = DiscordMemberMapper.ToRawRoleIds(member.RoleIds),
 	        Nickname = member.Nick,
 	        IsBot = member.IsBot,
 	        Username = member.Name,
