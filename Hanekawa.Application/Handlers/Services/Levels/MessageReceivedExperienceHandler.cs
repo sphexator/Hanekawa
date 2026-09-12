@@ -25,8 +25,12 @@ public class MessageReceivedExperienceHandler: INotificationHandler<MessageRecei
         if (!await _moduleService.IsEnabledAsync(notification.GuildId, ModuleName.Level, cancellationToken))
             return;
 
+        var lower = _configuration.GetValue("expLower", 1);
+        var upper = _configuration.GetValue("expUpper", 5);
+        if (upper <= lower)
+            upper = lower + 1;
+
         await _levelService.AddExperienceAsync(notification.Member,
-            Random.Shared.Next(Convert.ToInt32(_configuration["expLower"]),
-                Convert.ToInt32(_configuration["expUpper"])));
+            Random.Shared.Next(lower, upper));
     }
 }
