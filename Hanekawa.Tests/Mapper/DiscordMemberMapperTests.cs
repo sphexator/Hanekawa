@@ -8,20 +8,17 @@ public class DiscordMemberMapperTests
     [Fact]
     public void ToRawRoleIds_PreservesSnowflakeOrderAndValues()
     {
-        var roles = new[] { new Snowflake(100UL), new Snowflake(200UL), new Snowflake(300UL) };
+        var roles = new[] { new Snowflake(10), new Snowflake(20), new Snowflake(30) };
 
         var raw = DiscordMemberMapper.ToRawRoleIds(roles);
 
-        Assert.Equal([100UL, 200UL, 300UL], raw);
+        Assert.Equal([10ul, 20ul, 30ul], raw);
     }
 
     [Fact]
-    public void ToRawRoleIds_EmptyRoleList_ReturnsEmptyArray()
+    public void ToRawRoleIds_EmptyList_ReturnsEmptyArray()
     {
-        IReadOnlyList<Snowflake> roles = Array.Empty<Snowflake>();
-
-        var raw = DiscordMemberMapper.ToRawRoleIds(roles);
-
-        Assert.Empty(raw);
+        Assert.Empty(DiscordMemberMapper.ToRawRoleIds([]));
     }
+
 }

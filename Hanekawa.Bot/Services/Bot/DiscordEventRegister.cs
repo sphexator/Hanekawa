@@ -23,14 +23,16 @@ internal sealed class DiscordEventRegister(IServiceProvider service) : DiscordBo
     { 
 	    if (e is { OldMember: null } ) return ValueTask.CompletedTask;
 		return service.GetRequiredService<IEventPublisher>() 
-			.PublishAsync(new MemberUpdated(e.GuildId, ConvertToMember(e.OldMember), ConvertToMember(e.NewMember)));
+			.PublishAsync(new MemberUpdated(e.GuildId, DiscordMemberMapper.ToDiscordMember(e.OldMember),
+				DiscordMemberMapper.ToDiscordMember(e.NewMember)));
     }
 
     protected override ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
     {
         if (e.GuildId is null || e.Member is null) return ValueTask.CompletedTask;
         return service.GetRequiredService<IEventPublisher>()
-            .PublishAsync(new MessageReceived(e.GuildId.Value, e.ChannelId, ConvertToMember(e.Member), e.MessageId, e.Message.Content, e.Message.CreatedAt()));
+            .PublishAsync(new MessageReceived(e.GuildId.Value, e.ChannelId, DiscordMemberMapper.ToDiscordMember(e.Member),
+                e.MessageId, e.Message.Content, e.Message.CreatedAt()));
     }
 
     protected override ValueTask OnMessageDeleted(MessageDeletedEventArgs e)
@@ -107,18 +109,4 @@ internal sealed class DiscordEventRegister(IServiceProvider service) : DiscordBo
             .PublishAsync(new ReactionCleared(e.GuildId.Value, e.ChannelId, e.MessageId));
     }
 
-    private static DiscordMember ConvertToMember(IMember member)
-    {
-        return new DiscordMember
-        {
-	        Guild = new Guild { GuildId = member.GuildId },
-	        Id = member.Id,
-	        RoleIds = DiscordMemberMapper.ToRawRoleIds(member.RoleIds),
-	        Nickname = member.Nick,
-	        IsBot = member.IsBot,
-	        Username = member.Name,
-	        AvatarUrl = member.GetAvatarUrl(),
-	        VoiceSessionId = member.GetVoiceState()?.SessionId
-        };
-    }
 }

@@ -155,14 +155,15 @@ public class BotGatewayIntentConfigurationTests
     }
 
     [Fact]
-    public void ShippedAppsettings_BindsDiscordIntentsWithPrivilegedFlagsRequiredByEventHandlers()
+    public void FromConfiguration_ShippedAppsettingsJson_IncludesPrivilegedIntentsRequiredByEventHandlers()
     {
         var appsettingsPath = Path.GetFullPath(Path.Combine(
-            AppContext.BaseDirectory, "..", "..", "..", "..", "Hanekawa.Bot", "appsettings.json"));
-        Assert.True(File.Exists(appsettingsPath), $"Expected shipped appsettings at {appsettingsPath}");
+            AppContext.BaseDirectory,
+            "..", "..", "..", "..",
+            "Hanekawa.Bot", "appsettings.json"));
 
         var configuration = new ConfigurationBuilder()
-            .AddJsonFile(appsettingsPath)
+            .AddJsonFile(appsettingsPath, optional: false)
             .Build();
 
         var intents = BotGatewayIntentConfiguration.FromConfiguration(configuration);
