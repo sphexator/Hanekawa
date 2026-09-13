@@ -8,6 +8,52 @@ namespace Hanekawa.Tests.Mapper;
 public class DiscordMapperTests
 {
     [Fact]
+    public void ToLocalEmbed_MapsHeaderFooterAndFields()
+    {
+        var timestamp = new DateTimeOffset(2024, 6, 1, 12, 0, 0, TimeSpan.Zero);
+        var embed = new Embed
+        {
+            Title = "Module status",
+            Content = "Level is on",
+            Color = 0x00FF00,
+            Icon = "https://cdn/icon.png",
+            Attachment = "https://cdn/banner.png",
+            Timestamp = timestamp,
+            Header = new EmbedHeader("Hanekawa", "https://cdn/avatar.png", "https://example.com"),
+            Footer = new EmbedFooter("https://cdn/footer.png", "Updated"),
+            Fields =
+            [
+                new EmbedField("XP", "1–5 per message", true),
+                new EmbedField("Rank", "#3", false)
+            ]
+        };
+
+        var local = embed.ToLocalEmbed();
+
+        Assert.Equal("Module status", local.Title);
+        Assert.Equal("Level is on", local.Description);
+        Assert.Equal("https://cdn/icon.png", local.ThumbnailUrl);
+        Assert.Equal("https://cdn/banner.png", local.ImageUrl);
+        Assert.Equal(timestamp, local.Timestamp);
+        Assert.True(local.Author.HasValue);
+        Assert.Equal("Hanekawa", local.Author.Value.Name);
+        Assert.True(local.Footer.HasValue);
+        Assert.Equal("Updated", local.Footer.Value.Text);
+        Assert.True(local.Fields.HasValue);
+        Assert.Equal(2, local.Fields.Value.Count);
+        Assert.Equal("XP", local.Fields.Value[0].Name);
+        Assert.True(local.Fields.Value[0].IsInline.Value);
+    }
+
+    [Fact]
+    public void ToLocalEmbed_NoFields_OmitsFieldsCollection()
+    {
+        var local = new Embed { Title = "Ping", Content = "pong" }.ToLocalEmbed();
+
+        Assert.False(local.Fields.HasValue);
+    }
+
+    [Fact]
     public void ToLocalInteractionMessageResponse_TextOnly_DoesNotThrow()
     {
         var response = new Response<Message>(new Message("banned user"));

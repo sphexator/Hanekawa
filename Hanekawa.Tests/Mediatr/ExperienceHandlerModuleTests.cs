@@ -76,6 +76,36 @@ public class ExperienceHandlerModuleTests
     }
 
     [Fact]
+    public async Task HandleAsync_AdjustsUpperBound_WhenUpperLessThanOrEqualToLower()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["expLower"] = "10",
+                ["expUpper"] = "5"
+            })
+            .Build();
+        var captured = new List<int>();
+        var levelService = new Mock<ILevelService>();
+        levelService.Setup(x => x.AddExperienceAsync(
+                It.IsAny<Hanekawa.Entities.Discord.DiscordMember>(), It.IsAny<int>()))
+            .Callback<Hanekawa.Entities.Discord.DiscordMember, int>((_, experience) => captured.Add(experience))
+            .ReturnsAsync((Hanekawa.Entities.Discord.DiscordMember _, int experience) => experience);
+        var moduleService = new Mock<IModuleService>();
+        moduleService.Setup(x => x.IsEnabledAsync(1, ModuleName.Level, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        var sut = new MessageReceivedExperienceHandler(levelService.Object, configuration, moduleService.Object);
+
+        for (var i = 0; i < 30; i++)
+        {
+            await sut.HandleAsync(CreateNotification(), CancellationToken.None);
+        }
+
+        Assert.Equal(30, captured.Count);
+        Assert.All(captured, experience => Assert.Equal(10, experience));
+    }
+
+    [Fact]
     public async Task HandleAsync_UsesConfiguredExperienceBounds_WhenModuleEnabled()
     {
         const int lower = 10;
