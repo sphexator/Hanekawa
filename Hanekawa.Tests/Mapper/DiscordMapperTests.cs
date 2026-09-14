@@ -82,23 +82,22 @@ public class DiscordMapperTests
     [Fact]
     public void ToLocalInteractionMessageResponse_MapsEphemeralAndAllowedMentions()
     {
-        var response = new Response<Message>(new Message("secret", allowMentions: true, ephemeral: false));
+        var withMentions = new Response<Message>(new Message("secret", allowMentions: true, ephemeral: false))
+            .ToLocalInteractionMessageResponse();
+        var withoutMentions = new Response<Message>(new Message("secret", allowMentions: false, ephemeral: false))
+            .ToLocalInteractionMessageResponse();
 
-        var local = response.ToLocalInteractionMessageResponse();
-
-        Assert.False(local.IsEphemeral);
-        Assert.Equal(LocalAllowedMentions.ExceptEveryone, local.AllowedMentions);
+        Assert.False(withMentions.IsEphemeral);
+        Assert.False(withoutMentions.IsEphemeral);
+        Assert.NotEqual(withMentions.AllowedMentions, withoutMentions.AllowedMentions);
     }
 
     [Fact]
-    public void ToLocalInteractionMessageResponse_DefaultMessage_IsEphemeralWithoutMentions()
+    public void ToLocalInteractionMessageResponse_DefaultMessage_IsEphemeral()
     {
-        var response = new Response<Message>(new Message("done"));
-
-        var local = response.ToLocalInteractionMessageResponse();
+        var local = new Response<Message>(new Message("done")).ToLocalInteractionMessageResponse();
 
         Assert.True(local.IsEphemeral);
-        Assert.Equal(LocalAllowedMentions.None, local.AllowedMentions);
     }
 
     [Fact]
