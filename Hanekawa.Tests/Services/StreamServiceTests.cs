@@ -226,6 +226,8 @@ public class StreamServiceTests
     [InlineData("https://twitch.tv/Bob", "bob")]
     [InlineData("https://www.twitch.tv/Foo_Bar", "foo_bar")]
     [InlineData("http://twitch.tv/name?foo=1", "name")]
+    [InlineData("twitch.tv/NoScheme", "noscheme")]
+    [InlineData("https://twitch.tv/login#panel", "login")]
     public void NormalizeTwitchLogin_StripsUrlAndCasing(string input, string expected)
         => Assert.Equal(expected, StreamService.NormalizeTwitchLogin(input));
 
