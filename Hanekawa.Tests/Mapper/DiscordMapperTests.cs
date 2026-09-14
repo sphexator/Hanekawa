@@ -80,6 +80,28 @@ public class DiscordMapperTests
     }
 
     [Fact]
+    public void ToLocalInteractionMessageResponse_MapsEphemeralAndAllowedMentions()
+    {
+        var response = new Response<Message>(new Message("secret", allowMentions: true, ephemeral: false));
+
+        var local = response.ToLocalInteractionMessageResponse();
+
+        Assert.False(local.IsEphemeral);
+        Assert.Equal(LocalAllowedMentions.ExceptEveryone, local.AllowedMentions);
+    }
+
+    [Fact]
+    public void ToLocalInteractionMessageResponse_DefaultMessage_IsEphemeralWithoutMentions()
+    {
+        var response = new Response<Message>(new Message("done"));
+
+        var local = response.ToLocalInteractionMessageResponse();
+
+        Assert.True(local.IsEphemeral);
+        Assert.Equal(LocalAllowedMentions.None, local.AllowedMentions);
+    }
+
+    [Fact]
     public void ToPages_WithTwoItems_DoesNotThrow()
     {
         var response = new Response<Pagination<Message>>(new Pagination<Message>(
