@@ -54,6 +54,17 @@ public class DiscordMapperTests
     }
 
     [Fact]
+    public void ToLocalEmbed_NullTitleAndContent_MapToEmptyStrings()
+    {
+        var local = new Embed { Color = 0xFF0000 }.ToLocalEmbed();
+
+        Assert.Equal(string.Empty, local.Title);
+        Assert.Equal(string.Empty, local.Description);
+        Assert.Equal(string.Empty, local.ThumbnailUrl);
+        Assert.Equal(string.Empty, local.ImageUrl);
+    }
+
+    [Fact]
     public void ToLocalInteractionMessageResponse_TextOnly_DoesNotThrow()
     {
         var response = new Response<Message>(new Message("banned user"));
@@ -114,5 +125,13 @@ public class DiscordMapperTests
         Assert.Equal(2, pages.Length);
         Assert.Equal("page 1", pages[0].Content.Value);
         Assert.Equal("page 2", pages[1].Content.Value);
+    }
+
+    [Fact]
+    public void ToPages_WithNoItems_ReturnsEmptyArray()
+    {
+        var pages = new Response<Pagination<Message>>(new Pagination<Message>([])).ToPages();
+
+        Assert.Empty(pages);
     }
 }
