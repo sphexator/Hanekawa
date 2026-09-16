@@ -32,4 +32,12 @@ public class PaginationBuilderTests
         Assert.Contains("warning-0", pages[0].Content);
         Assert.Contains("warning-2", pages[0].Content);
     }
+
+    [Fact]
+    public void Paginate_WithNoItems_ReturnsEmptyArray()
+    {
+        var pages = new List<string>().BuildPage().Paginate<Message>();
+
+        Assert.Empty(pages);
+    }
 }

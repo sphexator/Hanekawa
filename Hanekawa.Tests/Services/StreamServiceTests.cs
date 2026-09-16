@@ -38,6 +38,23 @@ public class StreamServiceTests
     }
 
     [Fact]
+    public async Task TogglePublish_InitializesStreamConfig_WhenGuildExistsWithoutStreamConfig()
+    {
+        var configs = new List<GuildConfig> { new() { GuildId = GuildId, StreamConfig = null } };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var sut = new StreamService(db.Object, NullLogger<StreamService>.Instance);
+
+        var result = await sut.TogglePublish(GuildId);
+
+        Assert.Equal("Enabled publishing when a configured user starts streaming !", result);
+        Assert.NotNull(configs[0].StreamConfig);
+        Assert.True(configs[0].StreamConfig!.PublishOnStart);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task TogglePublish_FlipsPublishOnStart()
     {
         var stream = new StreamConfig { GuildId = GuildId, PublishOnStart = false };
@@ -145,6 +162,20 @@ public class StreamServiceTests
     }
 
     [Fact]
+    public async Task RemoveUser_ReturnsFalse_WhenGuildExistsButStreamConfigMissing()
+    {
+        var configs = new List<GuildConfig> { new() { GuildId = GuildId, StreamConfig = null } };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        var sut = new StreamService(db.Object, NullLogger<StreamService>.Instance);
+
+        var removed = await sut.RemoveUser(GuildId, 1);
+
+        Assert.False(removed);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task RemoveUser_ReturnsFalse_WhenUserIsMissing()
     {
         var configs = new List<GuildConfig>
@@ -199,6 +230,20 @@ public class StreamServiceTests
     {
         var db = new Mock<IDbContext>();
         db.Setup(x => x.GuildConfigs).ReturnsDbSet(new List<GuildConfig>());
+        var sut = new StreamService(db.Object, NullLogger<StreamService>.Instance);
+
+        var result = await sut.ListUsers(GuildId);
+
+        Assert.True(result.IsT0);
+        Assert.IsType<NotFound>(result.AsT0);
+    }
+
+    [Fact]
+    public async Task ListUsers_ReturnsNotFound_WhenGuildExistsButStreamConfigMissing()
+    {
+        var configs = new List<GuildConfig> { new() { GuildId = GuildId, StreamConfig = null } };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
         var sut = new StreamService(db.Object, NullLogger<StreamService>.Instance);
 
         var result = await sut.ListUsers(GuildId);
