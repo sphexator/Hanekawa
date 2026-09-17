@@ -1,6 +1,8 @@
 using System.Diagnostics.Metrics;
 using Hanekawa.Application;
 using Hanekawa.Application.Extensions;
+using Hanekawa.Application.Contracts.Discord.Common;
+using Hanekawa.Application.Handlers.Commands.Administration;
 using Hanekawa.Application.Handlers.Services.Warnings;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Pipelines;
@@ -43,6 +45,48 @@ public class MetricPipelineTests
         Assert.Same(expected, result);
         Assert.Equal(1, metrics.IncrementCount);
         inner.Verify(x => x.HandleAsync(request, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task VoidMetricPipeline_InvokesInnerHandler_AndIncrementsCounter()
+    {
+        var inner = new Mock<IRequestHandler<Ban>>();
+        inner.Setup(x => x.HandleAsync(It.IsAny<Ban>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var metrics = new FakeMetrics();
+
+        var sut = new MetricPipeline<Ban>(
+            inner.Object,
+            NullLogger<MetricPipeline<Ban>>.Instance,
+            metrics);
+
+        var request = new Ban { GuildId = 1, UserId = 2, ModeratorId = 3, Reason = "spam" };
+
+        await sut.HandleAsync(request, CancellationToken.None);
+
+        Assert.Equal(1, metrics.IncrementCount);
+        inner.Verify(x => x.HandleAsync(request, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public void DecoratedBanHandler_ResolvesAsMetricPipelineFromServiceProvider()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IMetrics>(new FakeMetrics());
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton<IServiceProvider>(sp => sp);
+        services.AddDecoratedRequestHandler<Ban, BanHandler>();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        using var scope = provider.CreateScope();
+
+        var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler<Ban>>();
+
+        Assert.IsType<MetricPipeline<Ban>>(handler);
     }
 
     [Fact]
