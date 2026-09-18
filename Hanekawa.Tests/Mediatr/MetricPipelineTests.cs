@@ -1,7 +1,7 @@
 using System.Diagnostics.Metrics;
 using Hanekawa.Application;
-using Hanekawa.Application.Extensions;
 using Hanekawa.Application.Contracts.Discord.Common;
+using Hanekawa.Application.Extensions;
 using Hanekawa.Application.Handlers.Commands.Administration;
 using Hanekawa.Application.Handlers.Services.Warnings;
 using Hanekawa.Application.Interfaces;
@@ -110,6 +110,44 @@ public class MetricPipelineTests
         var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler<WarningReceived, Response<Message>>>();
 
         Assert.IsType<WarningAdded>(handler);
+    }
+
+    [Fact]
+    public async Task DecoratedBanHandler_ResolvesMetricPipeline_AndInvokesBan()
+    {
+        var metrics = new FakeMetrics();
+        var bot = new Mock<IBot>();
+        bot.Setup(x => x.BanAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton<IBot>(nameof(ProviderSource.Discord), bot.Object);
+        services.AddSingleton<IMetrics>(metrics);
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddDecoratedRequestHandler<Ban, BanHandler>();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        using var scope = provider.CreateScope();
+
+        var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler<Ban>>();
+        Assert.IsType<MetricPipeline<Ban>>(handler);
+
+        await handler.HandleAsync(new Ban
+        {
+            GuildId = 10,
+            UserId = 20,
+            ModeratorId = 30,
+            Reason = "raid",
+            Days = 7,
+            Source = ProviderSource.Discord
+        }, CancellationToken.None);
+
+        Assert.Equal(1, metrics.IncrementCount);
+        bot.Verify(x => x.BanAsync(10, 20, 7, "raid %30%"), Times.Once);
     }
 
     private sealed class FakeMetrics : IMetrics
