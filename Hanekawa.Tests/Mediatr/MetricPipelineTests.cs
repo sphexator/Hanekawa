@@ -1,10 +1,16 @@
 using System.Diagnostics.Metrics;
 using Hanekawa.Application;
+using Hanekawa.Application.Contracts;
 using Hanekawa.Application.Contracts.Discord.Common;
 using Hanekawa.Application.Extensions;
 using Hanekawa.Application.Handlers.Commands.Administration;
+using Hanekawa.Application.Handlers.Services.Levels;
 using Hanekawa.Application.Handlers.Services.Warnings;
 using Hanekawa.Application.Interfaces;
+using Hanekawa.Application.Interfaces.Services;
+using Hanekawa.Entities.Discord;
+using Hanekawa.Entities.Users;
+using Moq.EntityFrameworkCore;
 using Hanekawa.Application.Pipelines;
 using Hanekawa.Decorator;
 using Hanekawa.Entities;
@@ -135,6 +141,116 @@ public class MetricPipelineTests
 
         Assert.Equal(1, metrics.IncrementCount);
         bot.Verify(x => x.BanAsync(10, 20, 7, "raid %30%"), Times.Once);
+    }
+
+    [Fact]
+    public async Task DecoratedKickHandler_ResolvesMetricPipeline_AndInvokesKick()
+    {
+        var metrics = new FakeMetrics();
+        var bot = new Mock<IBot>();
+        bot.Setup(x => x.KickAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton<IBot>(nameof(ProviderSource.Discord), bot.Object);
+        services.AddSingleton<IMetrics>(metrics);
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddDecoratedRequestHandler<Kick, KickHandler>();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        using var scope = provider.CreateScope();
+
+        var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler<Kick>>();
+        Assert.IsType<MetricPipeline<Kick>>(handler);
+
+        await handler.HandleAsync(new Kick
+        {
+            GuildId = 10,
+            UserId = 20,
+            ModeratorId = 30,
+            Reason = "raid",
+            Source = ProviderSource.Discord
+        }, CancellationToken.None);
+
+        Assert.Equal(1, metrics.IncrementCount);
+        bot.Verify(x => x.KickAsync(10, 20, "raid %30%"), Times.Once);
+    }
+
+    [Fact]
+    public async Task DecoratedLevelUpHandler_ResolvesMetricPipeline_AndInvokesLevelUp()
+    {
+        var metrics = new FakeMetrics();
+        var levelService = new Mock<ILevelService>();
+        var member = new DiscordMember
+        {
+            Id = 1,
+            Guild = new Guild { GuildId = 1 },
+            Username = "Bob"
+        };
+        var config = new Hanekawa.Entities.Configs.GuildConfig { GuildId = 1 };
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IMetrics>(metrics);
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton(levelService.Object);
+        services.AddDecoratedRequestHandler<LevelUp, LevelUpRoleHandler>();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        using var scope = provider.CreateScope();
+
+        var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler<LevelUp>>();
+        Assert.IsType<MetricPipeline<LevelUp>>(handler);
+
+        await handler.HandleAsync(new LevelUp(member, member.RoleIds, 5, config), CancellationToken.None);
+
+        Assert.Equal(1, metrics.IncrementCount);
+        levelService.Verify(x => x.AdjustRolesAsync(member, 5, config), Times.Once);
+    }
+
+    [Fact]
+    public async Task DecoratedWarningClearHandler_ResolvesMetricPipeline_AndInvokesHandler()
+    {
+        var metrics = new FakeMetrics();
+        var user = new DiscordMember
+        {
+            Id = 10,
+            Username = "user",
+            Guild = new Guild { GuildId = 1, Name = "guild" }
+        };
+        var warning = new Warning { GuildId = 1, UserId = 10, Valid = true };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Warnings).ReturnsDbSet(new List<Warning> { warning });
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IMetrics>(metrics);
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton(db.Object);
+        services.AddDecoratedRequestHandler<WarningClear, Response<Message>, WarningClearHandler>();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        using var scope = provider.CreateScope();
+
+        var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler<WarningClear, Response<Message>>>();
+        Assert.IsType<MetricPipeline<WarningClear, Response<Message>>>(handler);
+
+        await handler.HandleAsync(new WarningClear(user, 5, "cleared"), CancellationToken.None);
+
+        Assert.Equal(1, metrics.IncrementCount);
+        Assert.False(warning.Valid);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private sealed class FakeMetrics : IMetrics
