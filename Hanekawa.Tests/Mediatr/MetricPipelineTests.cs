@@ -253,6 +253,152 @@ public class MetricPipelineTests
         db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    [Fact]
+    public async Task DecoratedMuteHandler_ResolvesMetricPipeline_AndInvokesMute()
+    {
+        var metrics = new FakeMetrics();
+        var bot = new Mock<IBot>();
+        var duration = TimeSpan.FromMinutes(30);
+        bot.Setup(x => x.MuteAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<string>(), It.IsAny<TimeSpan>()))
+            .Returns(Task.CompletedTask);
+
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton<IBot>(nameof(ProviderSource.Discord), bot.Object);
+        services.AddSingleton<IMetrics>(metrics);
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddDecoratedRequestHandler<Mute, MuteHandler>();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        using var scope = provider.CreateScope();
+
+        var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler<Mute>>();
+        Assert.IsType<MetricPipeline<Mute>>(handler);
+
+        await handler.HandleAsync(new Mute
+        {
+            GuildId = 10,
+            UserId = 20,
+            ModeratorId = 30,
+            Reason = "spam",
+            Duration = duration,
+            Source = ProviderSource.Discord
+        }, CancellationToken.None);
+
+        Assert.Equal(1, metrics.IncrementCount);
+        bot.Verify(x => x.MuteAsync(10, 20, "spam %30%", duration), Times.Once);
+    }
+
+    [Fact]
+    public async Task DecoratedUnbanHandler_ResolvesMetricPipeline_AndInvokesUnban()
+    {
+        var metrics = new FakeMetrics();
+        var bot = new Mock<IBot>();
+        bot.Setup(x => x.UnbanAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton<IBot>(nameof(ProviderSource.Discord), bot.Object);
+        services.AddSingleton<IMetrics>(metrics);
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddDecoratedRequestHandler<Unban, UnbanHandler>();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        using var scope = provider.CreateScope();
+
+        var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler<Unban>>();
+        Assert.IsType<MetricPipeline<Unban>>(handler);
+
+        await handler.HandleAsync(new Unban
+        {
+            GuildId = 10,
+            UserId = 20,
+            ModeratorId = 30,
+            Reason = "appeal",
+            Source = ProviderSource.Discord
+        }, CancellationToken.None);
+
+        Assert.Equal(1, metrics.IncrementCount);
+        bot.Verify(x => x.UnbanAsync(10, 20, "appeal %30%"), Times.Once);
+    }
+
+    [Fact]
+    public async Task DecoratedUnmuteHandler_ResolvesMetricPipeline_AndInvokesUnmute()
+    {
+        var metrics = new FakeMetrics();
+        var bot = new Mock<IBot>();
+        bot.Setup(x => x.UnmuteAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton<IBot>(nameof(ProviderSource.Discord), bot.Object);
+        services.AddSingleton<IMetrics>(metrics);
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddDecoratedRequestHandler<Unmute, UnmuteHandler>();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        using var scope = provider.CreateScope();
+
+        var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler<Unmute>>();
+        Assert.IsType<MetricPipeline<Unmute>>(handler);
+
+        await handler.HandleAsync(new Unmute
+        {
+            GuildId = 10,
+            UserId = 20,
+            ModeratorId = 30,
+            Reason = "expired",
+            Source = ProviderSource.Discord
+        }, CancellationToken.None);
+
+        Assert.Equal(1, metrics.IncrementCount);
+        bot.Verify(x => x.UnmuteAsync(10, 20, "expired %30%"), Times.Once);
+    }
+
+    [Fact]
+    public async Task DecoratedWarningListHandler_ResolvesMetricPipeline_AndInvokesHandler()
+    {
+        var metrics = new FakeMetrics();
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Warnings).ReturnsDbSet(new List<Warning>
+        {
+            new() { GuildId = 1, UserId = 10, Reason = "spam" }
+        });
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IMetrics>(metrics);
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton(db.Object);
+        services.AddDecoratedRequestHandler<WarningList, Response<Pagination<Message>>, WarningListHandler>();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        using var scope = provider.CreateScope();
+
+        var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler<WarningList, Response<Pagination<Message>>>>();
+        Assert.IsType<MetricPipeline<WarningList, Response<Pagination<Message>>>>(handler);
+
+        var result = await handler.HandleAsync(new WarningList(1, 10), CancellationToken.None);
+
+        Assert.Equal(1, metrics.IncrementCount);
+        Assert.True(result.IsSuccess);
+        Assert.NotEmpty(result.Value.Items);
+    }
+
     private sealed class FakeMetrics : IMetrics
     {
         public int IncrementCount { get; private set; }
