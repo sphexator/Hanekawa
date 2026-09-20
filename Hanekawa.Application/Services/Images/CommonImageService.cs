@@ -5,15 +5,9 @@ using SixLabors.ImageSharp.Processing;
 
 namespace Hanekawa.Application.Services.Images;
 
-public class CommonImageService
+public class CommonImageService(IHttpClientFactory httpClientFactory)
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    public CommonImageService(IHttpClientFactory httpClientFactory)
-    {
-        _httpClientFactory = httpClientFactory;
-    }
-
-    /// <summary>
+	/// <summary>
     /// Draws an avatar onto the image
     /// </summary>
     /// <param name="avatarUrl"></param>
@@ -29,14 +23,14 @@ public class CommonImageService
     }
 
     /// <summary>
-    /// Obtains the image memory stream from the given URI.
+    /// Gets the image memory stream from the given URI.
     /// </summary>
     /// <param name="uri"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     internal async Task<Image> GetImageFromUrlAsync(Uri uri, CancellationToken cancellationToken = default)
     {
-        var client = _httpClientFactory.CreateClient("ImageService");
+        var client = httpClientFactory.CreateClient("ImageService");
         var imgStream = await client.GetStreamAsync(uri, cancellationToken);
         return await Image.LoadAsync<Rgba64>(imgStream, cancellationToken);
     }

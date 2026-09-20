@@ -10,7 +10,7 @@ namespace Hanekawa.Application.Services;
 /// <inheritdoc />
 public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> logger) : IActivityService
 {
-    internal const string DefaultAnnouncementMessage =
+	private const string DefaultAnnouncementMessage =
         "Congratulations {user} for being the most active user last week with {count} messages!";
 
     /// <inheritdoc />

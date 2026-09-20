@@ -48,6 +48,6 @@ public static class ImageExtensions
         var cornerBottomLeft = cornerTopLeft.RotateDegree(-90).Translate(0, bottomPos);
         var cornerBottomRight = cornerTopLeft.RotateDegree(180).Translate(rightPos, bottomPos);
 
-        return new PathCollection(cornerTopLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight);
+        return [ with(cornerTopLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight) ];
     }
 }

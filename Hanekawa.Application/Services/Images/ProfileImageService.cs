@@ -20,48 +20,37 @@ using Path = SixLabors.ImageSharp.Drawing.Path;
 
 namespace Hanekawa.Application.Services.Images;
 
-public class ProfileImageService
+public class ProfileImageService(ImageSettings settings, 
+	IHttpClientFactory httpClientFactory,
+	IDbContext dbContext, 
+	FontCollection fontCollection, 
+	ILogger logger, 
+	IConfigService config)
 {
-    private readonly IDbContext _dbContext;
-    private readonly IConfigService _config;
-    private readonly FontCollection _fontCollection;
-    private readonly ImageSettings _settings;
-    private readonly CommonImageService _common;
-    private readonly ILogger _logger;
+	private readonly CommonImageService _common = new(httpClientFactory);
 
-    public ProfileImageService(ImageSettings settings, IHttpClientFactory httpClientFactory,
-        IDbContext dbContext, FontCollection fontCollection, ILogger logger, IConfigService config)
-    {
-        _common = new CommonImageService(httpClientFactory);
-        _dbContext = dbContext;
-        _fontCollection = fontCollection;
-        _logger = logger;
-        _config = config;
-        _settings = settings;
-    }
-
-    private static Image<Rgba64> ProfileTemplate => Image.Load<Rgba64>(ProfileTemplatePath);
+	private static Image<Rgba64> ProfileTemplate => Image.Load<Rgba64>(ProfileTemplatePath);
     private static string ProfileTemplatePath => $"{Directory.GetCurrentDirectory()}/Data/Template/ProfileTemplate.png";
 
     public async ValueTask<Stream> DrawAsync(DiscordMember member, GuildUser userData, CancellationToken cancellationToken = default)
     {
         var toReturn = new MemoryStream();
-        using var img = new Image<Rgba64>(_settings.Profile.Width, _settings.Profile.Height);
-        var avatar = await _common.CreateAvatarAsync(member.AvatarUrl, _settings.Profile.Avatar.Size, cancellationToken);
+        using var img = new Image<Rgba64>(settings.Profile.Width, settings.Profile.Height);
+        var avatar = await _common.CreateAvatarAsync(member.AvatarUrl, settings.Profile.Avatar.Size, cancellationToken);
         img.Mutate(async void (x) =>
         {
             try
             {
                 x.DrawImage(ProfileTemplate, new Point(0, 0), new GraphicsOptions()); // image
                 x.DrawImage(avatar,
-                    new Point(_settings.Profile.Avatar.X, _settings.Profile.Avatar.Y),
+                    new Point(settings.Profile.Avatar.X, settings.Profile.Avatar.Y),
                     new GraphicsOptions { Antialias = true });
 
-                await ApplyText(x, _settings.Profile.Texts, member, userData, cancellationToken);
+                await ApplyText(x, settings.Profile.Texts, member, userData, cancellationToken);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Async void error drawing profile image");
+                logger.LogError(e, "Async void error drawing profile image");
             }
         });
         var progressBar = CreateProgressBar(userData, avatar.Height);
@@ -118,7 +107,7 @@ public class ProfileImageService
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error drawing text {TextName} on profile image", item.Text);
+                logger.LogError(e, "Error drawing text {TextName} on profile image", item.Text);
             }
         }
     }
@@ -136,13 +125,13 @@ public class ProfileImageService
                 switch (item.Text)
                 {
                     case "Currency":
-                        var config = await _config.GetAsync(userData.GuildId,
+                        var config1 = await config.GetAsync(userData.GuildId,
                             typeof(CurrencyConfig), cancellationToken);
-                        if (config is { CurrencyConfig: null })
+                        if (config1 is { CurrencyConfig: null })
                         {
-                            config.CurrencyConfig = new CurrencyConfig();
+                            config1.CurrencyConfig = new CurrencyConfig();
                         }
-                        value = config.CurrencyConfig.CurrencyName;
+                        value = config1.CurrencyConfig.CurrencyName;
                         break;
                 }
                 break;
@@ -157,10 +146,10 @@ public class ProfileImageService
         switch (item.SourceField)
         {
             case "ServerRank":
-                var rank = await _dbContext.Users.CountAsync(e => e.GuildId == member.GuildId
+                var rank = await dbContext.Users.CountAsync(e => e.GuildId == member.GuildId
                                                                   && e.Experience >= userData.Experience,
                     cancellationToken);
-                var count = await _dbContext.Users.CountAsync(e => e.GuildId == member.GuildId,
+                var count = await dbContext.Users.CountAsync(e => e.GuildId == member.GuildId,
                     cancellationToken);
                 value = $"{rank.Humanize()}/{count.Humanize()}";
                 break;
@@ -215,7 +204,7 @@ public class ProfileImageService
                 break;
         }
 
-        var font = new Font(_fontCollection.Get(_settings.Profile.Font), item.Size);
+        var font = new Font(fontCollection.Get(settings.Profile.Font), item.Size);
         var options = new RichTextOptions(font)
         {
             Path = new Path(new LinearLineSegment(points)),

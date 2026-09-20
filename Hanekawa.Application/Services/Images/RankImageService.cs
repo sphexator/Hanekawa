@@ -15,38 +15,38 @@ namespace Hanekawa.Application.Services.Images;
 internal class RankImageService
 {
     private readonly CommonImageService _common;
-    private readonly ImageSettings currentValue;
-    private readonly IHttpClientFactory httpClientFactory;
-    private readonly IDbContext dbContext;
-    private readonly FontCollection fontCollection;
-    private readonly ILogger<ImageService> logger;
-    private readonly IConfigService configService;
+    private readonly ImageSettings _currentValue;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IDbContext _dbContext;
+    private readonly FontCollection _fontCollection;
+    private readonly ILogger<ImageService> _logger;
+    private readonly IConfigService _configService;
 
     public RankImageService(ImageSettings currentValue, IHttpClientFactory httpClientFactory, IDbContext dbContext, 
     FontCollection fontCollection, ILogger<ImageService> logger, IConfigService configService)
     {
         _common = new CommonImageService(httpClientFactory);
-        this.currentValue = currentValue;
-        this.httpClientFactory = httpClientFactory;
-        this.dbContext = dbContext;
-        this.fontCollection = fontCollection;
-        this.logger = logger;
-        this.configService = configService;
+        _currentValue = currentValue;
+        _httpClientFactory = httpClientFactory;
+        _dbContext = dbContext;
+        _fontCollection = fontCollection;
+        _logger = logger;
+        _configService = configService;
     }
     
     internal async Task<Stream> DrawAsync(DiscordMember member, GuildUser userData, CancellationToken cancellationToken)
     {
-        var image = new Image<Rgba32>(currentValue.Rank.Width, currentValue.Rank.Height);
+        var image = new Image<Rgba32>(_currentValue.Rank.Width, _currentValue.Rank.Height);
         image.Mutate(x => x.Fill(Color.White));
 
-        var avatar = await _common.CreateAvatarAsync(member.AvatarUrl, currentValue.Rank.Avatar.Size, cancellationToken);
-        image.Mutate(x => x.DrawImage(avatar, new Point(currentValue.Rank.Avatar.X, currentValue.Rank.Avatar.Y), 1f));
+        var avatar = await _common.CreateAvatarAsync(member.AvatarUrl, _currentValue.Rank.Avatar.Size, cancellationToken);
+        image.Mutate(x => x.DrawImage(avatar, new Point(_currentValue.Rank.Avatar.X, _currentValue.Rank.Avatar.Y), 1f));
 
-        var font = this.fontCollection.Get(currentValue.Rank.Font);
+        var font = _fontCollection.Get(_currentValue.Rank.Font);
 
-        for (int i = 0; i < currentValue.Rank.Texts.Length; i++)
+        for (int i = 0; i < _currentValue.Rank.Texts.Length; i++)
         {
-            TextSettings? text = currentValue.Rank.Texts[i];
+            var text = _currentValue.Rank.Texts[i];
             var textValue = text.TextType switch
             {
                 "Regular" => text.Text,
