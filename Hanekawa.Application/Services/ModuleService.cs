@@ -7,21 +7,12 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace Hanekawa.Application.Services;
 
-public class ModuleService : IModuleService
+public class ModuleService(IDistributedCache cache, IDbContext db) : IModuleService
 {
     private static readonly DistributedCacheEntryOptions CacheOptions = new()
     {
         SlidingExpiration = TimeSpan.FromMinutes(5)
     };
-
-    private readonly IDistributedCache _cache;
-    private readonly IDbContext _db;
-
-    public ModuleService(IDistributedCache cache, IDbContext db)
-    {
-        _cache = cache;
-        _db = db;
-    }
 
     /// <inheritdoc />
     public async ValueTask<bool> IsEnabledAsync(ulong guildId, string module,
@@ -35,19 +26,19 @@ public class ModuleService : IModuleService
     public async Task SetEnabledAsync(ulong guildId, string module, bool enabled,
         CancellationToken cancellationToken = default)
     {
-        var entity = await _db.Modules
+        var entity = await db.Modules
             .FirstOrDefaultAsync(x => x.GuildId == guildId && x.Name == module, cancellationToken);
         if (entity is null)
         {
             entity = new Module { GuildId = guildId, Name = module, Enabled = enabled };
-            await _db.Modules.AddAsync(entity, cancellationToken);
+            await db.Modules.AddAsync(entity, cancellationToken);
         }
         else
         {
             entity.Enabled = enabled;
         }
 
-        await _db.SaveChangesAsync(cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
 
         var states = await GetStatesAsync(guildId, cancellationToken);
         states[module] = enabled;
@@ -75,14 +66,14 @@ public class ModuleService : IModuleService
     private async Task<Dictionary<string, bool>> GetStatesAsync(ulong guildId,
         CancellationToken cancellationToken)
     {
-        var cached = await _cache.GetStringAsync(KeyName(guildId), cancellationToken);
+        var cached = await cache.GetStringAsync(KeyName(guildId), cancellationToken);
         if (!string.IsNullOrEmpty(cached))
         {
             var states = JsonSerializer.Deserialize<Dictionary<string, bool>>(cached);
             if (states is not null) return states;
         }
 
-        var dbStates = await _db.Modules
+        var dbStates = await db.Modules
             .Where(x => x.GuildId == guildId)
             .Select(x => new { x.Name, x.Enabled })
             .ToListAsync(cancellationToken);
@@ -93,7 +84,7 @@ public class ModuleService : IModuleService
 
     private Task SetCacheAsync(ulong guildId, Dictionary<string, bool> states,
         CancellationToken cancellationToken)
-        => _cache.SetStringAsync(KeyName(guildId), JsonSerializer.Serialize(states), CacheOptions,
+        => cache.SetStringAsync(KeyName(guildId), JsonSerializer.Serialize(states), CacheOptions,
             cancellationToken);
 
     private static string KeyName(ulong guildId) => $"{guildId}-Modules";

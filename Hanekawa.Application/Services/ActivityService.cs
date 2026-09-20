@@ -135,7 +135,7 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
         }
 
         // New week: clear the current-week role from last week's holders so it can be earned again.
-        if (config.CurrentWeekRoleId.HasValue && config.CurrentHolders.Count > 0)
+        if (config is { CurrentWeekRoleId: not null, CurrentHolders.Count: > 0 })
         {
             foreach (var holder in config.CurrentHolders)
             {
