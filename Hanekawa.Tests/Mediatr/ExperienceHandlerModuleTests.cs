@@ -10,7 +10,7 @@ namespace Hanekawa.Tests.Mediatr;
 
 public class ExperienceHandlerModuleTests
 {
-    private static MessageReceived CreateNotification()
+    private static MessageRateLimitPassed CreateNotification()
         => new(1, 2, TestUsers.TestMember, 3, "hello", DateTimeOffset.UtcNow);
 
     private static IConfiguration CreateConfiguration()

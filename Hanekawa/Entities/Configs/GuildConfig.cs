@@ -22,4 +22,5 @@ public class GuildConfig : IConfig
     public CurrencyConfig? CurrencyConfig { get; set; } = new();
     public BoostConfig? BoostConfig { get; set; } = new();
     public StreamConfig? StreamConfig { get; set; } = new();
+    public ActivityConfig? ActivityConfig { get; set; } = new();
 }

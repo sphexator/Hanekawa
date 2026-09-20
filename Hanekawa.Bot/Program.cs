@@ -32,6 +32,7 @@ builder.Host.ConfigureDiscordBot<Bot>((_, bot) =>
 });
 
 builder.Services.AddSingleton<IBot, Bot>();
+builder.Services.AddHostedService<Hanekawa.Bot.Services.ActivityRolloverBackgroundService>();
 builder.Services.AddHttpClient();
 builder.Host.UseDefaultServiceProvider(x =>
 {

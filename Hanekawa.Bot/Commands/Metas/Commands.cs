@@ -9,6 +9,7 @@ public static class SlashGroupName
     public const string Boost = "Boost";
     public const string Module = "Module";
     public const string Stream = "Stream";
+    public const string Activity = "Activity";
 }
 
 public static class Account
@@ -82,4 +83,13 @@ public static class Stream
     public const string Add = "add";
     public const string Remove = "remove";
     public const string List = "list";
+}
+
+public static class ActivityName
+{
+    public const string Top = "top";
+    public const string RewardPrevious = "rewardprevious";
+    public const string RewardCurrent = "rewardcurrent";
+    public const string Channel = "channel";
+    public const string Message = "message";
 }

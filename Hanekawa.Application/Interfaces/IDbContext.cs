@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using Hanekawa.Entities;
+using Hanekawa.Entities.Activity;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Club;
 using Hanekawa.Entities.Internals;
@@ -53,6 +54,10 @@ public interface IDbContext : IAsyncDisposable
     /// Guild module toggle store
     /// </summary>
     DbSet<Module> Modules { get; set; }
+    /// <summary>
+    /// Weekly user activity store (rate-limited message counts)
+    /// </summary>
+    DbSet<GuildActivity> WeeklyActivities { get; set; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<bool> EnsureDatabaseCreated(CancellationToken cancellationToken = default);

@@ -3,6 +3,7 @@ using System;
 using Hanekawa.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Hanekawa.Infrastructure.Migrations
 {
     [DbContext(typeof(DbService))]
-    partial class DbServiceModelSnapshot : ModelSnapshot
+    [Migration("20260920100122_AddWeeklyActivity")]
+    partial class AddWeeklyActivity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,42 +91,6 @@ namespace Hanekawa.Infrastructure.Migrations
                     b.HasIndex("GuildId", "UserId");
 
                     b.ToTable("ClubMembers");
-                });
-
-            modelBuilder.Entity("Hanekawa.Entities.Configs.ActivityConfig", b =>
-                {
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<decimal?>("AnnouncementChannelId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<string>("AnnouncementMessage")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.PrimitiveCollection<decimal[]>("CurrentHolders")
-                        .IsRequired()
-                        .HasColumnType("numeric(20,0)[]");
-
-                    b.Property<decimal?>("CurrentWeekRoleId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<int>("CurrentWeekTopAmount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateOnly?>("LastProcessedWeekStart")
-                        .HasColumnType("date");
-
-                    b.Property<decimal?>("PreviousWeekHolderId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<decimal?>("PreviousWeekRoleId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.HasKey("GuildId");
-
-                    b.ToTable("ActivityConfig");
                 });
 
             modelBuilder.Entity("Hanekawa.Entities.Configs.AdminConfig", b =>
@@ -702,17 +669,6 @@ namespace Hanekawa.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Hanekawa.Entities.Configs.ActivityConfig", b =>
-                {
-                    b.HasOne("Hanekawa.Entities.Configs.GuildConfig", "GuildConfig")
-                        .WithOne("ActivityConfig")
-                        .HasForeignKey("Hanekawa.Entities.Configs.ActivityConfig", "GuildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("GuildConfig");
-                });
-
             modelBuilder.Entity("Hanekawa.Entities.Configs.AdminConfig", b =>
                 {
                     b.HasOne("Hanekawa.Entities.Configs.GuildConfig", "GuildConfig")
@@ -887,8 +843,6 @@ namespace Hanekawa.Infrastructure.Migrations
 
             modelBuilder.Entity("Hanekawa.Entities.Configs.GuildConfig", b =>
                 {
-                    b.Navigation("ActivityConfig");
-
                     b.Navigation("AdminConfig");
 
                     b.Navigation("BoostConfig");

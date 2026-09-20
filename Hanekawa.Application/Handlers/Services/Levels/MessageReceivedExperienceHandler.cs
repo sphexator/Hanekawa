@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Hanekawa.Application.Handlers.Services.Levels;
 
-public class MessageReceivedExperienceHandler: INotificationHandler<MessageReceived>
+public class MessageReceivedExperienceHandler: INotificationHandler<MessageRateLimitPassed>
 {
     private readonly IConfiguration _configuration;
     private readonly ILevelService _levelService;
@@ -20,7 +20,7 @@ public class MessageReceivedExperienceHandler: INotificationHandler<MessageRecei
         _moduleService = moduleService;
     }
 
-    public async Task HandleAsync(MessageReceived notification, CancellationToken cancellationToken)
+    public async Task HandleAsync(MessageRateLimitPassed notification, CancellationToken cancellationToken)
     {
         if (!await _moduleService.IsEnabledAsync(notification.GuildId, ModuleName.Level, cancellationToken))
             return;

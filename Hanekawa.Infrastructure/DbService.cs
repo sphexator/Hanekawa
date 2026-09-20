@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities;
+using Hanekawa.Entities.Activity;
 using Hanekawa.Entities.Club;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Internals;
@@ -29,6 +30,7 @@ internal class DbService : DbContext, IDbContext
     public DbSet<Item> Items { get; set; } = null!;
     public DbSet<ItemType> ItemTypes { get; set; } = null!;
     public DbSet<Module> Modules { get; set; } = null!;
+    public DbSet<GuildActivity> WeeklyActivities { get; set; } = null!;
 
     public new async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await base.SaveChangesAsync(cancellationToken);
@@ -86,6 +88,10 @@ internal class DbService : DbContext, IDbContext
             x.HasOne(e => e.StreamConfig)
                 .WithOne(e => e.GuildConfig)
                 .HasForeignKey<StreamConfig>(f => f.GuildId)
+                .OnDelete(DeleteBehavior.Cascade);
+            x.HasOne(e => e.ActivityConfig)
+                .WithOne(e => e.GuildConfig)
+                .HasForeignKey<ActivityConfig>(f => f.GuildId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -194,6 +200,16 @@ internal class DbService : DbContext, IDbContext
         {
             x.HasKey(e => new { e.GuildId, e.Name });
             x.Property(e => e.Name).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<GuildActivity>(x =>
+        {
+            x.HasKey(e => new { e.GuildId, e.UserId, e.WeekStart });
+        });
+
+        modelBuilder.Entity<ActivityConfig>(x =>
+        {
+            x.Property(e => e.AnnouncementMessage).HasMaxLength(1000);
         });
     }
 

@@ -7,6 +7,8 @@ using Hanekawa.Application.Handlers.Commands.Administration;
 using Hanekawa.Application.Handlers.Commands.Boost;
 using Hanekawa.Application.Handlers.Commands.Club;
 using Hanekawa.Application.Handlers.Commands.Settings;
+using Hanekawa.Application.Handlers.Services;
+using Hanekawa.Application.Handlers.Services.Activity;
 using Hanekawa.Application.Handlers.Services.Internal;
 using Hanekawa.Application.Handlers.Services.Levels;
 using Hanekawa.Application.Handlers.Services.Logs;
@@ -39,6 +41,8 @@ public static class DependencyInjection
         serviceCollection.AddScoped<IImageService, ImageService>();
         serviceCollection.AddScoped<IConfigService, ConfigService>();
         serviceCollection.AddScoped<IModuleService, ModuleService>();
+        serviceCollection.AddScoped<IActivityService, ActivityService>();
+        serviceCollection.AddSingleton<IMessageRateLimiter, MessageRateLimiter>();
 
         serviceCollection.AddScoped<IAdministrationCommandService, AdministrationCommandService>();
         serviceCollection.AddScoped<ILogService, LogSettingService>();
@@ -79,7 +83,9 @@ public static class DependencyInjection
         serviceCollection.AddScoped<INotificationHandler<UserLeave>, UserLeftHandler>();
         serviceCollection.AddScoped<INotificationHandler<UserBanned>, UserBannedHandler>();
         serviceCollection.AddScoped<INotificationHandler<UserUnbanned>, UserUnbannedHandler>();
-        serviceCollection.AddScoped<INotificationHandler<MessageReceived>, MessageReceivedExperienceHandler>();
+        serviceCollection.AddScoped<INotificationHandler<MessageReceived>, MessageRateLimitHandler>();
+        serviceCollection.AddScoped<INotificationHandler<MessageRateLimitPassed>, MessageReceivedExperienceHandler>();
+        serviceCollection.AddScoped<INotificationHandler<MessageRateLimitPassed>, WeeklyActivityHandler>();
 
         serviceCollection.AddMetricFactory(new CollectorRegistry());
         serviceCollection.AddSingleton<IMetrics, Metrics>();
