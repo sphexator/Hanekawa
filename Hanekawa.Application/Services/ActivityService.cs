@@ -93,7 +93,13 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
 
         foreach (var config in configs)
         {
-            await ProcessRolloverAsync(config, currentWeek, cancellationToken);
+            while (config.LastProcessedWeekStart is null || config.LastProcessedWeekStart < currentWeek)
+            {
+                var weekToClose = config.LastProcessedWeekStart?.AddDays(7) ?? currentWeek;
+                if (weekToClose > currentWeek) break;
+
+                await ProcessRolloverAsync(config, weekToClose, cancellationToken);
+            }
         }
 
         if (configs.Count > 0) await db.SaveChangesAsync(cancellationToken);
