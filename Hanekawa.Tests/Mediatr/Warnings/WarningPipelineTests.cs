@@ -31,8 +31,8 @@ public class WarningPipelineTests
             .ReturnsAsync(expected);
 
         var db = new Mock<IDbContext>();
-        db.Setup(x => x.GuildConfigs).Returns(new List<GuildConfig>().AsQueryable().BuildMockDbSet().Object);
-        db.Setup(x => x.Warnings).Returns(new List<Warning>().AsQueryable().BuildMockDbSet().Object);
+        db.Setup(x => x.GuildConfigs).Returns(new List<GuildConfig>().MockDbSet().Object);
+        db.Setup(x => x.Warnings).Returns(new List<Warning>().MockDbSet().Object);
 
         IRequestHandler<WarningReceived, Response<Message>> sut =
             new WarningAdded(inner.Object, db.Object, Mock.Of<IBot>());
@@ -136,8 +136,8 @@ public class WarningPipelineTests
         };
 
         var db = new Mock<IDbContext>();
-        db.Setup(x => x.GuildConfigs).Returns(new List<GuildConfig> { config }.AsQueryable().BuildMockDbSet().Object);
-        db.Setup(x => x.Warnings).Returns(warnings.AsQueryable().BuildMockDbSet().Object);
+        db.Setup(x => x.GuildConfigs).Returns(new List<GuildConfig> { config }.MockDbSet().Object);
+        db.Setup(x => x.Warnings).Returns(warnings.MockDbSet().Object);
 
         var bot = new Mock<IBot>();
         IRequestHandler<WarningReceived, Response<Message>> sut =
@@ -186,8 +186,8 @@ public class WarningPipelineTests
         var config = new GuildConfig { GuildId = 1, AdminConfig = null };
 
         var db = new Mock<IDbContext>();
-        db.Setup(x => x.GuildConfigs).Returns(new List<GuildConfig> { config }.AsQueryable().BuildMockDbSet().Object);
-        db.Setup(x => x.Warnings).Returns(warnings.AsQueryable().BuildMockDbSet().Object);
+        db.Setup(x => x.GuildConfigs).Returns(new List<GuildConfig> { config }.MockDbSet().Object);
+        db.Setup(x => x.Warnings).Returns(warnings.MockDbSet().Object);
 
         var bot = new Mock<IBot>();
         IRequestHandler<WarningReceived, Response<Message>> sut =
@@ -231,8 +231,8 @@ public class WarningPipelineTests
         };
 
         var db = new Mock<IDbContext>();
-        db.Setup(x => x.GuildConfigs).Returns(new List<GuildConfig> { config }.AsQueryable().BuildMockDbSet().Object);
-        db.Setup(x => x.Warnings).Returns(warnings.AsQueryable().BuildMockDbSet().Object);
+        db.Setup(x => x.GuildConfigs).Returns(new List<GuildConfig> { config }.MockDbSet().Object);
+        db.Setup(x => x.Warnings).Returns(warnings.MockDbSet().Object);
 
         var bot = new Mock<IBot>();
         bot.Setup(x => x.MuteAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<string>(), It.IsAny<TimeSpan>()))

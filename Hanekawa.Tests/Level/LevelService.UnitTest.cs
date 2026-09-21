@@ -67,11 +67,11 @@ public class LevelServiceUnitTest
     {
         // Arrange
         var configDbSet = new List<GuildConfig> { _config }
-            .AsQueryable().BuildMockDbSet();
+            .MockDbSet();
         var levelDbSet = new List<LevelRequirement> { new() { Level = 2, Experience = 400 } }
-            .AsQueryable().BuildMockDbSet();
+            .MockDbSet();
         var userDbSet = new List<GuildUser> { _user }
-            .AsQueryable().BuildMockDbSet();
+            .MockDbSet();
 
         _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
         _mockdb.Setup(e => e.LevelRequirements).Returns(levelDbSet.Object);
@@ -94,11 +94,11 @@ public class LevelServiceUnitTest
         _user.Experience = 300;
 
         var configDbSet = new List<GuildConfig> { _config }
-            .AsQueryable().BuildMockDbSet();
+            .MockDbSet();
         var levelDbSet = new List<LevelRequirement> { new() { Level = 2, Experience = 400 } }
-            .AsQueryable().BuildMockDbSet();
+            .MockDbSet();
         var userDbSet = new List<GuildUser> { _user }
-            .AsQueryable().BuildMockDbSet();
+            .MockDbSet();
 
         _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
         _mockdb.Setup(e => e.LevelRequirements).Returns(levelDbSet.Object);
@@ -123,11 +123,11 @@ public class LevelServiceUnitTest
         _user.Experience = 300;
 
         var configDbSet = new List<GuildConfig> { _config }
-            .AsQueryable().BuildMockDbSet();
+            .MockDbSet();
         var levelDbSet = new List<LevelRequirement> { new() { Level = 2, Experience = 400 } }
-            .AsQueryable().BuildMockDbSet();
+            .MockDbSet();
         var userDbSet = new List<GuildUser> { _user }
-            .AsQueryable().BuildMockDbSet();
+            .MockDbSet();
 
         _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
         _mockdb.Setup(e => e.LevelRequirements).Returns(levelDbSet.Object);
@@ -148,11 +148,11 @@ public class LevelServiceUnitTest
     {
         // Arrange
         var configDbSet = new List<GuildConfig> { _config }
-            .AsQueryable().BuildMockDbSet();
+            .MockDbSet();
         var levelDbSet = new List<LevelRequirement> { new() { Level = 2, Experience = 400 } }
-            .AsQueryable().BuildMockDbSet();
+            .MockDbSet();
         var userDbSet = new List<GuildUser> { _user }
-            .AsQueryable().BuildMockDbSet();
+            .MockDbSet();
 
         _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
         _mockdb.Setup(e => e.LevelRequirements).Returns(levelDbSet.Object);
@@ -170,7 +170,7 @@ public class LevelServiceUnitTest
     public async Task AddExperienceAsync_ReturnsNull_WhenLevelingIsDisabled()
     {
         _config.LevelConfig!.LevelEnabled = false;
-        var configDbSet = new List<GuildConfig> { _config }.AsQueryable().BuildMockDbSet();
+        var configDbSet = new List<GuildConfig> { _config }.MockDbSet();
         _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
 
         var actual = await _levelService.AddExperienceAsync(_member, 100);
@@ -183,7 +183,7 @@ public class LevelServiceUnitTest
     public async Task AddExperienceAsync_ReturnsNull_WhenLevelConfigIsMissing()
     {
         _config.LevelConfig = null;
-        var configDbSet = new List<GuildConfig> { _config }.AsQueryable().BuildMockDbSet();
+        var configDbSet = new List<GuildConfig> { _config }.MockDbSet();
         _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
 
         var actual = await _levelService.AddExperienceAsync(_member, 100);
@@ -196,10 +196,10 @@ public class LevelServiceUnitTest
     public async Task AddExperienceAsync_PersistsExperience_WhenUserIsCreated()
     {
         GuildUser? created = null;
-        var configDbSet = new List<GuildConfig> { _config }.AsQueryable().BuildMockDbSet();
+        var configDbSet = new List<GuildConfig> { _config }.MockDbSet();
         var levelDbSet = new List<LevelRequirement> { new() { Level = 2, Experience = 400 } }
-            .AsQueryable().BuildMockDbSet();
-        var userDbSet = new List<GuildUser>().AsQueryable().BuildMockDbSet();
+            .MockDbSet();
+        var userDbSet = new List<GuildUser>().MockDbSet();
         userDbSet.Setup(x => x.AddAsync(It.IsAny<GuildUser>(), It.IsAny<CancellationToken>()))
             .Callback<GuildUser, CancellationToken>((user, _) => created = user)
             .Returns(ValueTask.FromResult<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<GuildUser>>(null!));

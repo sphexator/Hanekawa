@@ -24,13 +24,13 @@ public class ActivityServiceTests
 
     private Mock<DbSet<GuildActivity>> SetupActivities(List<GuildActivity> activities)
     {
-        var dbSet = activities.AsQueryable().BuildMockDbSet();
+        var dbSet = activities.MockDbSet();
         _db.Setup(x => x.WeeklyActivities).Returns(dbSet.Object);
         return dbSet;
     }
 
     private void SetupConfigs(List<GuildConfig> configs)
-        => _db.Setup(x => x.GuildConfigs).Returns(configs.AsQueryable().BuildMockDbSet().Object);
+        => _db.Setup(x => x.GuildConfigs).Returns(configs.MockDbSet().Object);
 
     [Fact]
     public async Task TrackMessageAsync_CreatesEntry_WhenNoneExistsForWeek()
@@ -242,7 +242,7 @@ public class ActivityServiceTests
     [Fact]
     public async Task SetCurrentWeekRoleAsync_CreatesConfig_WhenGuildConfigMissing()
     {
-        var configDbSet = new List<GuildConfig>().AsQueryable().BuildMockDbSet();
+        var configDbSet = new List<GuildConfig>().MockDbSet();
         _db.Setup(x => x.GuildConfigs).Returns(configDbSet.Object);
 
         var response = await _sut.SetCurrentWeekRoleAsync(1, 100, 3);
