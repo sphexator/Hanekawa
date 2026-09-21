@@ -93,13 +93,8 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
 
         foreach (var config in configs)
         {
-            while (config.LastProcessedWeekStart is null || config.LastProcessedWeekStart < currentWeek)
-            {
-                var weekToClose = config.LastProcessedWeekStart?.AddDays(7) ?? currentWeek;
-                if (weekToClose > currentWeek) break;
-
-                await ProcessRolloverAsync(config, weekToClose, cancellationToken);
-            }
+            // Only the transition into the current ISO week is processed. Missed earlier weeks are not backfilled.
+            await ProcessRolloverAsync(config, currentWeek, cancellationToken);
         }
 
         if (configs.Count > 0) await db.SaveChangesAsync(cancellationToken);

@@ -199,7 +199,7 @@ public class ActivityServiceTests
     }
 
     [Fact]
-    public async Task ProcessWeekRolloversAsync_CatchesUp_WhenMultipleWeeksWereMissed()
+    public async Task ProcessWeekRolloversAsync_DoesNotBackfill_WhenMultipleWeeksWereMissed()
     {
         var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
         var missedWeek = currentWeek.AddDays(-14);
@@ -219,9 +219,9 @@ public class ActivityServiceTests
         await _sut.ProcessWeekRolloversAsync();
 
         _bot.Verify(x => x.SendMessageAsync(300,
-            It.Is<string>(m => m.Contains("<@10>") && m.Contains("5")), null), Times.Once);
-        _bot.Verify(x => x.SendMessageAsync(300,
             It.Is<string>(m => m.Contains("<@11>") && m.Contains("8")), null), Times.Once);
+        _bot.Verify(x => x.SendMessageAsync(300,
+            It.Is<string>(m => m.Contains("<@10>")), null), Times.Never);
         Assert.Equal(currentWeek, config.LastProcessedWeekStart);
     }
 
