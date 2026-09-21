@@ -123,6 +123,7 @@ public class ModuleServiceTests
         Assert.True(result.Single(x => x.Name == ModuleName.Level).Enabled);
         Assert.False(result.Single(x => x.Name == ModuleName.Club).Enabled);
         Assert.False(result.Single(x => x.Name == ModuleName.Streaming).Enabled);
+        Assert.False(result.Single(x => x.Name == ModuleName.Activity).Enabled);
     }
 
     [Fact]
