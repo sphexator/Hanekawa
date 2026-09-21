@@ -218,6 +218,94 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task ProcessWeekRolloversAsync_DoesNotReassignPreviousWeekRole_WhenWinnerUnchanged()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var previousWeek = currentWeek.AddDays(-7);
+        var config = new ActivityConfig(1)
+        {
+            PreviousWeekRoleId = 100,
+            PreviousWeekHolderId = 9,
+            LastProcessedWeekStart = previousWeek
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+        SetupActivities(
+        [
+            new GuildActivity { GuildId = 1, UserId = 9, WeekStart = previousWeek, MessageCount = 42 }
+        ]);
+
+        await _sut.ProcessWeekRolloversAsync();
+
+        _bot.Verify(x => x.RemoveRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
+        _bot.Verify(x => x.AddRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
+        Assert.Equal(9UL, config.PreviousWeekHolderId);
+        Assert.Equal(currentWeek, config.LastProcessedWeekStart);
+    }
+
+    [Fact]
+    public async Task ProcessWeekRolloversAsync_AdvancesLastProcessedWeek_WhenPreviousWeekHasNoActivity()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var previousWeek = currentWeek.AddDays(-7);
+        var config = new ActivityConfig(1)
+        {
+            AnnouncementChannelId = 300,
+            LastProcessedWeekStart = previousWeek
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+        SetupActivities([]);
+
+        await _sut.ProcessWeekRolloversAsync();
+
+        _bot.Verify(x => x.SendMessageAsync(It.IsAny<ulong>(), It.IsAny<string>(), null), Times.Never);
+        Assert.Equal(currentWeek, config.LastProcessedWeekStart);
+    }
+
+    [Fact]
+    public async Task ProcessWeekRolloversAsync_SkipsCurrentWeekRoleCleanup_WhenRoleNotConfigured()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var previousWeek = currentWeek.AddDays(-7);
+        var config = new ActivityConfig(1)
+        {
+            CurrentHolders = [7, 8],
+            LastProcessedWeekStart = previousWeek
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+        SetupActivities([]);
+
+        await _sut.ProcessWeekRolloversAsync();
+
+        _bot.Verify(x => x.RemoveRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
+        Assert.Equal([7UL, 8UL], config.CurrentHolders);
+    }
+
+    [Fact]
+    public async Task SetPreviousWeekRoleAsync_ReturnsDisableMessage_WhenRoleCleared()
+    {
+        var config = new ActivityConfig(1) { PreviousWeekRoleId = 50 };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+
+        var response = await _sut.SetPreviousWeekRoleAsync(1, null);
+
+        Assert.Null(config.PreviousWeekRoleId);
+        Assert.Contains("disabled", response);
+    }
+
+    [Fact]
+    public async Task SetAnnouncementChannelAsync_CreatesActivityConfig_WhenGuildRowExistsWithoutActivity()
+    {
+        var guildConfig = new GuildConfig { GuildId = 1, ActivityConfig = null };
+        SetupConfigs([guildConfig]);
+
+        var response = await _sut.SetAnnouncementChannelAsync(1, 400);
+
+        Assert.NotNull(guildConfig.ActivityConfig);
+        Assert.Equal(400UL, guildConfig.ActivityConfig!.AnnouncementChannelId);
+        Assert.Contains("<#400>", response);
+    }
+
+    [Fact]
     public async Task ProcessWeekRolloversAsync_UsesDefaultMessage_WhenNoneConfigured()
     {
         var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
