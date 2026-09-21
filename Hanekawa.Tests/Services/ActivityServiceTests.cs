@@ -199,6 +199,33 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task ProcessWeekRolloversAsync_DoesNotBackfill_WhenMultipleWeeksWereMissed()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var missedWeek = currentWeek.AddDays(-14);
+        var lastWeek = currentWeek.AddDays(-7);
+        var config = new ActivityConfig(1)
+        {
+            AnnouncementChannelId = 300,
+            LastProcessedWeekStart = missedWeek
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+        SetupActivities(
+        [
+            new GuildActivity { GuildId = 1, UserId = 10, WeekStart = missedWeek, MessageCount = 5 },
+            new GuildActivity { GuildId = 1, UserId = 11, WeekStart = lastWeek, MessageCount = 8 }
+        ]);
+
+        await _sut.ProcessWeekRolloversAsync();
+
+        _bot.Verify(x => x.SendMessageAsync(300,
+            It.Is<string>(m => m.Contains("<@11>") && m.Contains("8")), null), Times.Once);
+        _bot.Verify(x => x.SendMessageAsync(300,
+            It.Is<string>(m => m.Contains("<@10>")), null), Times.Never);
+        Assert.Equal(currentWeek, config.LastProcessedWeekStart);
+    }
+
+    [Fact]
     public async Task ProcessWeekRolloversAsync_SkipsGuildsAlreadyProcessed()
     {
         var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
