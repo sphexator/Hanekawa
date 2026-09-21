@@ -69,7 +69,7 @@ public class DbExtensionsTests
 
     private static (Mock<IDbContext> Db, Mock<DbSet<GuildUser>> Users) CreateDb(List<GuildUser> existing)
     {
-        var users = existing.AsQueryable().BuildMockDbSet();
+        var users = existing.MockDbSet();
         var db = new Mock<IDbContext>();
         db.Setup(x => x.Users).Returns(users.Object);
         db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);

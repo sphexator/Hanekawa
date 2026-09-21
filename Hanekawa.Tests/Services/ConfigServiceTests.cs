@@ -35,7 +35,7 @@ public class ConfigServiceTests
     public async Task GetAsync_LoadsFromDatabase_AndWritesCache_OnMiss()
     {
         var config = new GuildConfig { GuildId = 1, Prefix = "h." };
-        var dbSet = new List<GuildConfig> { config }.BuildMockDbSet();
+        var dbSet = new List<GuildConfig> { config }.MockDbSet();
         var db = new Mock<IDbContext>();
         db.Setup(x => x.GuildConfigs).Returns(dbSet.Object);
 
@@ -56,7 +56,7 @@ public class ConfigServiceTests
     public async Task GetAsync_CreatesAndPersistsConfig_WhenMissing()
     {
         GuildConfig? added = null;
-        var dbSet = new List<GuildConfig>().BuildMockDbSet();
+        var dbSet = new List<GuildConfig>().MockDbSet();
         dbSet.Setup(x => x.AddAsync(It.IsAny<GuildConfig>(), It.IsAny<CancellationToken>()))
             .Callback<GuildConfig, CancellationToken>((config, _) => added = config)
             .Returns(ValueTask.FromResult<EntityEntry<GuildConfig>>(null!));

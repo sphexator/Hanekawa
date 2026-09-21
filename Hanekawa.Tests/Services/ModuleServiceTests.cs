@@ -76,7 +76,7 @@ public class ModuleServiceTests
     public async Task SetEnabledAsync_InsertsRow_WhenMissing()
     {
         var modules = new List<Module>();
-        var dbSet = modules.BuildMockDbSet();
+        var dbSet = modules.MockDbSet();
         dbSet.Setup(x => x.AddAsync(It.IsAny<Module>(), It.IsAny<CancellationToken>()))
             .Callback<Module, CancellationToken>((m, _) => modules.Add(m))
             .ReturnsAsync((Module m, CancellationToken _) => null!);

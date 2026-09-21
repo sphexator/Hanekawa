@@ -14,7 +14,7 @@ public class WarningReceivedTests
     [Fact]
     public async Task WarningReceived_PersistsValidWarning_AndReturnsLocalizedMessage()
     {
-        var mockSet = new List<Warning>().AsQueryable().BuildMockDbSet();
+        var mockSet = new List<Warning>().MockDbSet();
         Warning? stored = null;
         mockSet.Setup(x => x.AddAsync(It.IsAny<Warning>(), It.IsAny<CancellationToken>()))
             .Callback<Warning, CancellationToken>((warning, _) => stored = warning)

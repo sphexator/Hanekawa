@@ -19,7 +19,7 @@ public class GreetServiceTests
     public async Task SetChannel_CreatesConfig_AndPersistsChannel()
     {
         GuildConfig? added = null;
-        var dbSet = new List<GuildConfig>().BuildMockDbSet();
+        var dbSet = new List<GuildConfig>().MockDbSet();
         dbSet.Setup(x => x.AddAsync(It.IsAny<GuildConfig>(), It.IsAny<CancellationToken>()))
             .Callback<GuildConfig, CancellationToken>((config, _) => added = config)
             .Returns(ValueTask.FromResult<EntityEntry<GuildConfig>>(null!));

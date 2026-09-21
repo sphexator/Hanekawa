@@ -85,7 +85,7 @@ public class ItemServiceTests
     public async Task CreateItemAsync_Throws_WhenTypeIsMissing()
     {
         var typeId = Guid.NewGuid();
-        var types = new List<ItemType>().AsQueryable().BuildMockDbSet();
+        var types = new List<ItemType>().MockDbSet();
         types.Setup(x => x.FindAsync(It.IsAny<object[]>()))
             .ReturnsAsync((ItemType?)null);
         var db = new Mock<IDbContext>();
@@ -105,10 +105,10 @@ public class ItemServiceTests
         var typeId = Guid.NewGuid();
         var itemType = new ItemType { Id = typeId, Name = "consumable" };
         Item? added = null;
-        var types = new List<ItemType> { itemType }.AsQueryable().BuildMockDbSet();
+        var types = new List<ItemType> { itemType }.MockDbSet();
         types.Setup(x => x.FindAsync(It.IsAny<object[]>()))
             .ReturnsAsync(itemType);
-        var items = new List<Item>().AsQueryable().BuildMockDbSet();
+        var items = new List<Item>().MockDbSet();
         items.Setup(x => x.AddAsync(It.IsAny<Item>(), It.IsAny<CancellationToken>()))
             .Callback<Item, CancellationToken>((item, _) => added = item)
             .Returns(ValueTask.FromResult<EntityEntry<Item>>(null!));

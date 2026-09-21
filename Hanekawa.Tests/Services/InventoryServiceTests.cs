@@ -46,7 +46,7 @@ public class InventoryServiceTests
     public async Task GetInventoryAsync_CreatesUser_WhenMissing()
     {
         GuildUser? added = null;
-        var users = new List<GuildUser>().AsQueryable().BuildMockDbSet();
+        var users = new List<GuildUser>().MockDbSet();
         users.Setup(x => x.AddAsync(It.IsAny<GuildUser>(), It.IsAny<CancellationToken>()))
             .Callback<GuildUser, CancellationToken>((user, _) => added = user)
             .Returns(ValueTask.FromResult<EntityEntry<GuildUser>>(null!));
