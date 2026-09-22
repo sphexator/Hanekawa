@@ -93,6 +93,22 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    public async Task IsEnabledAsync_ReturnsTrue_WhenActivityModuleEnabled()
+    {
+        var modules = new List<Module>
+        {
+            new() { GuildId = 1, Name = ModuleName.Activity, Enabled = true }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Modules).ReturnsDbSet(modules);
+        var sut = new ModuleService(new Mock<IDistributedCache>().Object, db.Object);
+
+        var result = await sut.IsEnabledAsync(1, ModuleName.Activity);
+
+        Assert.True(result);
+    }
+
+    [Fact]
     public async Task SetEnabledAsync_UpdatesRow_WhenPresent()
     {
         var existing = new Module { GuildId = 1, Name = ModuleName.Boost, Enabled = false };
