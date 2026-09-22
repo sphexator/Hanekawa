@@ -199,6 +199,89 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task ProcessWeekRolloversAsync_ProcessesPreviousWeek_OnFirstRun_WhenNeverProcessed()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var previousWeek = currentWeek.AddDays(-7);
+        var config = new ActivityConfig(1)
+        {
+            AnnouncementChannelId = 300,
+            LastProcessedWeekStart = null
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+        SetupActivities(
+        [
+            new GuildActivity { GuildId = 1, UserId = 4, WeekStart = previousWeek, MessageCount = 12 }
+        ]);
+
+        await _sut.ProcessWeekRolloversAsync();
+
+        _bot.Verify(x => x.SendMessageAsync(300,
+            It.Is<string>(m => m.Contains("<@4>") && m.Contains("12")), null), Times.Once);
+        Assert.Equal(currentWeek, config.LastProcessedWeekStart);
+    }
+
+    [Fact]
+    public async Task ProcessWeekRolloversAsync_ProcessesEachPendingGuild_Independently()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var previousWeek = currentWeek.AddDays(-7);
+        var guildOne = new ActivityConfig(1)
+        {
+            AnnouncementChannelId = 301,
+            LastProcessedWeekStart = previousWeek
+        };
+        var guildTwo = new ActivityConfig(2)
+        {
+            AnnouncementChannelId = 302,
+            LastProcessedWeekStart = previousWeek
+        };
+        SetupConfigs(
+        [
+            new GuildConfig { GuildId = 1, ActivityConfig = guildOne },
+            new GuildConfig { GuildId = 2, ActivityConfig = guildTwo }
+        ]);
+        SetupActivities(
+        [
+            new GuildActivity { GuildId = 1, UserId = 10, WeekStart = previousWeek, MessageCount = 3 },
+            new GuildActivity { GuildId = 2, UserId = 20, WeekStart = previousWeek, MessageCount = 7 }
+        ]);
+
+        await _sut.ProcessWeekRolloversAsync();
+
+        _bot.Verify(x => x.SendMessageAsync(301,
+            It.Is<string>(m => m.Contains("<@10>")), null), Times.Once);
+        _bot.Verify(x => x.SendMessageAsync(302,
+            It.Is<string>(m => m.Contains("<@20>")), null), Times.Once);
+        Assert.Equal(currentWeek, guildOne.LastProcessedWeekStart);
+        Assert.Equal(currentWeek, guildTwo.LastProcessedWeekStart);
+    }
+
+    [Fact]
+    public async Task ProcessWeekRolloversAsync_AnnouncesWithoutRole_WhenPreviousWeekRoleNotConfigured()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var previousWeek = currentWeek.AddDays(-7);
+        var config = new ActivityConfig(1)
+        {
+            AnnouncementChannelId = 300,
+            LastProcessedWeekStart = previousWeek
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+        SetupActivities(
+        [
+            new GuildActivity { GuildId = 1, UserId = 9, WeekStart = previousWeek, MessageCount = 6 }
+        ]);
+
+        await _sut.ProcessWeekRolloversAsync();
+
+        _bot.Verify(x => x.SendMessageAsync(300,
+            It.Is<string>(m => m.Contains("<@9>")), null), Times.Once);
+        _bot.Verify(x => x.AddRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
+        _bot.Verify(x => x.RemoveRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
+    }
+
+    [Fact]
     public async Task ProcessWeekRolloversAsync_DoesNotBackfill_WhenMultipleWeeksWereMissed()
     {
         var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
@@ -316,6 +399,30 @@ public class ActivityServiceTests
         var response = await _sut.SetPreviousWeekRoleAsync(1, null);
 
         Assert.Null(config.PreviousWeekRoleId);
+        Assert.Contains("disabled", response);
+    }
+
+    [Fact]
+    public async Task SetAnnouncementChannelAsync_ReturnsDisableMessage_WhenChannelCleared()
+    {
+        var config = new ActivityConfig(1) { AnnouncementChannelId = 400 };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+
+        var response = await _sut.SetAnnouncementChannelAsync(1, null);
+
+        Assert.Null(config.AnnouncementChannelId);
+        Assert.Contains("disabled", response);
+    }
+
+    [Fact]
+    public async Task SetCurrentWeekRoleAsync_ReturnsDisableMessage_WhenRoleCleared()
+    {
+        var config = new ActivityConfig(1) { CurrentWeekRoleId = 100, CurrentWeekTopAmount = 2 };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+
+        var response = await _sut.SetCurrentWeekRoleAsync(1, null, 2);
+
+        Assert.Null(config.CurrentWeekRoleId);
         Assert.Contains("disabled", response);
     }
 
