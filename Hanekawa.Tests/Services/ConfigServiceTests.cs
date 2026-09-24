@@ -100,23 +100,29 @@ public class ConfigServiceTests
     [Fact]
     public async Task GetAsync_WithInclude_QueriesDatabase_EvenWhenGuildConfigIsCached()
     {
-        var cached = new GuildConfig { GuildId = 1, Prefix = "cached." };
-        var cache = new Mock<IDistributedCache>();
-        cache.Setup(x => x.GetAsync("1-GuildConfig", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(cached)));
-
+        var cached = new GuildConfig
+        {
+            GuildId = 1,
+            Prefix = "cached.",
+            LogConfig = new LogConfig { GuildId = 1, ModLogChannelId = 1 }
+        };
         var fromDb = new GuildConfig
         {
             GuildId = 1,
-            LogConfig = new LogConfig { GuildId = 1, ModLogChannelId = 42 }
+            Prefix = "db.",
+            LogConfig = new LogConfig { GuildId = 1, ModLogChannelId = 99 }
         };
+        var cache = new Mock<IDistributedCache>();
+        cache.Setup(x => x.GetAsync("1-GuildConfig", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(cached)));
         var db = new Mock<IDbContext>();
         db.Setup(x => x.GuildConfigs).ReturnsDbSet(new List<GuildConfig> { fromDb });
         var sut = new ConfigService(cache.Object, db.Object);
 
         var result = await sut.GetAsync(1, typeof(LogConfig));
 
-        Assert.Equal(42ul, result.LogConfig!.ModLogChannelId);
+        Assert.Equal("db.", result.Prefix);
+        Assert.Equal(99ul, result.LogConfig!.ModLogChannelId);
         db.Verify(x => x.GuildConfigs, Times.AtLeastOnce);
     }
 

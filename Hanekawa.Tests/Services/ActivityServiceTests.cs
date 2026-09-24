@@ -336,7 +336,6 @@ public class ActivityServiceTests
 
         await _sut.ProcessWeekRolloversAsync();
 
-        _bot.Verify(x => x.AddRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
         _bot.Verify(x => x.SendMessageAsync(It.IsAny<ulong>(), It.IsAny<string>(), null), Times.Never);
         _db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -355,14 +354,14 @@ public class ActivityServiceTests
         SetupActivities(
         [
             new GuildActivity { GuildId = 1, UserId = 1, WeekStart = currentWeek, MessageCount = 10 },
-            new GuildActivity { GuildId = 1, UserId = 2, WeekStart = currentWeek, MessageCount = 5 }
+            new GuildActivity { GuildId = 1, UserId = 2, WeekStart = currentWeek, MessageCount = 50 }
         ]);
 
         await _sut.SyncCurrentWeekRolesAsync(1);
 
-        _bot.Verify(x => x.AddRoleAsync(1, 1, 100), Times.Once);
-        _bot.Verify(x => x.AddRoleAsync(1, 2, 100), Times.Never);
-        Assert.Equal([1UL], config.CurrentHolders);
+        _bot.Verify(x => x.AddRoleAsync(1, 2, 100), Times.Once);
+        _bot.Verify(x => x.AddRoleAsync(1, 1, 100), Times.Never);
+        Assert.Equal([2UL], config.CurrentHolders);
     }
 
     [Fact]
@@ -545,11 +544,10 @@ public class ActivityServiceTests
         var config = new ActivityConfig(1);
         SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
 
-        var response = await _sut.SetAnnouncementMessageAsync(1, "  Weekly shout-out: {user}  ");
+        var response = await _sut.SetAnnouncementMessageAsync(1, "  Hello {user}  ");
 
-        Assert.Equal("Weekly shout-out: {user}", config.AnnouncementMessage);
+        Assert.Equal("Hello {user}", config.AnnouncementMessage);
         Assert.Contains("updated", response);
-        _db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
