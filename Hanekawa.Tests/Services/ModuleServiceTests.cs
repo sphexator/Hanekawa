@@ -123,6 +123,40 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    public async Task SetEnabledAsync_WritesUpdatedStateToCache_EvenWhenCacheWasStale()
+    {
+        var cache = new Mock<IDistributedCache>();
+        cache.Setup(x => x.GetAsync("1-Modules", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(JsonSerializer.SerializeToUtf8Bytes(
+                new Dictionary<string, bool> { [ModuleName.Level] = false }));
+        byte[]? written = null;
+        cache.Setup(x => x.SetAsync(
+                "1-Modules",
+                It.IsAny<byte[]>(),
+                It.IsAny<DistributedCacheEntryOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, byte[], DistributedCacheEntryOptions, CancellationToken>((_, bytes, _, _) =>
+                written = bytes)
+            .Returns(Task.CompletedTask);
+
+        var modules = new List<Module>
+        {
+            new() { GuildId = 1, Name = ModuleName.Level, Enabled = false }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Modules).ReturnsDbSet(modules);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var sut = new ModuleService(cache.Object, db.Object);
+
+        await sut.SetEnabledAsync(1, ModuleName.Level, true);
+
+        Assert.NotNull(written);
+        var cached = JsonSerializer.Deserialize<Dictionary<string, bool>>(written);
+        Assert.NotNull(cached);
+        Assert.True(cached[ModuleName.Level]);
+    }
+
+    [Fact]
     public async Task GetModulesAsync_ReturnsAllKnownModules_WithStoredState()
     {
         var modules = new List<Module>

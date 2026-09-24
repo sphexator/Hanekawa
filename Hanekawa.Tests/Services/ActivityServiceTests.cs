@@ -325,6 +325,43 @@ public class ActivityServiceTests
 
         _bot.Verify(x => x.AddRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
         _bot.Verify(x => x.SendMessageAsync(It.IsAny<ulong>(), It.IsAny<string>(), null), Times.Never);
+        _db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ProcessWeekRolloversAsync_IgnoresGuilds_WithoutActivityConfig()
+    {
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = null }]);
+        SetupActivities([]);
+
+        await _sut.ProcessWeekRolloversAsync();
+
+        _bot.Verify(x => x.SendMessageAsync(It.IsAny<ulong>(), It.IsAny<string>(), null), Times.Never);
+        _db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SyncCurrentWeekRolesAsync_TreatsZeroTopAmountAsOne()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var config = new ActivityConfig(1)
+        {
+            CurrentWeekRoleId = 100,
+            CurrentWeekTopAmount = 0,
+            CurrentHolders = []
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+        SetupActivities(
+        [
+            new GuildActivity { GuildId = 1, UserId = 1, WeekStart = currentWeek, MessageCount = 10 },
+            new GuildActivity { GuildId = 1, UserId = 2, WeekStart = currentWeek, MessageCount = 50 }
+        ]);
+
+        await _sut.SyncCurrentWeekRolesAsync(1);
+
+        _bot.Verify(x => x.AddRoleAsync(1, 2, 100), Times.Once);
+        _bot.Verify(x => x.AddRoleAsync(1, 1, 100), Times.Never);
+        Assert.Equal([2UL], config.CurrentHolders);
     }
 
     [Fact]
@@ -499,6 +536,18 @@ public class ActivityServiceTests
 
         Assert.Null(config.AnnouncementMessage);
         Assert.Contains("reset", response);
+    }
+
+    [Fact]
+    public async Task SetAnnouncementMessageAsync_TrimsAndPersistsCustomMessage()
+    {
+        var config = new ActivityConfig(1);
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+
+        var response = await _sut.SetAnnouncementMessageAsync(1, "  Hello {user}  ");
+
+        Assert.Equal("Hello {user}", config.AnnouncementMessage);
+        Assert.Contains("updated", response);
     }
 
     [Theory]
