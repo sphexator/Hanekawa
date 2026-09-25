@@ -35,6 +35,20 @@ public class WeeklyActivityHandlerTests
     }
 
     [Fact]
+    public async Task HandleAsync_PassesMessageTimestamp_ToTrackMessageAsync()
+    {
+        var timestamp = new DateTimeOffset(2026, 9, 17, 8, 15, 0, TimeSpan.Zero);
+        _moduleService.Setup(x => x.IsEnabledAsync(1, ModuleName.Activity, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        var notification = new MessageRateLimitPassed(1, 2, TestUsers.TestMember, 3, "hello", timestamp);
+
+        await _sut.HandleAsync(notification, CancellationToken.None);
+
+        _activityService.Verify(x => x.TrackMessageAsync(1, TestUsers.TestMember.Id, timestamp,
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task HandleAsync_SkipsTracking_WhenActivityModuleDisabled()
     {
         _moduleService.Setup(x => x.IsEnabledAsync(1, ModuleName.Activity, It.IsAny<CancellationToken>()))

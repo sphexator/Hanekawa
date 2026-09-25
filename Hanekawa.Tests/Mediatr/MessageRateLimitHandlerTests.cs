@@ -35,7 +35,9 @@ public class MessageRateLimitHandlerTests
                 m.GuildId == notification.GuildId &&
                 m.ChannelId == notification.ChannelId &&
                 m.MessageId == notification.MessageId &&
-                m.Member == notification.Member),
+                m.Member == notification.Member &&
+                m.Message == notification.Message &&
+                m.CreatedAt == notification.CreatedAt),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 

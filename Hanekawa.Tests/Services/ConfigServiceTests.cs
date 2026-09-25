@@ -98,6 +98,24 @@ public class ConfigServiceTests
     }
 
     [Fact]
+    public async Task GetAsync_WithInclude_LoadsActivityConfig_FromDatabase_OnCacheMiss()
+    {
+        var config = new GuildConfig
+        {
+            GuildId = 1,
+            ActivityConfig = new ActivityConfig(1) { AnnouncementChannelId = 55 }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(new List<GuildConfig> { config });
+        var cache = CreateEmptyCache();
+        var sut = new ConfigService(cache.Object, db.Object);
+
+        var result = await sut.GetAsync(1, typeof(ActivityConfig));
+
+        Assert.Equal(55ul, result.ActivityConfig!.AnnouncementChannelId);
+    }
+
+    [Fact]
     public async Task GetAsync_WithInclude_QueriesDatabase_EvenWhenGuildConfigIsCached()
     {
         var cached = new GuildConfig
