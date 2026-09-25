@@ -104,6 +104,24 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task GetWeeklyLeaderboardAsync_RespectsCountParameter()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        SetupActivities(
+        [
+            new GuildActivity { GuildId = 1, UserId = 1, WeekStart = currentWeek, MessageCount = 40 },
+            new GuildActivity { GuildId = 1, UserId = 2, WeekStart = currentWeek, MessageCount = 30 },
+            new GuildActivity { GuildId = 1, UserId = 3, WeekStart = currentWeek, MessageCount = 20 },
+            new GuildActivity { GuildId = 1, UserId = 4, WeekStart = currentWeek, MessageCount = 10 }
+        ]);
+
+        var result = await _sut.GetWeeklyLeaderboardAsync(1, count: 2);
+
+        Assert.Equal(2, result.Count);
+        Assert.Equal([1UL, 2UL], result.Select(x => x.UserId).ToArray());
+    }
+
+    [Fact]
     public async Task SyncCurrentWeekRolesAsync_DoesNothing_WhenNoRoleConfigured()
     {
         SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = new ActivityConfig(1) }]);

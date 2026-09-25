@@ -46,6 +46,20 @@ public class RequireModuleAttributeTests
     }
 
     [Fact]
+    public async Task CheckAsync_ReturnsSuccess_WhenActivityModuleIsEnabled()
+    {
+        var modules = new Mock<IModuleService>();
+        modules.Setup(x => x.IsEnabledAsync(GuildId, ModuleName.Activity, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        var context = CreateContext(NonOwnerId, modules.Object, []);
+
+        var result = await new RequireModuleAttribute(ModuleName.Activity).CheckAsync(context);
+
+        Assert.True(result.IsSuccessful);
+        modules.Verify(x => x.IsEnabledAsync(GuildId, ModuleName.Activity, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task CheckAsync_ReturnsFailure_WhenModuleIsDisabled()
     {
         var modules = new Mock<IModuleService>();
