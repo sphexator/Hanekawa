@@ -70,7 +70,8 @@ public class DropService : IDropService
         }
 
         var cache = scope.ServiceProvider.GetRequiredService<ICacheContext>();
-        cache.Add($"{msg.ChannelId}-{msg.Id}-drop", user.Id);
+        cache.Add($"{msg.Id}-{msg.ChannelId}-drop",
+            new GuildUser { Id = user.Id, GuildId = user.Guild.GuildId });
     }
 
     /// <inheritdoc />

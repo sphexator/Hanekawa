@@ -458,6 +458,19 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task SetPreviousWeekRoleAsync_PersistsRole_AndReturnsConfirmationMessage()
+    {
+        var config = new ActivityConfig(1);
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+
+        var response = await _sut.SetPreviousWeekRoleAsync(1, 77);
+
+        Assert.Equal(77UL, config.PreviousWeekRoleId);
+        Assert.Contains("<@&77>", response);
+        _db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task SetAnnouncementChannelAsync_ReturnsDisableMessage_WhenChannelCleared()
     {
         var config = new ActivityConfig(1) { AnnouncementChannelId = 400 };

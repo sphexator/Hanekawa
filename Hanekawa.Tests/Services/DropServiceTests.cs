@@ -78,7 +78,8 @@ public class DropServiceTests
 
         bot.Verify(x => x.SendMessageAsync(ChannelId, It.Is<string>(m => m.Contains("drop event")), It.IsAny<Attachment>()),
             Times.Once);
-        cache.Verify(x => x.Add($"{ChannelId}-{MessageId}-drop", UserId), Times.Once);
+        cache.Verify(x => x.Add($"{MessageId}-{ChannelId}-drop",
+            It.Is<GuildUser>(u => u.Id == UserId && u.GuildId == GuildId)), Times.Once);
     }
 
     [Fact]

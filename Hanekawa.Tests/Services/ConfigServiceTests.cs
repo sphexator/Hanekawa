@@ -14,6 +14,22 @@ namespace Hanekawa.Tests.Services;
 public class ConfigServiceTests
 {
     [Fact]
+    public async Task GetAsync_ReturnsDeserializedGuildConfig_WhenCacheHit()
+    {
+        var config = new GuildConfig { GuildId = 7, Prefix = "hit." };
+        var cache = new Mock<IDistributedCache>();
+        cache.Setup(x => x.GetAsync("7-GuildConfig", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(config)));
+        var db = new Mock<IDbContext>(MockBehavior.Strict);
+        var sut = new ConfigService(cache.Object, db.Object);
+
+        var result = await sut.GetAsync(7);
+
+        Assert.Equal("hit.", result.Prefix);
+        db.Verify(x => x.GuildConfigs, Times.Never);
+    }
+
+    [Fact]
     public async Task GetAsync_ReturnsCachedConfig_WithoutQueryingDatabase()
     {
         var config = new GuildConfig { GuildId = 1, Prefix = "cached." };
