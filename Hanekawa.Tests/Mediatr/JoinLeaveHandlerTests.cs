@@ -33,4 +33,17 @@ public class JoinLeaveHandlerTests
 
         modules.Verify(x => x.IsEnabledAsync(1, ModuleName.Logging, It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task UserLeftHandler_ReturnsEarly_WhenLoggingModuleDisabled()
+    {
+        var modules = new Mock<IModuleService>();
+        modules.Setup(x => x.IsEnabledAsync(1, ModuleName.Logging, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        var sut = new UserLeftHandler(modules.Object);
+
+        await sut.HandleAsync(new UserLeave(1, 2), CancellationToken.None);
+
+        modules.Verify(x => x.IsEnabledAsync(1, ModuleName.Logging, It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

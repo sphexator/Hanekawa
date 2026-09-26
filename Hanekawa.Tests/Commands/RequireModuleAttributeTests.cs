@@ -73,6 +73,20 @@ public class RequireModuleAttributeTests
         Assert.Equal($"The {ModuleName.Level} module is disabled in this server.", result.FailureReason);
     }
 
+    [Fact]
+    public async Task CheckAsync_ReturnsFailure_WhenActivityModuleIsDisabled()
+    {
+        var modules = new Mock<IModuleService>();
+        modules.Setup(x => x.IsEnabledAsync(GuildId, ModuleName.Activity, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        var context = CreateContext(NonOwnerId, modules.Object, []);
+
+        var result = await new RequireModuleAttribute(ModuleName.Activity).CheckAsync(context);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal($"The {ModuleName.Activity} module is disabled in this server.", result.FailureReason);
+    }
+
     private static IDiscordGuildCommandContext CreateContext(
         ulong authorId,
         IModuleService moduleService,
