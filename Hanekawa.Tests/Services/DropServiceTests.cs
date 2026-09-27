@@ -78,14 +78,14 @@ public class DropServiceTests
 
         bot.Verify(x => x.SendMessageAsync(ChannelId, It.Is<string>(m => m.Contains("drop event")), It.IsAny<Attachment>()),
             Times.Once);
-        cache.Verify(x => x.Add($"{ChannelId}-{MessageId}-drop", UserId), Times.Once);
+        cache.Verify(x => x.Add(DropService.DropCacheKey(ChannelId, MessageId), UserId), Times.Once);
     }
 
     [Fact]
     public async Task ClaimAsync_DoesNotReward_WhenDropIsNotCached()
     {
         var (sut, bot, cache, levels) = CreateSut([], new FixedRandom(0));
-        cache.Setup(x => x.Get<GuildUser>(It.IsAny<string>())).Returns((GuildUser?)null);
+        cache.Setup(x => x.Get<ulong>(It.IsAny<string>())).Returns(0UL);
 
         await sut.ClaimAsync(ChannelId, MessageId, CreateMember());
 
@@ -105,8 +105,8 @@ public class DropServiceTests
             }
         };
         var (sut, bot, cache, levels) = CreateSut(configs, new FixedRandom(0));
-        cache.Setup(x => x.Get<GuildUser>($"{MessageId}-{ChannelId}-drop"))
-            .Returns(new GuildUser { Id = UserId, GuildId = GuildId });
+        cache.Setup(x => x.Get<ulong>(DropService.DropCacheKey(ChannelId, MessageId)))
+            .Returns(UserId);
         levels.Setup(x => x.AddExperienceAsync(It.IsAny<DiscordMember>(), 50)).ReturnsAsync(50);
         bot.Setup(x => x.DeleteMessageAsync(GuildId, ChannelId, MessageId)).Returns(Task.CompletedTask);
         bot.Setup(x => x.SendMessageAsync(ChannelId, It.IsAny<string>(), It.IsAny<Attachment>()))
@@ -119,15 +119,25 @@ public class DropServiceTests
         levels.Verify(x => x.AddExperienceAsync(member, 50), Times.Once);
         bot.Verify(x => x.SendMessageAsync(ChannelId, It.Is<string>(m => m.Contains("50 experience")), It.IsAny<Attachment>()),
             Times.Once);
-        cache.Verify(x => x.Remove($"{MessageId}-{ChannelId}-drop"), Times.Once);
+        cache.Verify(x => x.Remove(DropService.DropCacheKey(ChannelId, MessageId)), Times.Once);
+    }
+
+    [Fact]
+    public async Task ClaimAsync_ReleasesSemaphore_WhenDropIsNotCached()
+    {
+        var (sut, _, cache, _) = CreateSut([], new FixedRandom(0));
+        cache.Setup(x => x.Get<ulong>(It.IsAny<string>())).Returns(0UL);
+
+        await sut.ClaimAsync(ChannelId, MessageId, CreateMember());
+        await sut.ClaimAsync(ChannelId, MessageId, CreateMember());
     }
 
     [Fact]
     public async Task ClaimAsync_DeletesMessageWithoutReward_WhenConfigIsMissing()
     {
         var (sut, bot, cache, levels) = CreateSut([], new FixedRandom(0));
-        cache.Setup(x => x.Get<GuildUser>($"{MessageId}-{ChannelId}-drop"))
-            .Returns(new GuildUser { Id = UserId, GuildId = GuildId });
+        cache.Setup(x => x.Get<ulong>(DropService.DropCacheKey(ChannelId, MessageId)))
+            .Returns(UserId);
         bot.Setup(x => x.DeleteMessageAsync(GuildId, ChannelId, MessageId)).Returns(Task.CompletedTask);
 
         await sut.ClaimAsync(ChannelId, MessageId, CreateMember());

@@ -12,6 +12,8 @@ namespace Hanekawa.Application.Services;
 /// <inheritdoc />
 public class DropService : IDropService
 {
+    internal static string DropCacheKey(ulong channelId, ulong messageId) => $"{channelId}-{messageId}-drop";
+
     private readonly ILevelService _levelService;
     private readonly ILogger<DropService> _logger;
     private readonly SemaphoreSlim _semaphoreSlim;
@@ -70,39 +72,46 @@ public class DropService : IDropService
         }
 
         var cache = scope.ServiceProvider.GetRequiredService<ICacheContext>();
-        cache.Add($"{msg.ChannelId}-{msg.Id}-drop", user.Id);
+        cache.Add(DropCacheKey(msg.ChannelId, msg.Id), user.Id);
     }
 
     /// <inheritdoc />
     public async Task ClaimAsync(ulong channelId, ulong msgId, DiscordMember user, CancellationToken cancellationToken = default)
     {
         await _semaphoreSlim.WaitAsync(cancellationToken);
-        _logger.LogDebug("{UserId}-{GuildId} entered the semaphore for drop claims",
-            user.Id, user.Guild.GuildId);
+        try
+        {
+            _logger.LogDebug("{UserId}-{GuildId} entered the semaphore for drop claims",
+                user.Id, user.Guild.GuildId);
 
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        var cache = scope.ServiceProvider.GetRequiredService<ICacheContext>();
-        var value = cache.Get<GuildUser>($"{msgId}-{channelId}-drop");
-        if(value is null) return;
+            var cacheKey = DropCacheKey(channelId, msgId);
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            var cache = scope.ServiceProvider.GetRequiredService<ICacheContext>();
+            if (cache.Get<ulong>(cacheKey) is 0)
+                return;
 
-        var bot = _serviceProvider.GetRequiredService<IBot>();
-        await bot.DeleteMessageAsync(user.Guild.GuildId, channelId, msgId);
+            var bot = _serviceProvider.GetRequiredService<IBot>();
+            await bot.DeleteMessageAsync(user.Guild.GuildId, channelId, msgId);
 
-        var db = scope.ServiceProvider.GetRequiredService<IDbContext>();
-        var config = await db.GuildConfigs
-            .Include(x => x.DropConfig)
-            .FirstOrDefaultAsync(x => x.GuildId == user.Guild.GuildId,
-                cancellationToken: cancellationToken);
-        if (config is null) return;
+            var db = scope.ServiceProvider.GetRequiredService<IDbContext>();
+            var config = await db.GuildConfigs
+                .Include(x => x.DropConfig)
+                .FirstOrDefaultAsync(x => x.GuildId == user.Guild.GuildId,
+                    cancellationToken: cancellationToken);
+            if (config is null) return;
 
-        var exp = await _levelService.AddExperienceAsync(user, config.DropConfig.ExpReward);
-        await bot.SendMessageAsync(channelId,
-            $"Rewarded {user.Nickname ?? user.Username} with {exp ?? 0} experience for claiming the drop!");
+            var exp = await _levelService.AddExperienceAsync(user, config.DropConfig.ExpReward);
+            await bot.SendMessageAsync(channelId,
+                $"Rewarded {user.Nickname ?? user.Username} with {exp ?? 0} experience for claiming the drop!");
 
-        cache.Remove($"{msgId}-{channelId}-drop");
-        _semaphoreSlim.Release();
-        _logger.LogDebug("{UserId}-{GuildId} exited the semaphore for drop claims",
-            user.Id, user.Guild.GuildId);
+            cache.Remove(cacheKey);
+        }
+        finally
+        {
+            _semaphoreSlim.Release();
+            _logger.LogDebug("{UserId}-{GuildId} exited the semaphore for drop claims",
+                user.Id, user.Guild.GuildId);
+        }
     }
 
     /// <inheritdoc />
