@@ -194,6 +194,19 @@ public class DropServiceTests
         Assert.Equal("⭐", drop.Emote);
     }
 
+    [Fact]
+    public async Task Configure_MergesBlacklistChannels_WhenNewChannelsProvided()
+    {
+        const ulong extraChannelId = 7;
+        var drop = new DropConfig { GuildId = 0, Blacklist = [ChannelId] };
+        var configs = new List<GuildConfig> { new() { GuildId = 0, DropConfig = drop } };
+        var (sut, _, _, _) = CreateSut(configs, new FixedRandom(0));
+
+        await sut.Configure(cfg => { cfg.Blacklist = [extraChannelId]; });
+
+        Assert.Equal(new ulong[] { ChannelId, extraChannelId }, drop.Blacklist);
+    }
+
     private static (DropService Sut, Mock<IBot> Bot, Mock<ICacheContext> Cache, Mock<ILevelService> Levels)
         CreateSut(List<GuildConfig> configs, Random random)
     {
