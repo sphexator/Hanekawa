@@ -26,5 +26,8 @@
       <ProjectReference Include="..\Hanekawa.Application\Hanekawa.Application.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <InternalsVisibleTo Include="Hanekawa.Tests" />
+    </ItemGroup>
 
 </Project>
