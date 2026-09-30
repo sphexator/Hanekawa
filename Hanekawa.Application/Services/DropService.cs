@@ -145,6 +145,8 @@ public class DropService : IDropService
                     : cfg.DropConfig.Blacklist[i];
                 newBlacklist[i] = x;
             }
+
+            cfg.DropConfig.Blacklist = newBlacklist;
         }
         Save:
         await db.SaveChangesAsync();

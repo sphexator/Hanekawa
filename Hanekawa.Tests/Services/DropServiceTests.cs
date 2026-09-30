@@ -194,6 +194,24 @@ public class DropServiceTests
         Assert.Equal("⭐", drop.Emote);
     }
 
+    [Fact]
+    public async Task Configure_MergesBlacklistChannels_WhenNewChannelsProvided()
+    {
+        var drop = new DropConfig { GuildId = 0, Blacklist = [10, 20] };
+        var configs = new List<GuildConfig> { new() { GuildId = 0, DropConfig = drop } };
+        var (sut, _, _, _) = CreateSut(configs, new FixedRandom(0));
+
+        await sut.Configure(cfg => cfg.Blacklist = [30]);
+
+        Assert.Equal([10UL, 20UL, 30UL], drop.Blacklist);
+    }
+
+    [Theory]
+    [InlineData(5UL, 99UL, "5-99-drop")]
+    [InlineData(ulong.MaxValue, 1UL, "18446744073709551615-1-drop")]
+    public void DropCacheKey_MatchesDropAndClaimLookup(ulong channelId, ulong messageId, string expected)
+        => Assert.Equal(expected, DropService.DropCacheKey(channelId, messageId));
+
     private static (DropService Sut, Mock<IBot> Bot, Mock<ICacheContext> Cache, Mock<ILevelService> Levels)
         CreateSut(List<GuildConfig> configs, Random random)
     {
