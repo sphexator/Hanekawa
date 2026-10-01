@@ -182,6 +182,24 @@ public class DropServiceTests
     }
 
     [Fact]
+    public void DropCacheKey_MatchesDropAndClaimLookup()
+    {
+        Assert.Equal($"{ChannelId}-{MessageId}-drop", DropService.DropCacheKey(ChannelId, MessageId));
+    }
+
+    [Fact]
+    public async Task Configure_MergesBlacklistChannels_WhenNewChannelsProvided()
+    {
+        var drop = new DropConfig { GuildId = 0, Blacklist = [1, 2] };
+        var configs = new List<GuildConfig> { new() { GuildId = 0, DropConfig = drop } };
+        var (sut, _, _, _) = CreateSut(configs, new FixedRandom(0));
+
+        await sut.Configure(cfg => cfg.Blacklist = [3]);
+
+        Assert.Equal([1ul, 2ul, 3ul], drop.Blacklist);
+    }
+
+    [Fact]
     public async Task Configure_DoesNotOverwrite_WhenExpRewardAndEmoteAreDefaults()
     {
         var drop = new DropConfig { GuildId = 0, ExpReward = 40, Emote = "⭐" };
