@@ -14,11 +14,11 @@ namespace Hanekawa.Tests.Services;
 public class ConfigServiceTests
 {
     [Fact]
-    public async Task GetAsync_ThrowsJsonException_WhenCachedJsonIsInvalid()
+    public async Task GetAsync_ThrowsJsonException_WhenCachedPayloadIsInvalid()
     {
         var cache = new Mock<IDistributedCache>();
         cache.Setup(x => x.GetAsync("1-GuildConfig", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Encoding.UTF8.GetBytes("{not-json"));
+            .ReturnsAsync("{not-valid-json"u8.ToArray());
         var db = new Mock<IDbContext>(MockBehavior.Strict);
         var sut = new ConfigService(cache.Object, db.Object);
 

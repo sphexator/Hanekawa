@@ -94,9 +94,10 @@ public class DropServiceTests
     }
 
     [Fact]
-    public async Task ClaimAsync_AwardsClaimingMember_WhenCacheOnlyMarksDropActive()
+    public async Task ClaimAsync_AwardsReactingMember_WhenCacheOnlyMarksDropActive()
     {
-        const ulong claimerId = 99;
+        const ulong dropOwnerId = 10;
+        const ulong claimerId = 77;
         var configs = new List<GuildConfig>
         {
             new()
@@ -107,18 +108,20 @@ public class DropServiceTests
         };
         var (sut, bot, cache, levels) = CreateSut(configs, new FixedRandom(0));
         cache.Setup(x => x.Get<ulong>(DropService.DropCacheKey(ChannelId, MessageId)))
-            .Returns(UserId);
+            .Returns(dropOwnerId);
         levels.Setup(x => x.AddExperienceAsync(It.IsAny<DiscordMember>(), 50)).ReturnsAsync(50);
         bot.Setup(x => x.DeleteMessageAsync(GuildId, ChannelId, MessageId)).Returns(Task.CompletedTask);
         bot.Setup(x => x.SendMessageAsync(ChannelId, It.IsAny<string>(), It.IsAny<Attachment>()))
             .ReturnsAsync(new RestMessage());
 
-        var claimer = CreateMember();
-        claimer.Id = claimerId;
+        var claimer = CreateMember(claimerId);
         await sut.ClaimAsync(ChannelId, MessageId, claimer);
 
         levels.Verify(x => x.AddExperienceAsync(claimer, 50), Times.Once);
-        cache.Verify(x => x.Remove(DropService.DropCacheKey(ChannelId, MessageId)), Times.Once);
+        bot.Verify(x => x.SendMessageAsync(ChannelId, It.Is<string>(m => m.Contains("Dropper")), It.IsAny<Attachment>()),
+            Times.Never);
+        bot.Verify(x => x.SendMessageAsync(ChannelId, It.Is<string>(m => m.Contains("dropper")), It.IsAny<Attachment>()),
+            Times.Once);
     }
 
     [Fact]
@@ -264,12 +267,12 @@ public class DropServiceTests
     private static TextChannel CreateChannel()
         => new() { Id = ChannelId, Name = "drops", GuildId = GuildId, Mention = $"<#{ChannelId}>" };
 
-    private static DiscordMember CreateMember()
+    private static DiscordMember CreateMember(ulong userId = UserId)
         => new()
         {
-            Id = UserId,
+            Id = userId,
             Username = "dropper",
-            Nickname = "Dropper",
+            Nickname = userId == UserId ? "Dropper" : null,
             Guild = new Guild { GuildId = GuildId, Name = "guild", Emotes = [] }
         };
 

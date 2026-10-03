@@ -82,32 +82,32 @@ public class ItemServiceTests
     }
 
     [Fact]
-    public async Task GetAllItemTypesAsync_ReturnsCachedTypes()
+    public async Task GetAllItemTypesAsync_ReturnsCachedTypes_WithoutQueryingDatabase()
     {
-        var type = new ItemType { Id = Guid.NewGuid(), Name = "consumable" };
+        var types = new List<ItemType> { new() { Id = Guid.NewGuid(), Name = "consumable" } };
         var cache = new Mock<ICacheContext>();
         cache.Setup(x => x.GetOrCreateAsync("all_item_types", It.IsAny<Func<Task<List<ItemType>>>>()))
-            .ReturnsAsync([type]);
+            .ReturnsAsync(types);
         var db = new Mock<IDbContext>(MockBehavior.Strict);
         var sut = new ItemService(db.Object, cache.Object);
 
         var result = (await sut.GetAllItemTypesAsync()).ToList();
 
-        Assert.Same(type, Assert.Single(result));
+        Assert.Same(types[0], Assert.Single(result));
         db.Verify(x => x.ItemTypes, Times.Never);
     }
 
     [Fact]
-    public async Task GetAllItemTypesAsync_LoadsTypes_OnCacheMiss()
+    public async Task GetAllItemTypesAsync_LoadsFromDatabase_OnCacheMiss()
     {
-        var type = new ItemType { Id = Guid.NewGuid(), Name = "utility" };
+        var itemType = new ItemType { Id = Guid.NewGuid(), Name = "utility" };
         var db = new Mock<IDbContext>();
-        db.Setup(x => x.ItemTypes).ReturnsDbSet(new List<ItemType> { type });
+        db.Setup(x => x.ItemTypes).ReturnsDbSet(new List<ItemType> { itemType });
         var sut = new ItemService(db.Object, CreateFactoryCache<List<ItemType>>());
 
         var result = (await sut.GetAllItemTypesAsync()).ToList();
 
-        Assert.Same(type, Assert.Single(result));
+        Assert.Same(itemType, Assert.Single(result));
     }
 
     [Fact]
