@@ -14,6 +14,19 @@ namespace Hanekawa.Tests.Services;
 public class ConfigServiceTests
 {
     [Fact]
+    public async Task GetAsync_ThrowsJsonException_WhenCachedPayloadIsInvalid()
+    {
+        var cache = new Mock<IDistributedCache>();
+        cache.Setup(x => x.GetAsync("1-GuildConfig", It.IsAny<CancellationToken>()))
+            .ReturnsAsync("{not-valid-json"u8.ToArray());
+        var db = new Mock<IDbContext>(MockBehavior.Strict);
+        var sut = new ConfigService(cache.Object, db.Object);
+
+        await Assert.ThrowsAsync<JsonException>(() => sut.GetAsync(1).AsTask());
+        db.Verify(x => x.GuildConfigs, Times.Never);
+    }
+
+    [Fact]
     public async Task GetAsync_ReturnsCachedConfig_WithoutQueryingDatabase()
     {
         var config = new GuildConfig { GuildId = 1, Prefix = "cached." };

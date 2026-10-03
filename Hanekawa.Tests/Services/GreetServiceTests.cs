@@ -38,6 +38,69 @@ public class GreetServiceTests
     }
 
     [Fact]
+    public async Task SetMessage_CreatesGuildAndGreetConfig_WhenMissing()
+    {
+        GuildConfig? added = null;
+        var dbSet = new List<GuildConfig>().MockDbSet();
+        dbSet.Setup(x => x.AddAsync(It.IsAny<GuildConfig>(), It.IsAny<CancellationToken>()))
+            .Callback<GuildConfig, CancellationToken>((config, _) => added = config)
+            .Returns(ValueTask.FromResult<EntityEntry<GuildConfig>>(null!));
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).Returns(dbSet.Object);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var sut = new GreetService(db.Object, NullLogger<GreetService>.Instance);
+
+        var result = await sut.SetMessage(GuildId, "hello");
+
+        Assert.Equal("Updated greet message !", result);
+        Assert.NotNull(added);
+        Assert.Equal(GuildId, added!.GuildId);
+        Assert.Equal("hello", added.GreetConfig!.Message);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ListImages_ReturnsNotFound_WhenGuildConfigIsMissing()
+    {
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(new List<GuildConfig>());
+        var sut = new GreetService(db.Object, NullLogger<GreetService>.Instance);
+
+        var result = await sut.ListImages(GuildId);
+
+        Assert.True(result.IsT0);
+        Assert.IsType<NotFound>(result.AsT0);
+    }
+
+    [Fact]
+    public async Task ListImages_ReturnsNotFound_WhenGreetConfigIsNull()
+    {
+        var configs = new List<GuildConfig> { new() { GuildId = GuildId, GreetConfig = null } };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        var sut = new GreetService(db.Object, NullLogger<GreetService>.Instance);
+
+        var result = await sut.ListImages(GuildId);
+
+        Assert.True(result.IsT0);
+        Assert.IsType<NotFound>(result.AsT0);
+    }
+
+    [Fact]
+    public async Task RemoveImage_ReturnsFalse_WhenGreetConfigIsMissing()
+    {
+        var configs = new List<GuildConfig> { new() { GuildId = GuildId, GreetConfig = null } };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        var sut = new GreetService(db.Object, NullLogger<GreetService>.Instance);
+
+        var removed = await sut.RemoveImage(GuildId, 1);
+
+        Assert.False(removed);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task SetMessage_UpdatesExistingGreetConfig()
     {
         var greet = new GreetConfig { GuildId = GuildId, Message = "old" };
