@@ -138,6 +138,65 @@ public class GreetServiceTests
     }
 
     [Fact]
+    public async Task ListImages_ReturnsNotFound_WhenGuildConfigMissing()
+    {
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(new List<GuildConfig>());
+        var sut = new GreetService(db.Object, NullLogger<GreetService>.Instance);
+
+        var result = await sut.ListImages(GuildId);
+
+        Assert.True(result.IsT0);
+        Assert.IsType<NotFound>(result.AsT0);
+    }
+
+    [Fact]
+    public async Task ListImages_ReturnsNotFound_WhenGreetConfigMissing()
+    {
+        var configs = new List<GuildConfig> { new() { GuildId = GuildId, GreetConfig = null } };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        var sut = new GreetService(db.Object, NullLogger<GreetService>.Instance);
+
+        var result = await sut.ListImages(GuildId);
+
+        Assert.True(result.IsT0);
+        Assert.IsType<NotFound>(result.AsT0);
+    }
+
+    [Fact]
+    public async Task SetChannel_InitializesGreetConfig_WhenGuildExistsWithoutGreetConfig()
+    {
+        var configs = new List<GuildConfig> { new() { GuildId = GuildId, GreetConfig = null } };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var sut = new GreetService(db.Object, NullLogger<GreetService>.Instance);
+        var channel = new TextChannel { Id = 9, Name = "welcome", GuildId = GuildId, Mention = "<#9>" };
+
+        var result = await sut.SetChannel(GuildId, channel);
+
+        Assert.Contains("<#9>", result);
+        Assert.NotNull(configs[0].GreetConfig);
+        Assert.Equal(9ul, configs[0].GreetConfig!.Channel);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RemoveImage_ReturnsFalse_WhenGreetConfigMissing()
+    {
+        var configs = new List<GuildConfig> { new() { GuildId = GuildId, GreetConfig = null } };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        var sut = new GreetService(db.Object, NullLogger<GreetService>.Instance);
+
+        var removed = await sut.RemoveImage(GuildId, 1);
+
+        Assert.False(removed);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task ListImages_ReturnsNotFound_WhenNoImagesExist()
     {
         var configs = new List<GuildConfig>
