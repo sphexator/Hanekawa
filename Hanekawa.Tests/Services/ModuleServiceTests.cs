@@ -73,6 +73,33 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    public async Task IsEnabledAsync_LoadsFromDatabase_WhenCacheIsEmptyString()
+    {
+        var cache = new Mock<IDistributedCache>();
+        cache.Setup(x => x.GetAsync("1-Modules", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<byte>());
+        cache.Setup(x => x.SetAsync(
+                "1-Modules",
+                It.IsAny<byte[]>(),
+                It.IsAny<DistributedCacheEntryOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var modules = new List<Module>
+        {
+            new() { GuildId = 1, Name = ModuleName.Streaming, Enabled = true }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Modules).ReturnsDbSet(modules);
+        var sut = new ModuleService(cache.Object, db.Object);
+
+        var result = await sut.IsEnabledAsync(1, ModuleName.Streaming);
+
+        Assert.True(result);
+        db.Verify(x => x.Modules, Times.AtLeastOnce);
+    }
+
+    [Fact]
     public async Task IsEnabledAsync_LoadsFromDatabase_WhenCachePayloadDeserializesToNull()
     {
         var cache = new Mock<IDistributedCache>();
