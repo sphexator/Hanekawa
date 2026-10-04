@@ -10,6 +10,19 @@ namespace Hanekawa.Tests.Services;
 public class LogSettingServiceTests
 {
     [Fact]
+    public async Task SetMessageLogChannelAsync_DoesNothing_WhenLogConfigIsMissing()
+    {
+        var configs = new List<GuildConfig> { new() { GuildId = 1, LogConfig = null } };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        var sut = new LogSettingService(NullLogger<LogSettingService>.Instance, db.Object);
+
+        await sut.SetMessageLogChannelAsync(1, 7);
+
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task SetModLogChannelAsync_DoesNothing_WhenConfigIsMissing()
     {
         var db = new Mock<IDbContext>();

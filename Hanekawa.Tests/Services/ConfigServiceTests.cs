@@ -27,6 +27,19 @@ public class ConfigServiceTests
     }
 
     [Fact]
+    public async Task GetAsync_ThrowsJsonException_WhenCachedValueIsEmptyString()
+    {
+        var cache = new Mock<IDistributedCache>();
+        cache.Setup(x => x.GetAsync("1-GuildConfig", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<byte>());
+        var db = new Mock<IDbContext>(MockBehavior.Strict);
+        var sut = new ConfigService(cache.Object, db.Object);
+
+        await Assert.ThrowsAsync<JsonException>(() => sut.GetAsync(1).AsTask());
+        db.Verify(x => x.GuildConfigs, Times.Never);
+    }
+
+    [Fact]
     public async Task GetAsync_ReturnsCachedConfig_WithoutQueryingDatabase()
     {
         var config = new GuildConfig { GuildId = 1, Prefix = "cached." };

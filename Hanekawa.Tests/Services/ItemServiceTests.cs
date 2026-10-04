@@ -69,6 +69,22 @@ public class ItemServiceTests
     }
 
     [Fact]
+    public async Task GetAllItemsAsync_ReturnsCachedItems_WithoutQueryingDatabase()
+    {
+        var items = new List<Item> { CreateItem(Guid.NewGuid(), "Potion", "consumable") };
+        var cache = new Mock<ICacheContext>();
+        cache.Setup(x => x.GetOrCreateAsync("all_items", It.IsAny<Func<Task<List<Item>>>>()))
+            .ReturnsAsync(items);
+        var db = new Mock<IDbContext>(MockBehavior.Strict);
+        var sut = new ItemService(db.Object, cache.Object);
+
+        var result = (await sut.GetAllItemsAsync()).ToList();
+
+        Assert.Same(items[0], Assert.Single(result));
+        db.Verify(x => x.Items, Times.Never);
+    }
+
+    [Fact]
     public async Task GetAllItemsAsync_LoadsItems_OnCacheMiss()
     {
         var item = CreateItem(Guid.NewGuid(), "Potion", "consumable");

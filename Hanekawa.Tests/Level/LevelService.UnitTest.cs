@@ -193,6 +193,41 @@ public class LevelServiceUnitTest
     }
 
     [Fact]
+    public async Task AddExperienceAsync_ReturnsNull_WhenGuildConfigRowIsMissing()
+    {
+        var configDbSet = new List<GuildConfig>().MockDbSet();
+        _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
+
+        var actual = await _levelService.AddExperienceAsync(_member, 100);
+
+        Assert.Null(actual);
+        _mockdb.Verify(e => e.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _mockDispatcher.Verify(x => x.SendAsync(It.IsAny<LevelUp>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AddExperienceAsync_PersistsExperience_WithoutLevelUp_WhenNoNextLevelRequirement()
+    {
+        _user.Experience = 10_000;
+        _user.Level = 99;
+        var configDbSet = new List<GuildConfig> { _config }.MockDbSet();
+        var levelDbSet = new List<LevelRequirement>().MockDbSet();
+        var userDbSet = new List<GuildUser> { _user }.MockDbSet();
+
+        _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
+        _mockdb.Setup(e => e.LevelRequirements).Returns(levelDbSet.Object);
+        _mockdb.Setup(e => e.Users).Returns(userDbSet.Object);
+
+        var actual = await _levelService.AddExperienceAsync(_member, 50);
+
+        Assert.Equal(50, actual);
+        Assert.Equal(99, _user.Level);
+        Assert.Equal(10_050, _user.Experience);
+        _mockDispatcher.Verify(x => x.SendAsync(It.IsAny<LevelUp>(), It.IsAny<CancellationToken>()), Times.Never);
+        _mockdb.Verify(e => e.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task AddExperienceAsync_PersistsExperience_WhenUserIsCreated()
     {
         GuildUser? created = null;

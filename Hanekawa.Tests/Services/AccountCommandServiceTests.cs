@@ -17,6 +17,28 @@ public class AccountCommandServiceTests
     };
 
     [Fact]
+    public async Task GetWalletAsync_CreatesUser_WhenMissing()
+    {
+        GuildUser? added = null;
+        var users = new List<GuildUser>().MockDbSet();
+        users.Setup(x => x.AddAsync(It.IsAny<GuildUser>(), It.IsAny<CancellationToken>()))
+            .Callback<GuildUser, CancellationToken>((user, _) => added = user)
+            .Returns(ValueTask.FromResult<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<GuildUser>>(null!));
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Users).Returns(users.Object);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var sut = new AccountCommandService(Mock.Of<IImageService>(), db.Object);
+
+        var currency = await sut.GetWalletAsync(_member);
+
+        Assert.Equal(0, currency);
+        Assert.NotNull(added);
+        Assert.Equal(1ul, added.GuildId);
+        Assert.Equal(10ul, added.Id);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task GetWalletAsync_ReturnsExistingUserCurrency()
     {
         var users = new List<GuildUser>
