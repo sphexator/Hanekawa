@@ -154,6 +154,15 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
         CancellationToken cancellationToken = default)
     {
         var config = await GetOrCreateConfigAsync(guildId, cancellationToken);
+        if (config.PreviousWeekRoleId.HasValue &&
+            config.PreviousWeekRoleId != roleId &&
+            config.PreviousWeekHolderId.HasValue)
+        {
+            await bot.RemoveRoleAsync(config.GuildId, config.PreviousWeekHolderId.Value,
+                config.PreviousWeekRoleId.Value);
+            config.PreviousWeekHolderId = null;
+        }
+
         config.PreviousWeekRoleId = roleId;
         await db.SaveChangesAsync(cancellationToken);
         return roleId.HasValue
@@ -166,6 +175,14 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
         CancellationToken cancellationToken = default)
     {
         var config = await GetOrCreateConfigAsync(guildId, cancellationToken);
+        if (config.CurrentWeekRoleId.HasValue &&
+            config.CurrentWeekRoleId != roleId &&
+            config.CurrentHolders.Count > 0)
+        {
+            await RemoveCurrentWeekRoleFromHoldersAsync(config, config.CurrentWeekRoleId.Value,
+                cancellationToken);
+        }
+
         config.CurrentWeekRoleId = roleId;
         config.CurrentWeekTopAmount = Math.Max(1, topAmount);
         await db.SaveChangesAsync(cancellationToken);
@@ -212,6 +229,20 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
             .Include(x => x.ActivityConfig)
             .FirstOrDefaultAsync(x => x.GuildId == guildId, cancellationToken);
         return config?.ActivityConfig;
+    }
+
+    private async Task RemoveCurrentWeekRoleFromHoldersAsync(ActivityConfig config, ulong roleId,
+        CancellationToken cancellationToken)
+    {
+        foreach (var userId in config.CurrentHolders)
+        {
+            logger.LogInformation(
+                "Removing previous current-week activity role {Role} from user {User} in guild {Guild}",
+                roleId, userId, config.GuildId);
+            await bot.RemoveRoleAsync(config.GuildId, userId, roleId);
+        }
+
+        config.CurrentHolders = [];
     }
 
     private async Task<ActivityConfig> GetOrCreateConfigAsync(ulong guildId,

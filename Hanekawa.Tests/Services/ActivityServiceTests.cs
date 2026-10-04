@@ -485,13 +485,57 @@ public class ActivityServiceTests
     [Fact]
     public async Task SetCurrentWeekRoleAsync_ReturnsDisableMessage_WhenRoleCleared()
     {
-        var config = new ActivityConfig(1) { CurrentWeekRoleId = 100, CurrentWeekTopAmount = 2 };
+        var config = new ActivityConfig(1)
+        {
+            CurrentWeekRoleId = 100,
+            CurrentWeekTopAmount = 2,
+            CurrentHolders = [5, 6]
+        };
         SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
 
         var response = await _sut.SetCurrentWeekRoleAsync(1, null, 2);
 
         Assert.Null(config.CurrentWeekRoleId);
+        Assert.Empty(config.CurrentHolders);
         Assert.Contains("disabled", response);
+        _bot.Verify(x => x.RemoveRoleAsync(1, 5, 100), Times.Once);
+        _bot.Verify(x => x.RemoveRoleAsync(1, 6, 100), Times.Once);
+    }
+
+    [Fact]
+    public async Task SetCurrentWeekRoleAsync_RemovesOldRoleFromHolders_WhenRewardRoleChanges()
+    {
+        var config = new ActivityConfig(1)
+        {
+            CurrentWeekRoleId = 100,
+            CurrentWeekTopAmount = 1,
+            CurrentHolders = [42]
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+
+        await _sut.SetCurrentWeekRoleAsync(1, 200, 1);
+
+        Assert.Equal(200UL, config.CurrentWeekRoleId);
+        Assert.Empty(config.CurrentHolders);
+        _bot.Verify(x => x.RemoveRoleAsync(1, 42, 100), Times.Once);
+        _bot.Verify(x => x.AddRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SetPreviousWeekRoleAsync_RemovesRoleFromHolder_WhenRewardRoleChanges()
+    {
+        var config = new ActivityConfig(1)
+        {
+            PreviousWeekRoleId = 50,
+            PreviousWeekHolderId = 9
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+
+        await _sut.SetPreviousWeekRoleAsync(1, 60);
+
+        Assert.Equal(60UL, config.PreviousWeekRoleId);
+        Assert.Null(config.PreviousWeekHolderId);
+        _bot.Verify(x => x.RemoveRoleAsync(1, 9, 50), Times.Once);
     }
 
     [Fact]
