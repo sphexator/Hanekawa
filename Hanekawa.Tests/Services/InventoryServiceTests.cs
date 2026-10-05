@@ -103,6 +103,19 @@ public class InventoryServiceTests
     }
 
     [Fact]
+    public async Task UpdateInventoryAsync_WithSingleItem_InvalidatesInventoryCache()
+    {
+        var itemId = Guid.NewGuid();
+        var existing = CreateUser(new Inventory { ItemId = itemId, Amount = 1, UserId = UserId });
+        var (sut, db, cache) = CreateMutatingSut(existing);
+
+        await sut.UpdateInventoryAsync(existing, new Inventory { ItemId = itemId, Amount = 2, UserId = UserId });
+
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        cache.Verify(x => x.Remove($"inventory_{UserId}"), Times.Once);
+    }
+
+    [Fact]
     public async Task AddItemAsync_IncreasesAmount_WhenItemExists()
     {
         var itemId = Guid.NewGuid();
