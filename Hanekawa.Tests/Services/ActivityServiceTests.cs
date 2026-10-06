@@ -458,6 +458,23 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task SetPreviousWeekRoleAsync_RemovesRoleFromHolder_WhenRewardDisabled()
+    {
+        var config = new ActivityConfig(1)
+        {
+            PreviousWeekRoleId = 50,
+            PreviousWeekHolderId = 9
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+
+        await _sut.SetPreviousWeekRoleAsync(1, null);
+
+        Assert.Null(config.PreviousWeekRoleId);
+        Assert.Null(config.PreviousWeekHolderId);
+        _bot.Verify(x => x.RemoveRoleAsync(1, 9, 50), Times.Once);
+    }
+
+    [Fact]
     public async Task SetPreviousWeekRoleAsync_PersistsRole_AndReturnsMentionMessage()
     {
         var config = new ActivityConfig(1);

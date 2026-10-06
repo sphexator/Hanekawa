@@ -93,6 +93,36 @@ public class AccountCommandServiceTests
     }
 
     [Fact]
+    public async Task RankAsync_CreatesUser_WhenMissing()
+    {
+        GuildUser? added = null;
+        var users = new List<GuildUser>().MockDbSet();
+        users.Setup(x => x.AddAsync(It.IsAny<GuildUser>(), It.IsAny<CancellationToken>()))
+            .Callback<GuildUser, CancellationToken>((user, _) => added = user)
+            .Returns(ValueTask.FromResult<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<GuildUser>>(null!));
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Users).Returns(users.Object);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var stream = new MemoryStream();
+        var images = new Mock<IImageService>();
+        images.Setup(x => x.DrawRankAsync(_member, It.IsAny<GuildUser>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(stream);
+        var sut = new AccountCommandService(images.Object, db.Object);
+
+        var result = await sut.RankAsync(_member);
+
+        Assert.Same(stream, result);
+        Assert.NotNull(added);
+        Assert.Equal(1ul, added.GuildId);
+        Assert.Equal(10ul, added.Id);
+        images.Verify(x => x.DrawRankAsync(
+            _member,
+            It.Is<GuildUser>(u => u.Id == 10 && u.GuildId == 1),
+            It.IsAny<CancellationToken>()), Times.Once);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task RankAsync_DrawsRankForExistingUser()
     {
         var users = new List<GuildUser>
@@ -115,6 +145,34 @@ public class AccountCommandServiceTests
             It.Is<GuildUser>(u => u.Id == 10 && u.GuildId == 1),
             It.IsAny<CancellationToken>()), Times.Once);
         db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ProfileAsync_CreatesUser_WhenMissing()
+    {
+        GuildUser? added = null;
+        var users = new List<GuildUser>().MockDbSet();
+        users.Setup(x => x.AddAsync(It.IsAny<GuildUser>(), It.IsAny<CancellationToken>()))
+            .Callback<GuildUser, CancellationToken>((user, _) => added = user)
+            .Returns(ValueTask.FromResult<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<GuildUser>>(null!));
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Users).Returns(users.Object);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var stream = new MemoryStream();
+        var images = new Mock<IImageService>();
+        images.Setup(x => x.DrawProfileAsync(_member, It.IsAny<GuildUser>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(stream);
+        var sut = new AccountCommandService(images.Object, db.Object);
+
+        var result = await sut.ProfileAsync(_member);
+
+        Assert.Same(stream, result);
+        Assert.NotNull(added);
+        images.Verify(x => x.DrawProfileAsync(
+            _member,
+            It.Is<GuildUser>(u => u.Id == 10 && u.GuildId == 1),
+            It.IsAny<CancellationToken>()), Times.Once);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
