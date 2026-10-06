@@ -467,10 +467,11 @@ public class ActivityServiceTests
         };
         SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
 
-        await _sut.SetPreviousWeekRoleAsync(1, null);
+        var response = await _sut.SetPreviousWeekRoleAsync(1, null);
 
         Assert.Null(config.PreviousWeekRoleId);
         Assert.Null(config.PreviousWeekHolderId);
+        Assert.Contains("disabled", response);
         _bot.Verify(x => x.RemoveRoleAsync(1, 9, 50), Times.Once);
     }
 
