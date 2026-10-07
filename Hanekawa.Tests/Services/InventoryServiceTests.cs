@@ -248,6 +248,15 @@ public class InventoryServiceTests
         Assert.Equal(0, await sut.GetItemCountAsync(UserId, Guid.NewGuid()));
     }
 
+    [Fact]
+    public async Task GetItemCountAsync_ReturnsZero_WhenItemNotInInventory()
+    {
+        var existing = CreateUser(new Inventory { ItemId = Guid.NewGuid(), Amount = 3, UserId = UserId });
+        var (sut, _, _) = CreateMutatingSut(existing);
+
+        Assert.Equal(0, await sut.GetItemCountAsync(UserId, Guid.NewGuid()));
+    }
+
     private static GuildUser CreateUser(params Inventory[] inventory)
         => new()
         {
