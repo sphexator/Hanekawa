@@ -23,6 +23,19 @@ public class LogSettingServiceTests
     }
 
     [Fact]
+    public async Task SetJoinLeaveLogChannelAsync_DoesNothing_WhenLogConfigIsMissing()
+    {
+        var configs = new List<GuildConfig> { new() { GuildId = 1, LogConfig = null } };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        var sut = new LogSettingService(NullLogger<LogSettingService>.Instance, db.Object);
+
+        await sut.SetJoinLeaveLogChannelAsync(1, 9);
+
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task SetModLogChannelAsync_DoesNothing_WhenConfigIsMissing()
     {
         var db = new Mock<IDbContext>();
@@ -94,5 +107,18 @@ public class LogSettingServiceTests
         await sut.SetVoiceLogChannelAsync(1, 8);
 
         Assert.Equal(8ul, logConfig.VoiceLogChannelId);
+    }
+
+    [Fact]
+    public async Task SetVoiceLogChannelAsync_DoesNothing_WhenLogConfigIsMissing()
+    {
+        var configs = new List<GuildConfig> { new() { GuildId = 1, LogConfig = null } };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        var sut = new LogSettingService(NullLogger<LogSettingService>.Instance, db.Object);
+
+        await sut.SetVoiceLogChannelAsync(1, 8);
+
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 }

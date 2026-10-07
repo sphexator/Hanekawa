@@ -557,6 +557,42 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task SetPreviousWeekRoleAsync_DoesNotRemoveRole_WhenRoleUnchanged()
+    {
+        var config = new ActivityConfig(1)
+        {
+            PreviousWeekRoleId = 50,
+            PreviousWeekHolderId = 9
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+
+        await _sut.SetPreviousWeekRoleAsync(1, 50);
+
+        Assert.Equal(50UL, config.PreviousWeekRoleId);
+        Assert.Equal(9UL, config.PreviousWeekHolderId);
+        _bot.Verify(x => x.RemoveRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SetCurrentWeekRoleAsync_DoesNotRemoveHolders_WhenRoleUnchanged()
+    {
+        var config = new ActivityConfig(1)
+        {
+            CurrentWeekRoleId = 100,
+            CurrentWeekTopAmount = 2,
+            CurrentHolders = [5, 6]
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+
+        await _sut.SetCurrentWeekRoleAsync(1, 100, 3);
+
+        Assert.Equal(100UL, config.CurrentWeekRoleId);
+        Assert.Equal(3, config.CurrentWeekTopAmount);
+        Assert.Equal([5UL, 6UL], config.CurrentHolders);
+        _bot.Verify(x => x.RemoveRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
+    }
+
+    [Fact]
     public async Task SetAnnouncementChannelAsync_CreatesActivityConfig_WhenGuildRowExistsWithoutActivity()
     {
         var guildConfig = new GuildConfig { GuildId = 1, ActivityConfig = null };

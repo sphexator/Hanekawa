@@ -154,7 +154,7 @@ public class InventoryService : IInventoryService
             .Select(e => new
             {
                 e.Id,
-                e.User.Inventory.FirstOrDefault(x => x.ItemId == itemId)!.Amount
+                Amount = e.User.Inventory.Where(x => x.ItemId == itemId).Select(x => x.Amount).FirstOrDefault()
             })
             .FirstOrDefaultAsync(x => x.Id == userId);
         return user?.Amount ?? 0;
