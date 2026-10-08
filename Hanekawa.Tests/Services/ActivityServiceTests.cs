@@ -540,6 +540,49 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task SetCurrentWeekRoleAsync_RemovesOldRoleFromEveryHolder_WhenMultipleHoldersExist()
+    {
+        var config = new ActivityConfig(1)
+        {
+            CurrentWeekRoleId = 100,
+            CurrentWeekTopAmount = 3,
+            CurrentHolders = [41, 42, 43]
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+
+        await _sut.SetCurrentWeekRoleAsync(1, 200, 3);
+
+        Assert.Equal(200UL, config.CurrentWeekRoleId);
+        Assert.Empty(config.CurrentHolders);
+        _bot.Verify(x => x.RemoveRoleAsync(1, 41, 100), Times.Once);
+        _bot.Verify(x => x.RemoveRoleAsync(1, 42, 100), Times.Once);
+        _bot.Verify(x => x.RemoveRoleAsync(1, 43, 100), Times.Once);
+    }
+
+    [Fact]
+    public async Task ProcessWeekRolloversAsync_ClearsCurrentWeekRoleFromAllHolders_WhenMultipleHoldersExist()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var previousWeek = currentWeek.AddDays(-7);
+        var config = new ActivityConfig(1)
+        {
+            CurrentWeekRoleId = 200,
+            CurrentHolders = [7, 8, 9],
+            LastProcessedWeekStart = previousWeek
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+        SetupActivities([]);
+
+        await _sut.ProcessWeekRolloversAsync();
+
+        _bot.Verify(x => x.RemoveRoleAsync(1, 7, 200), Times.Once);
+        _bot.Verify(x => x.RemoveRoleAsync(1, 8, 200), Times.Once);
+        _bot.Verify(x => x.RemoveRoleAsync(1, 9, 200), Times.Once);
+        Assert.Empty(config.CurrentHolders);
+        Assert.Equal(currentWeek, config.LastProcessedWeekStart);
+    }
+
+    [Fact]
     public async Task SetPreviousWeekRoleAsync_RemovesRoleFromHolder_WhenRewardRoleChanges()
     {
         var config = new ActivityConfig(1)

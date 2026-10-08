@@ -201,6 +201,32 @@ public class InventoryServiceTests
     }
 
     [Fact]
+    public async Task RemoveItemAsync_DoesNothing_WhenUserNotInDatabase()
+    {
+        var itemId = Guid.NewGuid();
+        var notPersisted = CreateUser(new Inventory { ItemId = itemId, Amount = 5, UserId = UserId });
+        var (sut, db, cache) = CreateMutatingSut([]);
+
+        await sut.RemoveItemAsync(notPersisted, itemId, 1);
+
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        cache.Verify(x => x.Remove(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateInventoryAsync_WithSingleItem_DoesNothing_WhenUserNotInDatabase()
+    {
+        var notPersisted = CreateUser();
+        var (sut, db, cache) = CreateMutatingSut([]);
+
+        await sut.UpdateInventoryAsync(notPersisted,
+            new Inventory { ItemId = Guid.NewGuid(), Amount = 1, UserId = UserId });
+
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        cache.Verify(x => x.Remove(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
     public async Task RemoveItemAsync_Throws_WhenAmountExceedsStock()
     {
         var itemId = Guid.NewGuid();
