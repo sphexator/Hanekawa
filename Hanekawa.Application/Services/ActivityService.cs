@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Services;
 using Hanekawa.Entities.Activity;
@@ -10,6 +11,8 @@ namespace Hanekawa.Application.Services;
 /// <inheritdoc />
 public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> logger) : IActivityService
 {
+    private static readonly ConcurrentDictionary<ulong, SemaphoreSlim> CurrentWeekRoleSyncLocks = new();
+
 	private const string DefaultAnnouncementMessage =
         "Congratulations {user} for being the most active user last week with {count} messages!";
 
@@ -47,6 +50,20 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
 
     /// <inheritdoc />
     public async Task SyncCurrentWeekRolesAsync(ulong guildId, CancellationToken cancellationToken = default)
+    {
+        var gate = CurrentWeekRoleSyncLocks.GetOrAdd(guildId, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken);
+        try
+        {
+            await SyncCurrentWeekRolesCoreAsync(guildId, cancellationToken);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private async Task SyncCurrentWeekRolesCoreAsync(ulong guildId, CancellationToken cancellationToken)
     {
         var config = await GetConfigAsync(guildId, cancellationToken);
         if (config?.CurrentWeekRoleId is null) return;
