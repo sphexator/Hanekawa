@@ -359,6 +359,42 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task SyncCurrentWeekRolesAsync_SerializesConcurrentCalls_ForSameGuild()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var config = new ActivityConfig(1)
+        {
+            CurrentWeekRoleId = 100,
+            CurrentWeekTopAmount = 1,
+            CurrentHolders = []
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+        SetupActivities(
+        [
+            new GuildActivity { GuildId = 1, UserId = 1, WeekStart = currentWeek, MessageCount = 10 }
+        ]);
+
+        var inside = 0;
+        var peakConcurrency = 0;
+        _bot.Setup(x => x.AddRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()))
+            .Returns(async () =>
+            {
+                var depth = Interlocked.Increment(ref inside);
+                peakConcurrency = Math.Max(peakConcurrency, depth);
+                await Task.Delay(100);
+                Interlocked.Decrement(ref inside);
+            });
+
+        var first = _sut.SyncCurrentWeekRolesAsync(1);
+        var second = _sut.SyncCurrentWeekRolesAsync(1);
+        await Task.WhenAll(first, second);
+
+        Assert.Equal(1, peakConcurrency);
+        Assert.Equal([1UL], config.CurrentHolders);
+        _bot.Verify(x => x.AddRoleAsync(1, 1, 100), Times.Once);
+    }
+
+    [Fact]
     public async Task SyncCurrentWeekRolesAsync_TreatsZeroTopAmountAsOne()
     {
         var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
