@@ -18,6 +18,8 @@ public interface IInventoryService
 
 public class InventoryService : IInventoryService
 {
+    internal static string InventoryCacheKey(ulong guildId, ulong userId) => $"inventory_{guildId}_{userId}";
+
     private readonly IDbContext _dbContext;
     private readonly ICacheContext _cache;
 
@@ -46,7 +48,7 @@ public class InventoryService : IInventoryService
         existingUser.User.Inventory = inventory;
 
         await _dbContext.SaveChangesAsync();
-        _cache.Remove($"inventory_{user.Id}");
+        _cache.Remove(InventoryCacheKey(user.GuildId, user.Id));
     }
     public async ValueTask UpdateInventoryAsync(GuildUser user, Inventory inventory)
     {
@@ -69,7 +71,7 @@ public class InventoryService : IInventoryService
         }
 
         await _dbContext.SaveChangesAsync();
-        _cache.Remove($"inventory_{user.Id}");
+        _cache.Remove(InventoryCacheKey(user.GuildId, user.Id));
     }
 
     public async ValueTask AddItemAsync(GuildUser user, Guid itemId, int amount)
@@ -101,7 +103,7 @@ public class InventoryService : IInventoryService
         }
 
         await _dbContext.SaveChangesAsync();
-        _cache.Remove($"inventory_{user.Id}");
+        _cache.Remove(InventoryCacheKey(user.GuildId, user.Id));
     }
 
     public async ValueTask RemoveItemAsync(GuildUser user, Guid itemId, int amount)
@@ -131,7 +133,7 @@ public class InventoryService : IInventoryService
         }
 
         await _dbContext.SaveChangesAsync();
-        _cache.Remove($"inventory_{user.Id}");
+        _cache.Remove(InventoryCacheKey(user.GuildId, user.Id));
     }
 
     public async ValueTask<bool> HasItemAsync(GuildUser user, Guid itemId)
@@ -162,7 +164,7 @@ public class InventoryService : IInventoryService
 
     private async ValueTask<GuildUser> GetOrCreateInventoryAsync(ulong guildId, ulong userId, CancellationToken cancellationToken = default)
     {
-        return await _cache.GetOrCreateAsync($"inventory_{userId}", async () =>
+        return await _cache.GetOrCreateAsync(InventoryCacheKey(guildId, userId), async () =>
         {
             var userEntity = await _dbContext.Users.Include(e => e.User)
                 .ThenInclude(e => e.Inventory)
