@@ -18,7 +18,7 @@ public class InventoryServiceTests
     {
         var user = CreateUser();
         var cache = new Mock<ICacheContext>();
-        cache.Setup(x => x.GetOrCreateAsync($"inventory_{UserId}", It.IsAny<Func<Task<GuildUser>>>()))
+        cache.Setup(x => x.GetOrCreateAsync(InventoryService.InventoryCacheKey(GuildId, UserId), It.IsAny<Func<Task<GuildUser>>>()))
             .ReturnsAsync(user);
         var db = new Mock<IDbContext>(MockBehavior.Strict);
         var sut = new InventoryService(db.Object, cache.Object);
@@ -40,6 +40,38 @@ public class InventoryServiceTests
         var result = await sut.GetInventoryAsync(GuildId, UserId);
 
         Assert.Same(user, result);
+    }
+
+    [Fact]
+    public async Task GetInventoryAsync_UsesDistinctCacheKeys_PerGuild()
+    {
+        const ulong otherGuildId = 999;
+        var cache = new Mock<ICacheContext>();
+        var seenKeys = new List<string>();
+        cache.Setup(x => x.GetOrCreateAsync(It.IsAny<string>(), It.IsAny<Func<Task<GuildUser>>>()))
+            .Returns((string key, Func<Task<GuildUser>> factory) =>
+            {
+                seenKeys.Add(key);
+                return new ValueTask<GuildUser>(factory());
+            });
+        var guildAUser = CreateUser();
+        var guildBUser = new GuildUser
+        {
+            GuildId = otherGuildId,
+            Id = UserId,
+            User = new User { Id = UserId, Inventory = [] }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Users).ReturnsDbSet(new List<GuildUser> { guildAUser, guildBUser });
+        var sut = new InventoryService(db.Object, cache.Object);
+
+        await sut.GetInventoryAsync(GuildId, UserId);
+        await sut.GetInventoryAsync(otherGuildId, UserId);
+
+        Assert.Equal(
+            [InventoryService.InventoryCacheKey(GuildId, UserId), InventoryService.InventoryCacheKey(otherGuildId, UserId)],
+            seenKeys);
+        Assert.Equal(otherGuildId, (await sut.GetInventoryAsync(otherGuildId, UserId)).GuildId);
     }
 
     [Fact]
@@ -74,7 +106,7 @@ public class InventoryServiceTests
 
         Assert.Same(inventory, existing.User.Inventory);
         db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        cache.Verify(x => x.Remove($"inventory_{UserId}"), Times.Once);
+        cache.Verify(x => x.Remove(InventoryService.InventoryCacheKey(GuildId, UserId)), Times.Once);
     }
 
     [Fact]
@@ -112,7 +144,7 @@ public class InventoryServiceTests
         await sut.UpdateInventoryAsync(existing, new Inventory { ItemId = itemId, Amount = 2, UserId = UserId });
 
         db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        cache.Verify(x => x.Remove($"inventory_{UserId}"), Times.Once);
+        cache.Verify(x => x.Remove(InventoryService.InventoryCacheKey(GuildId, UserId)), Times.Once);
     }
 
     [Fact]
@@ -126,7 +158,7 @@ public class InventoryServiceTests
 
         Assert.Equal(5, existing.User.Inventory.Single().Amount);
         db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        cache.Verify(x => x.Remove($"inventory_{UserId}"), Times.Once);
+        cache.Verify(x => x.Remove(InventoryService.InventoryCacheKey(GuildId, UserId)), Times.Once);
     }
 
     [Fact]
@@ -178,7 +210,7 @@ public class InventoryServiceTests
         await sut.RemoveItemAsync(existing, itemId, 2);
         Assert.Empty(existing.User.Inventory);
         db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
-        cache.Verify(x => x.Remove($"inventory_{UserId}"), Times.Exactly(2));
+        cache.Verify(x => x.Remove(InventoryService.InventoryCacheKey(GuildId, UserId)), Times.Exactly(2));
     }
 
     [Fact]
