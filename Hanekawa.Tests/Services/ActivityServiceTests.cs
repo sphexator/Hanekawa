@@ -134,6 +134,19 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task SyncCurrentWeekRolesAsync_DoesNothing_WhenGuildConfigRowMissing()
+    {
+        SetupConfigs([]);
+        SetupActivities([]);
+
+        await _sut.SyncCurrentWeekRolesAsync(1);
+
+        _bot.Verify(x => x.AddRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
+        _bot.Verify(x => x.RemoveRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
+        _db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task SyncCurrentWeekRolesAsync_AssignsRoleToTopUsers_AndRemovesFromDropouts()
     {
         var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
@@ -395,6 +408,55 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task SyncCurrentWeekRolesAsync_AllowsConcurrentSyncs_ForDifferentGuilds()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var configOne = new ActivityConfig(1)
+        {
+            CurrentWeekRoleId = 100,
+            CurrentWeekTopAmount = 1,
+            CurrentHolders = []
+        };
+        var configTwo = new ActivityConfig(2)
+        {
+            CurrentWeekRoleId = 200,
+            CurrentWeekTopAmount = 1,
+            CurrentHolders = []
+        };
+        SetupConfigs(
+        [
+            new GuildConfig { GuildId = 1, ActivityConfig = configOne },
+            new GuildConfig { GuildId = 2, ActivityConfig = configTwo }
+        ]);
+        SetupActivities(
+        [
+            new GuildActivity { GuildId = 1, UserId = 1, WeekStart = currentWeek, MessageCount = 10 },
+            new GuildActivity { GuildId = 2, UserId = 2, WeekStart = currentWeek, MessageCount = 20 }
+        ]);
+
+        var inside = 0;
+        var peakConcurrency = 0;
+        _bot.Setup(x => x.AddRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()))
+            .Returns(async () =>
+            {
+                var depth = Interlocked.Increment(ref inside);
+                peakConcurrency = Math.Max(peakConcurrency, depth);
+                await Task.Delay(100);
+                Interlocked.Decrement(ref inside);
+            });
+
+        var guildOne = _sut.SyncCurrentWeekRolesAsync(1);
+        var guildTwo = _sut.SyncCurrentWeekRolesAsync(2);
+        await Task.WhenAll(guildOne, guildTwo);
+
+        Assert.Equal(2, peakConcurrency);
+        Assert.Equal([1UL], configOne.CurrentHolders);
+        Assert.Equal([2UL], configTwo.CurrentHolders);
+        _bot.Verify(x => x.AddRoleAsync(1, 1, 100), Times.Once);
+        _bot.Verify(x => x.AddRoleAsync(2, 2, 200), Times.Once);
+    }
+
+    [Fact]
     public async Task SyncCurrentWeekRolesAsync_TreatsZeroTopAmountAsOne()
     {
         var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
@@ -416,6 +478,31 @@ public class ActivityServiceTests
         _bot.Verify(x => x.AddRoleAsync(1, 2, 100), Times.Once);
         _bot.Verify(x => x.AddRoleAsync(1, 1, 100), Times.Never);
         Assert.Equal([2UL], config.CurrentHolders);
+    }
+
+    [Fact]
+    public async Task ProcessWeekRolloversAsync_AddsPreviousWeekRole_WhenHolderWasNeverAssigned()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var previousWeek = currentWeek.AddDays(-7);
+        var config = new ActivityConfig(1)
+        {
+            PreviousWeekRoleId = 100,
+            PreviousWeekHolderId = null,
+            LastProcessedWeekStart = previousWeek
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+        SetupActivities(
+        [
+            new GuildActivity { GuildId = 1, UserId = 9, WeekStart = previousWeek, MessageCount = 42 }
+        ]);
+
+        await _sut.ProcessWeekRolloversAsync();
+
+        _bot.Verify(x => x.RemoveRoleAsync(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<ulong>()), Times.Never);
+        _bot.Verify(x => x.AddRoleAsync(1, 9, 100), Times.Once);
+        Assert.Equal(9UL, config.PreviousWeekHolderId);
+        Assert.Equal(currentWeek, config.LastProcessedWeekStart);
     }
 
     [Fact]
