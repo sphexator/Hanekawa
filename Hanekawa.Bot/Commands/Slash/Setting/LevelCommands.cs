@@ -29,7 +29,7 @@ public class LevelCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<ILevelCommandService>();
         await service.AddAsync(Context.GuildId, role.Id, level, Context.CancellationToken);
-        return Response();
+        return Response(string.Empty);
     }
     
     [SlashCommand(LevelName.Remove)]
@@ -40,7 +40,7 @@ public class LevelCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<ILevelCommandService>();
         await service.RemoveAsync(Context.GuildId, role.Id, Context.CancellationToken);
-        return Response();
+        return Response(string.Empty);
     }
     
     [SlashCommand(LevelName.List)]
@@ -63,7 +63,7 @@ public class LevelCommands(IMetrics metrics) : DiscordApplicationGuildModuleBase
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<ILevelCommandService>();
         await service.ModifyAsync(Context.GuildId, role.Id, level, Context.CancellationToken);
-        return Response();
+        return Response(string.Empty);
     }
     
     [AutoComplete(LevelName.Add)]

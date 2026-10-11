@@ -18,7 +18,7 @@ builder.Services.Configure<DefaultApplicationCommandCacheProviderConfiguration>(
 });
 builder.Services.Configure<DefaultApplicationCommandLocalizerConfiguration>(options =>
 {
-    options.DirectoryPath = ApplicationCommandPaths.LocalizationDirectory;
+    options.DirectoryPath = ApplicationCommandPaths.ResolveWritableLocalizationDirectory();
 });
 
 builder.Host.ConfigureDiscordBot<Bot>((_, bot) =>

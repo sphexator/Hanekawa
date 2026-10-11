@@ -37,7 +37,7 @@ internal class RankImageService
     internal async Task<Stream> DrawAsync(DiscordMember member, GuildUser userData, CancellationToken cancellationToken)
     {
         var image = new Image<Rgba32>(_currentValue.Rank.Width, _currentValue.Rank.Height);
-        image.Mutate(x => x.Fill(Color.White));
+        image.Mutate(x => x.Paint(canvas => canvas.Fill(Brushes.Solid(Color.White))));
 
         var avatar = await _common.CreateAvatarAsync(member.AvatarUrl, _currentValue.Rank.Avatar.Size, cancellationToken);
         image.Mutate(x => x.DrawImage(avatar, new Point(_currentValue.Rank.Avatar.X, _currentValue.Rank.Avatar.Y), 1f));
@@ -69,12 +69,15 @@ internal class RankImageService
                 ? new Font(font, text.Size, FontStyle.Bold) 
                 : new Font(font, text.Size);
 
-            image.Mutate(x => x.DrawText(
+            image.Mutate(x => x.Paint(canvas => canvas.DrawText(
+                new RichTextOptions(textFont)
+                {
+                    Origin = new PointF(text.TextPosition.X, text.TextPosition.Y)
+                },
                 textValue,
-                textFont,
-                Color.Black,
-                new Point(text.TextPosition.X, text.TextPosition.Y)
-            ));
+                Brushes.Solid(Color.Black),
+                null
+            )));
         }   
 
         var stream = new MemoryStream();

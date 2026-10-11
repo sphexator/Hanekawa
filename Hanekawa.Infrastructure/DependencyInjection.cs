@@ -30,8 +30,9 @@ public static class DependencyInjection
         services.AddDbContextPool<IDbContext, DbService>(x =>
         {
             x.UseNpgsql(cfg["connectionString"]);
-            x.EnableDetailedErrors();
-            x.EnableSensitiveDataLogging(false);
+	        x.EnableDetailedErrors(); 
+	        x.EnableSensitiveDataLogging();
+            
             x.UseTriggers(builder =>
             {
                 builder.AddTrigger<ModLogBeforeTrigger>();

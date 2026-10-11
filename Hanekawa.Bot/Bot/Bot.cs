@@ -45,7 +45,7 @@ public sealed class Bot : DiscordBot, IBot
 
     /// <inheritdoc />
     public Task BanAsync(ulong guildId, ulong userId, int days, string reason)
-        => this.CreateBanAsync(guildId, userId, reason, days, new DefaultRestRequestOptions { Reason = reason });
+        => this.CreateBansAsync(guildId, [userId], TimeSpan.FromDays(days), new DefaultRestRequestOptions { Reason = reason });
 
     /// <inheritdoc />
     public Task UnbanAsync(ulong guildId, ulong userId, string reason)

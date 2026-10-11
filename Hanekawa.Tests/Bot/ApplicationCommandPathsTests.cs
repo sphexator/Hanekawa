@@ -23,6 +23,17 @@ public class ApplicationCommandPathsTests
     }
 
     [Fact]
+    public void ResolveWritableLocalizationDirectory_ReturnsBundledPath_WhenWritable()
+    {
+        // Locally the bundled directory is writable, so no temp fallback is used.
+        var resolved = ApplicationCommandPaths.ResolveWritableLocalizationDirectory();
+
+        Assert.Equal(
+            Path.GetFullPath(ApplicationCommandPaths.LocalizationDirectory),
+            Path.GetFullPath(resolved));
+    }
+
+    [Fact]
     public void CacheAndLocalizationDirectories_AreDistinct()
     {
         // Regression: pointing both Disqord cache and localizer at the same temp folder

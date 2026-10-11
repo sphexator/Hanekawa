@@ -21,22 +21,19 @@ public static class ImageExtensions
         var size = ctx.GetCurrentSize();
         var corners = BuildCorners(size.Width, size.Height, cornerRadius);
 
-        ctx.SetGraphicsOptions(new GraphicsOptions
+        return ctx.Paint(new DrawingOptions
         {
-            Antialias = true,
-            AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
-        });
-
-        foreach (var c in corners)
-        {
-            ctx = ctx.Fill(Color.Red, c);
-        }
-        return ctx;
+            GraphicsOptions = new GraphicsOptions
+            {
+                Antialias = true,
+                AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
+            }
+        }, canvas => canvas.Fill(Brushes.Solid(Color.Red), corners));
     }
 
     private static PathCollection BuildCorners(int imageWidth, int imageHeight, float cornerRadius)
     {
-        var rect = new RectangularPolygon(-0.5f, -0.5f, cornerRadius, cornerRadius);
+        var rect = new RectanglePolygon(-0.5f, -0.5f, cornerRadius, cornerRadius);
 
         var cornerTopLeft = rect.Clip(
                 new EllipsePolygon(cornerRadius - 0.5f, cornerRadius - 0.5f, cornerRadius));

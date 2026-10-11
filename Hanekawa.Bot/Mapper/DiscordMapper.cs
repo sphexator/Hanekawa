@@ -3,6 +3,7 @@ using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Discord;
+using Qommon;
 
 namespace Hanekawa.Bot.Mapper;
 
@@ -155,13 +156,7 @@ internal static class DiscordExtensions
             IsTextToSpeech = false,
             AllowedMentions = response.Value.AllowMentions
                 ? LocalAllowedMentions.ExceptEveryone : LocalAllowedMentions.None,
-            Components = new List<LocalRowComponent>
-            {
-                new()
-                {
-                    Components = new List<LocalComponent>()
-                }
-            },
+            Components = new Optional<IList<LocalComponent>>(),
             IsEphemeral = response.Value.Emphemeral
         };
 
