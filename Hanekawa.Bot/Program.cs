@@ -31,7 +31,7 @@ builder.Host.ConfigureDiscordBot<Bot>((_, bot) =>
     bot.OwnerIds = [111123736660324352];
 });
 
-builder.Services.AddSingleton<IBot, Bot>();
+builder.Services.AddSingleton<IBot>(services => services.GetRequiredService<Bot>());
 builder.Services.AddHostedService<Hanekawa.Bot.Services.ActivityRolloverBackgroundService>();
 builder.Services.AddHttpClient();
 builder.Host.UseDefaultServiceProvider(x =>

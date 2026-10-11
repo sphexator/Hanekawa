@@ -171,7 +171,8 @@ public class ProfileImageService(ImageSettings settings,
         var points = new PointF[Convert.ToInt32(numb)];
         //const double radius = 55;
         var radius = (int) Math.Ceiling((size * Math.PI) / (2 * Math.PI));
-        for (var i = 0; i < numb; i++)
+        
+        for (var i = 0; i < points.Length; i++)
         {
             var radians = i * Math.PI / 360;
 
