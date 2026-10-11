@@ -13,7 +13,7 @@ public interface IInventoryService
     ValueTask AddItemAsync(GuildUser user, Guid itemId, int amount);
     ValueTask RemoveItemAsync(GuildUser user, Guid itemId, int amount);
     ValueTask<bool> HasItemAsync(GuildUser user, Guid itemId);
-    ValueTask<int> GetItemCountAsync(ulong userId, Guid itemId);
+    ValueTask<int> GetItemCountAsync(ulong guildId, ulong userId, Guid itemId);
 }
 
 public class InventoryService : IInventoryService
@@ -149,16 +149,16 @@ public class InventoryService : IInventoryService
         return existingUser.User.Inventory.Any(x => x.ItemId == itemId);
     }
 
-    public async ValueTask<int> GetItemCountAsync(ulong userId, Guid itemId)
+    public async ValueTask<int> GetItemCountAsync(ulong guildId, ulong userId, Guid itemId)
     {
         var user = await _dbContext.Users.Include(e => e.User)
             .ThenInclude(e => e.Inventory)
+            .Where(x => x.GuildId == guildId && x.Id == userId)
             .Select(e => new
             {
-                e.Id,
                 Amount = e.User.Inventory.Where(x => x.ItemId == itemId).Select(x => x.Amount).FirstOrDefault()
             })
-            .FirstOrDefaultAsync(x => x.Id == userId);
+            .FirstOrDefaultAsync();
         return user?.Amount ?? 0;
     }
 

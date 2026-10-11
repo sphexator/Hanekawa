@@ -295,7 +295,7 @@ public class InventoryServiceTests
         var existing = CreateUser(new Inventory { ItemId = itemId, Amount = 5, UserId = UserId });
         var (sut, _, _) = CreateMutatingSut(existing);
 
-        Assert.Equal(5, await sut.GetItemCountAsync(UserId, itemId));
+        Assert.Equal(5, await sut.GetItemCountAsync(GuildId, UserId, itemId));
     }
 
     [Fact]
@@ -303,7 +303,7 @@ public class InventoryServiceTests
     {
         var (sut, _, _) = CreateMutatingSut([]);
 
-        Assert.Equal(0, await sut.GetItemCountAsync(UserId, Guid.NewGuid()));
+        Assert.Equal(0, await sut.GetItemCountAsync(GuildId, UserId, Guid.NewGuid()));
     }
 
     [Fact]
@@ -312,7 +312,49 @@ public class InventoryServiceTests
         var existing = CreateUser(new Inventory { ItemId = Guid.NewGuid(), Amount = 3, UserId = UserId });
         var (sut, _, _) = CreateMutatingSut(existing);
 
-        Assert.Equal(0, await sut.GetItemCountAsync(UserId, Guid.NewGuid()));
+        Assert.Equal(0, await sut.GetItemCountAsync(GuildId, UserId, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetItemCountAsync_ReturnsCountForRequestedGuild_WhenSameUserInMultipleGuilds()
+    {
+        const ulong otherGuildId = 999;
+        var itemId = Guid.NewGuid();
+        var guildAUser = CreateUser(new Inventory { ItemId = itemId, Amount = 2, UserId = UserId });
+        var guildBUser = new GuildUser
+        {
+            GuildId = otherGuildId,
+            Id = UserId,
+            User = new User
+            {
+                Id = UserId,
+                Inventory = [new Inventory { ItemId = itemId, Amount = 7, UserId = UserId }]
+            }
+        };
+        var (sut, _, _) = CreateMutatingSut([guildAUser, guildBUser]);
+
+        Assert.Equal(2, await sut.GetItemCountAsync(GuildId, UserId, itemId));
+        Assert.Equal(7, await sut.GetItemCountAsync(otherGuildId, UserId, itemId));
+    }
+
+    [Fact]
+    public async Task AddItemAsync_InvalidatesGuildScopedCacheKey_FromUserGuildId()
+    {
+        const ulong otherGuildId = 999;
+        var itemId = Guid.NewGuid();
+        var user = new GuildUser
+        {
+            GuildId = otherGuildId,
+            Id = UserId,
+            User = new User { Id = UserId, Inventory = [] }
+        };
+        var (sut, db, cache) = CreateMutatingSut([user]);
+
+        await sut.AddItemAsync(user, itemId, 1);
+
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        cache.Verify(x => x.Remove(InventoryService.InventoryCacheKey(otherGuildId, UserId)), Times.Once);
+        cache.Verify(x => x.Remove(InventoryService.InventoryCacheKey(GuildId, UserId)), Times.Never);
     }
 
     private static GuildUser CreateUser(params Inventory[] inventory)
