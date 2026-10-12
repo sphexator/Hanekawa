@@ -47,8 +47,11 @@ public static class DbExtensions
         }
         catch (DbUpdateException)
         {
+            // Another instance may have inserted the row; detach our failed insert so later
+            // SaveChanges on this context does not retry it or leave callers with a detached entity.
+            DetachIfTracked(dbContext, user);
+
             var existingUser = await dbContext.Users
-                .AsNoTracking()
                 .Include(e => e.User)
                 .FirstOrDefaultAsync(x => x.GuildId == guildId && x.Id == userId, cancellationToken);
 
@@ -62,6 +65,18 @@ public static class DbExtensions
         finally
         {
             Semaphore.Release();
+        }
+    }
+
+    private static void DetachIfTracked(IDbContext dbContext, GuildUser user)
+    {
+        try
+        {
+            dbContext.Users.Entry(user).State = EntityState.Detached;
+        }
+        catch (Exception ex) when (ex is NullReferenceException or InvalidOperationException)
+        {
+            // Unit-test DbSet mocks may not implement Entry; production DbContext does.
         }
     }
 }
