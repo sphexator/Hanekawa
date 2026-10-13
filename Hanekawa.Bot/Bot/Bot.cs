@@ -45,7 +45,11 @@ public sealed class Bot : DiscordBot, IBot
 
     /// <inheritdoc />
     public Task BanAsync(ulong guildId, ulong userId, int days, string reason)
-        => this.CreateBansAsync(guildId, [userId], TimeSpan.FromDays(days), new DefaultRestRequestOptions { Reason = reason });
+        // CreateBansAsync is the bulk-ban endpoint: Discord returns failed user ids in the
+        // body instead of an error, and Disqord does not throw for those failures. A ban the
+        // bot cannot perform (role hierarchy, missing access) would then be reported as success.
+        => this.CreateBanAsync(guildId, userId, reason, TimeSpan.FromDays(days),
+            new DefaultRestRequestOptions { Reason = reason });
 
     /// <inheritdoc />
     public Task UnbanAsync(ulong guildId, ulong userId, string reason)
