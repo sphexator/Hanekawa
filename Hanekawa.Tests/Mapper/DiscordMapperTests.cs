@@ -73,6 +73,8 @@ public class DiscordMapperTests
 
         Assert.Equal("banned user", local.Content.Value);
         Assert.False(local.Embeds.HasValue);
+        // An empty component row is rejected by Discord after the command already succeeded.
+        Assert.False(local.Components.HasValue);
     }
 
     [Fact]
@@ -88,6 +90,7 @@ public class DiscordMapperTests
 
         Assert.True(local.Embeds.HasValue);
         Assert.Equal("Boost", local.Embeds.Value[0].Title.Value);
+        Assert.False(local.Components.HasValue);
     }
 
     [Fact]

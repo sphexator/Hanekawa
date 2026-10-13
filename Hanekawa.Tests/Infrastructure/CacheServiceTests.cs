@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace Hanekawa.Tests.Infrastructure;
 
@@ -80,5 +81,30 @@ public class CacheServiceTests
         Assert.Equal("created", result);
         Assert.Equal(1, factoryCalls);
         Assert.Equal("created", _sut.Get<string>(key));
+    }
+
+    [Fact]
+    public void Add_WithExpiration_StoresAbsoluteTtl()
+    {
+        var cache = new Mock<IDistributedCache>();
+        var sut = new CacheService(cache.Object, NullLogger<CacheService>.Instance);
+        var ttl = TimeSpan.FromMinutes(5);
+
+        sut.Add("guild-config", "value", ttl);
+
+        cache.Verify(x => x.Set(
+            "guild-config",
+            It.IsAny<byte[]>(),
+            It.Is<DistributedCacheEntryOptions>(options =>
+                options.AbsoluteExpirationRelativeToNow == ttl)));
+    }
+
+    [Fact]
+    public void Get_WithExpiration_ReturnsStoredValue()
+    {
+        const string key = "guild-config";
+        _sut.Add(key, "cached", TimeSpan.FromMinutes(5));
+
+        Assert.Equal("cached", _sut.Get<string>(key, TimeSpan.FromMinutes(5)));
     }
 }
