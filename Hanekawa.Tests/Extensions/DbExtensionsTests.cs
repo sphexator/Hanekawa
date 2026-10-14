@@ -117,6 +117,28 @@ public class DbExtensionsTests
         Assert.Equal(results[0].Id, results[1].Id);
     }
 
+    [Fact]
+    public async Task GetOrCreateUserAsync_ConcurrentCalls_OnSameGuildUser_PersistOnlyOnce()
+    {
+        var existingList = new List<GuildUser>();
+        var (db, users) = CreateDb(existingList);
+        users.Setup(x => x.AddAsync(It.IsAny<GuildUser>(), It.IsAny<CancellationToken>()))
+            .Callback<GuildUser, CancellationToken>((u, _) => existingList.Add(u))
+            .Returns(ValueTask.FromResult<EntityEntry<GuildUser>>(null!));
+        var saveCount = 0;
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1)
+            .Callback(() => Interlocked.Increment(ref saveCount));
+
+        var task1 = db.Object.GetOrCreateUserAsync(4, 77).AsTask();
+        var task2 = db.Object.GetOrCreateUserAsync(4, 77).AsTask();
+        var results = await Task.WhenAll(task1, task2);
+
+        Assert.Equal(1, saveCount);
+        Assert.Same(results[0], results[1]);
+        Assert.Single(existingList);
+    }
+
     private static (Mock<IDbContext> Db, Mock<DbSet<GuildUser>> Users) CreateDb(List<GuildUser> existing)
     {
         var users = existing.MockDbSet();

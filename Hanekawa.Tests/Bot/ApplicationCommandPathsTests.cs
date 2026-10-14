@@ -52,4 +52,38 @@ public class ApplicationCommandPathsTests
 
         Assert.Equal(expected, actual);
     }
+
+    [Fact]
+    public void ResolveWritableLocalizationDirectory_UsesTempFallback_WhenBundledDirectoryIsReadOnly()
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+
+        var bundled = Path.GetFullPath(ApplicationCommandPaths.LocalizationDirectory);
+        Assert.True(Directory.Exists(bundled), "Bundled localization directory must exist in test output.");
+
+        var priorMode = File.GetUnixFileMode(bundled);
+        var readOnly = UnixFileMode.UserRead | UnixFileMode.UserExecute
+            | UnixFileMode.GroupRead | UnixFileMode.GroupExecute
+            | UnixFileMode.OtherRead | UnixFileMode.OtherExecute;
+        try
+        {
+            File.SetUnixFileMode(bundled, readOnly);
+
+            var resolved = Path.GetFullPath(ApplicationCommandPaths.ResolveWritableLocalizationDirectory());
+            var expectedFallbackRoot = Path.GetFullPath(
+                Path.Combine(Path.GetTempPath(), "hanekawa", "localizations"));
+
+            Assert.StartsWith(expectedFallbackRoot, resolved);
+            Assert.NotEqual(bundled, resolved);
+            Assert.True(File.Exists(Path.Combine(resolved, "en-US.json")));
+            Assert.NotEqual(
+                ApplicationCommandPaths.CacheDirectory,
+                resolved);
+        }
+        finally
+        {
+            File.SetUnixFileMode(bundled, priorMode);
+        }
+    }
 }
