@@ -84,6 +84,22 @@ public class ActivityServiceTests
     }
 
     [Fact]
+    public async Task TrackMessageAsync_BucketsByUtcWeek_WhenOffsetCrossesMonday()
+    {
+        var dbSet = SetupActivities([]);
+        // 2026-09-21 03:00 +05:00 is 2026-09-20 22:00 UTC (Sunday), still the week of 2026-09-14.
+        var timestamp = new DateTimeOffset(2026, 9, 21, 3, 0, 0, TimeSpan.FromHours(5));
+
+        await _sut.TrackMessageAsync(1, 2, timestamp);
+
+        dbSet.Verify(x => x.AddAsync(
+            It.Is<GuildActivity>(a =>
+                a.GuildId == 1 && a.UserId == 2 &&
+                a.WeekStart == new DateOnly(2026, 9, 14) && a.MessageCount == 1),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task GetWeeklyLeaderboardAsync_ReturnsTopUsersForCurrentWeek_OrderedByCount()
     {
         var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
@@ -854,6 +870,17 @@ public class ActivityServiceTests
     {
         var timestamp = DateTimeOffset.Parse(input, CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal);
+
+        Assert.Equal(DateOnly.Parse(expected), ActivityService.GetWeekStart(timestamp));
+    }
+
+    [Theory]
+    [InlineData(2026, 9, 21, 3, 5, "2026-09-14")] // local Monday, still Sunday UTC
+    [InlineData(2026, 9, 20, 22, -5, "2026-09-21")] // local Sunday, already Monday UTC
+    public void GetWeekStart_UsesUtcDate_WhenOffsetCrossesMonday(
+        int year, int month, int day, int hour, int offsetHours, string expected)
+    {
+        var timestamp = new DateTimeOffset(year, month, day, hour, 0, 0, TimeSpan.FromHours(offsetHours));
 
         Assert.Equal(DateOnly.Parse(expected), ActivityService.GetWeekStart(timestamp));
     }
