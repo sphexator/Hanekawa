@@ -37,22 +37,15 @@ public class ProfileImageService(ImageSettings settings,
         var toReturn = new MemoryStream();
         using var img = new Image<Rgba64>(settings.Profile.Width, settings.Profile.Height);
         var avatar = await _common.CreateAvatarAsync(member.AvatarUrl, settings.Profile.Avatar.Size, cancellationToken);
-        img.Mutate(async void (x) =>
+        img.Mutate(x =>
         {
-            try
-            {
-                x.DrawImage(ProfileTemplate, new Point(0, 0), new GraphicsOptions()); // image
-                x.DrawImage(avatar,
-                    new Point(settings.Profile.Avatar.X, settings.Profile.Avatar.Y),
-                    new GraphicsOptions { Antialias = true });
-
-                await ApplyText(x, settings.Profile.Texts, member, userData, cancellationToken);
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Async void error drawing profile image");
-            }
+            x.DrawImage(ProfileTemplate, new Point(0, 0), new GraphicsOptions()); // image
+            x.DrawImage(avatar,
+                new Point(settings.Profile.Avatar.X, settings.Profile.Avatar.Y),
+                new GraphicsOptions { Antialias = true });
         });
+
+        await ApplyText(img, settings.Profile.Texts, member, userData, cancellationToken);
         var progressBar = CreateProgressBar(userData, avatar.Height);
         img.Mutate(x => x.Paint(new DrawingOptions
         {
@@ -70,7 +63,7 @@ public class ProfileImageService(ImageSettings settings,
         return toReturn;
     }
 
-    private async ValueTask ApplyText(IImageProcessingContext x, TextSettings[] texts, DiscordMember member,
+    private async ValueTask ApplyText(Image<Rgba64> img, TextSettings[] texts, DiscordMember member,
         GuildUser userData,
         CancellationToken cancellationToken)
     {
@@ -111,13 +104,13 @@ public class ProfileImageService(ImageSettings settings,
             }
         }
 
-        x.Paint(canvas =>
+        img.Mutate(x => x.Paint(canvas =>
         {
             foreach (var (text, item, points, alignment) in draws)
             {
                 DrawTextValue(canvas, text, item, points, alignment);
             }
-        });
+        }));
     }
 
     private async ValueTask<string> HandleCustomTextAsync(DiscordMember member, GuildUser userData, TextSettings item,
