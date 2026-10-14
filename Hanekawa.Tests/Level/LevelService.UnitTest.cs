@@ -113,7 +113,9 @@ public class LevelServiceUnitTest
         // Assert
         Assert.Equal(expected, actual);
         Assert.Equal(2, _user.Level);
+        Assert.Equal(500, _user.Experience);
         Assert.Equal(new ulong[] { 1, 2, 3, 4 }, _member.RoleIds);
+        _mockdb.Verify(e => e.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
