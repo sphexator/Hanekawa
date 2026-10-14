@@ -206,6 +206,36 @@ public class LevelServiceUnitTest
     }
 
     [Fact]
+    public async Task AddExperienceAsync_AdvancesOneLevel_AndKeepsSurplusExperience_WhenAwardCrossesTwoThresholds()
+    {
+        _user.Experience = 0;
+        _user.Level = 1;
+
+        var configDbSet = new List<GuildConfig> { _config }.MockDbSet();
+        var levelDbSet = new List<LevelRequirement>
+        {
+            new() { Level = 2, Experience = 100 },
+            new() { Level = 3, Experience = 200 }
+        }.MockDbSet();
+        var userDbSet = new List<GuildUser> { _user }.MockDbSet();
+
+        _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
+        _mockdb.Setup(e => e.LevelRequirements).Returns(levelDbSet.Object);
+        _mockdb.Setup(e => e.Users).Returns(userDbSet.Object);
+        _mockBot.Setup(x => x.ModifyRolesAsync(_member, It.IsAny<ulong[]>())).Returns(Task.CompletedTask);
+
+        var actual = await _levelService.AddExperienceAsync(_member, 250);
+
+        Assert.Equal(250, actual);
+        Assert.Equal(2, _user.Level);
+        Assert.Equal(250, _user.Experience);
+        _mockDispatcher.Verify(x => x.SendAsync(
+            It.Is<LevelUp>(e => e.Member == _member && e.Level == 2 && e.GuildConfig == _config),
+            It.IsAny<CancellationToken>()), Times.Once);
+        _mockdb.Verify(e => e.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task AddExperienceAsync_PersistsExperience_WithoutLevelUp_WhenNoNextLevelRequirement()
     {
         _user.Experience = 10_000;

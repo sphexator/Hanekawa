@@ -164,6 +164,35 @@ public class DropServiceTests
     }
 
     [Fact]
+    public async Task ClaimAsync_AnnouncesZeroExperience_AndClearsCache_WhenLevelingAwardsNothing()
+    {
+        var configs = new List<GuildConfig>
+        {
+            new()
+            {
+                GuildId = GuildId,
+                DropConfig = new DropConfig { GuildId = GuildId, ExpReward = 50 }
+            }
+        };
+        var (sut, bot, cache, levels) = CreateSut(configs, new FixedRandom(0));
+        cache.Setup(x => x.Get<ulong>(DropService.DropCacheKey(ChannelId, MessageId)))
+            .Returns(UserId);
+        levels.Setup(x => x.AddExperienceAsync(It.IsAny<DiscordMember>(), 50))
+            .ReturnsAsync((int?)null);
+        bot.Setup(x => x.DeleteMessageAsync(GuildId, ChannelId, MessageId)).Returns(Task.CompletedTask);
+        bot.Setup(x => x.SendMessageAsync(ChannelId, It.IsAny<string>(), It.IsAny<Attachment>()))
+            .ReturnsAsync(new RestMessage());
+
+        await sut.ClaimAsync(ChannelId, MessageId, CreateMember());
+
+        bot.Verify(x => x.DeleteMessageAsync(GuildId, ChannelId, MessageId), Times.Once);
+        bot.Verify(x => x.SendMessageAsync(ChannelId,
+            It.Is<string>(m => m.Contains("Dropper") && m.Contains("0 experience")),
+            It.IsAny<Attachment>()), Times.Once);
+        cache.Verify(x => x.Remove(DropService.DropCacheKey(ChannelId, MessageId)), Times.Once);
+    }
+
+    [Fact]
     public async Task ClaimAsync_DeletesMessageWithoutReward_WhenConfigIsMissing()
     {
         var (sut, bot, cache, levels) = CreateSut([], new FixedRandom(0));

@@ -41,6 +41,24 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    public async Task IsEnabledAsync_DoesNotEnableModuleFromAnotherGuildOrName()
+    {
+        var modules = new List<Module>
+        {
+            new() { GuildId = 1, Name = ModuleName.Level, Enabled = true },
+            new() { GuildId = 2, Name = ModuleName.Activity, Enabled = true }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Modules).ReturnsDbSet(modules);
+        var sut = new ModuleService(new Mock<IDistributedCache>().Object, db.Object);
+
+        Assert.True(await sut.IsEnabledAsync(1, ModuleName.Level));
+        Assert.False(await sut.IsEnabledAsync(1, ModuleName.Activity));
+        Assert.False(await sut.IsEnabledAsync(2, ModuleName.Level));
+        Assert.True(await sut.IsEnabledAsync(2, ModuleName.Activity));
+    }
+
+    [Fact]
     public async Task IsEnabledAsync_ReturnsFalse_WhenModuleDisabled()
     {
         var modules = new List<Module>
