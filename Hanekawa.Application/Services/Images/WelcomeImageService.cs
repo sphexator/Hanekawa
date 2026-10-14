@@ -33,14 +33,8 @@ public class WelcomeImageService
         image.Mutate(x =>
         {
             x.DrawImage(avatar, new Point(dbImage.AvatarX, dbImage.AvatarY), 1f);
-            x.Paint(canvas => canvas.DrawText(
-                new RichTextOptions(new Font(_fontCollection.Get("Arial"), dbImage.UsernameSize))
-                {
-                    Origin = new PointF(dbImage.UsernameX, dbImage.UsernameY)
-                },
-                member.Username,
-                Brushes.Solid(Color.White),
-                null));
+            x.DrawText(member.Username, new Font(_fontCollection.Get("Arial"), dbImage.UsernameSize), Color.White,
+                new Point(dbImage.UsernameX, dbImage.UsernameY));
         });
 
         await image.SaveAsync(toReturn, PngFormat.Instance, cancellationToken: cancellationToken);

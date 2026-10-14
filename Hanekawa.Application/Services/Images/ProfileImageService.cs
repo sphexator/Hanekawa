@@ -54,16 +54,17 @@ public class ProfileImageService(ImageSettings settings,
             }
         });
         var progressBar = CreateProgressBar(userData, avatar.Height);
-        img.Mutate(x => x.Paint(new DrawingOptions
-        {
-            GraphicsOptions = new GraphicsOptions
+        img.Mutate(x =>
+            x.DrawLine(new DrawingOptions
             {
-                BlendPercentage = 1
-            }
-        }, canvas => canvas.DrawLine(Pens.Solid(Color.Gray, 3), CreateProgressBar(1, avatar.Height))));
+                GraphicsOptions = new GraphicsOptions
+                {
+                    BlendPercentage = 1
+                }
+            }, Color.Gray, 3, CreateProgressBar(1, avatar.Height)));
         if (progressBar.Length > 0)
         {
-            img.Mutate(x => x.Paint(canvas => canvas.DrawLine(Pens.Solid(Color.Red, 3), progressBar)));
+            img.Mutate(x => x.DrawLine(Color.Red,3, progressBar));
         }
 
         await img.SaveAsync(toReturn, WebpFormat.Instance, cancellationToken: cancellationToken);
@@ -74,7 +75,6 @@ public class ProfileImageService(ImageSettings settings,
         GuildUser userData,
         CancellationToken cancellationToken)
     {
-        var draws = new List<(string Text, TextSettings Item, PointF[] Points, HorizontalAlignment Alignment)>();
         for (var i = 0; i < texts.Length; i++)
         {
             var item = texts[i];
@@ -84,7 +84,7 @@ public class ProfileImageService(ImageSettings settings,
                 if (!item.Headline)
                 {
                     var textValue = await HandleCustomTextAsync(member, userData, item, cancellationToken);
-                    draws.Add((textValue, item, points, HorizontalAlignment.Left));
+                    DrawTextValue(x, textValue, item, points);
                 }
 
                 var value = "undefined";
@@ -103,21 +103,13 @@ public class ProfileImageService(ImageSettings settings,
                         break;
                 }
 
-                draws.Add((value, item, points, HorizontalAlignment.Right));
+                DrawTextValue(x, value, item, points, HorizontalAlignment.Right);
             }
             catch (Exception e)
             {
                 logger.LogError(e, "Error drawing text {TextName} on profile image", item.Text);
             }
         }
-
-        x.Paint(canvas =>
-        {
-            foreach (var (text, item, points, alignment) in draws)
-            {
-                DrawTextValue(canvas, text, item, points, alignment);
-            }
-        });
     }
 
     private async ValueTask<string> HandleCustomTextAsync(DiscordMember member, GuildUser userData, TextSettings item,
@@ -171,7 +163,7 @@ public class ProfileImageService(ImageSettings settings,
         var points = new PointF[Convert.ToInt32(numb)];
         //const double radius = 55;
         var radius = (int) Math.Ceiling((size * Math.PI) / (2 * Math.PI));
-        
+        // numb is fractional; iterating it walks one past the rounded array length.
         for (var i = 0; i < points.Length; i++)
         {
             var radians = i * Math.PI / 360;
@@ -192,7 +184,7 @@ public class ProfileImageService(ImageSettings settings,
         return CreateProgressBar(percentage, avatarSize);
     }
 
-    private void DrawTextValue(DrawingCanvas canvas, string text, TextSettings item, PointF[] points, HorizontalAlignment alignment = HorizontalAlignment.Left)
+    private void DrawTextValue(IImageProcessingContext context, string text, TextSettings item, PointF[] points, HorizontalAlignment alignment = HorizontalAlignment.Left)
     {
         var position = Vector2.Zero;
         if (item.Headline)
@@ -216,9 +208,10 @@ public class ProfileImageService(ImageSettings settings,
         var font = new Font(fontCollection.Get(settings.Profile.Font), item.Size);
         var options = new RichTextOptions(font)
         {
+            Path = new Path(new LinearLineSegment(points)),
             HorizontalAlignment = alignment,
             Origin = position
         };
-        canvas.DrawText(options, text, new Path(new LinearLineSegment(points)), Brushes.Solid(Color.White), null);
+        context.DrawText(options, text, Color.White);
     }
 }
