@@ -198,6 +198,30 @@ public class InventoryServiceTests
     }
 
     [Fact]
+    public async Task AddItemAsync_DoesNotMutateAnotherGuild_WhenRequestedGuildUserIsMissing()
+    {
+        const ulong otherGuildId = 999;
+        var itemId = Guid.NewGuid();
+        var otherGuildUser = new GuildUser
+        {
+            GuildId = otherGuildId,
+            Id = UserId,
+            User = new User
+            {
+                Id = UserId,
+                Inventory = [new Inventory { ItemId = itemId, Amount = 4, UserId = UserId }]
+            }
+        };
+        var (sut, db, cache) = CreateMutatingSut([otherGuildUser]);
+
+        await sut.AddItemAsync(CreateUser(), itemId, 1);
+
+        Assert.Equal(4, otherGuildUser.User.Inventory.Single().Amount);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        cache.Verify(x => x.Remove(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
     public async Task RemoveItemAsync_DecreasesAmount_AndRemovesRowWhenZero()
     {
         var itemId = Guid.NewGuid();
@@ -246,6 +270,30 @@ public class InventoryServiceTests
     }
 
     [Fact]
+    public async Task RemoveItemAsync_DoesNotRemoveFromAnotherGuild_WhenRequestedGuildUserIsMissing()
+    {
+        const ulong otherGuildId = 999;
+        var itemId = Guid.NewGuid();
+        var otherGuildUser = new GuildUser
+        {
+            GuildId = otherGuildId,
+            Id = UserId,
+            User = new User
+            {
+                Id = UserId,
+                Inventory = [new Inventory { ItemId = itemId, Amount = 4, UserId = UserId }]
+            }
+        };
+        var (sut, db, cache) = CreateMutatingSut([otherGuildUser]);
+
+        await sut.RemoveItemAsync(CreateUser(new Inventory { ItemId = itemId, Amount = 4, UserId = UserId }), itemId, 1);
+
+        Assert.Equal(4, otherGuildUser.User.Inventory.Single().Amount);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        cache.Verify(x => x.Remove(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
     public async Task UpdateInventoryAsync_WithSingleItem_DoesNothing_WhenUserNotInDatabase()
     {
         var notPersisted = CreateUser();
@@ -286,6 +334,28 @@ public class InventoryServiceTests
         var (sut, _, _) = CreateMutatingSut([]);
 
         Assert.False(await sut.HasItemAsync(CreateUser(), Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task HasItemAsync_IgnoresInventoryOwnedByTheSameUserInAnotherGuild()
+    {
+        const ulong otherGuildId = 999;
+        var itemId = Guid.NewGuid();
+        var otherGuildUser = new GuildUser
+        {
+            GuildId = otherGuildId,
+            Id = UserId,
+            User = new User
+            {
+                Id = UserId,
+                Inventory = [new Inventory { ItemId = itemId, Amount = 4, UserId = UserId }]
+            }
+        };
+        var requested = CreateUser();
+        var (sut, _, _) = CreateMutatingSut([otherGuildUser, requested]);
+
+        Assert.False(await sut.HasItemAsync(requested, itemId));
+        Assert.True(await sut.HasItemAsync(otherGuildUser, itemId));
     }
 
     [Fact]

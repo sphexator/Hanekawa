@@ -195,6 +195,33 @@ public class ModuleServiceTests
     }
 
     [Fact]
+    public async Task SetEnabledAsync_DoesNotChangeTheSameModule_InAnotherGuild()
+    {
+        var otherGuild = new Module { GuildId = 2, Name = ModuleName.Level, Enabled = false };
+        var thisGuild = new Module { GuildId = 1, Name = ModuleName.Level, Enabled = false };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Modules).ReturnsDbSet(new List<Module> { otherGuild, thisGuild });
+        var cache = new Mock<IDistributedCache>();
+        cache.Setup(x => x.SetAsync(
+                It.IsAny<string>(),
+                It.IsAny<byte[]>(),
+                It.IsAny<DistributedCacheEntryOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var sut = new ModuleService(cache.Object, db.Object);
+
+        await sut.SetEnabledAsync(1, ModuleName.Level, true);
+
+        Assert.True(thisGuild.Enabled);
+        Assert.False(otherGuild.Enabled);
+        cache.Verify(x => x.SetAsync(
+            "2-Modules",
+            It.IsAny<byte[]>(),
+            It.IsAny<DistributedCacheEntryOptions>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task SetEnabledAsync_WritesUpdatedStateToCache_EvenWhenCacheWasStale()
     {
         var cache = new Mock<IDistributedCache>();

@@ -133,6 +133,63 @@ public class StreamServiceTests
     }
 
     [Fact]
+    public async Task AddUser_AllowsSameDiscordUserAndTwitchLogin_InAnotherGuild()
+    {
+        var otherUsers = new List<StreamUser>
+        {
+            new() { GuildId = 999, DiscordUserId = 42, TwitchLogin = "alice" }
+        };
+        var thisStream = new StreamConfig { GuildId = GuildId, Users = [] };
+        var configs = new List<GuildConfig>
+        {
+            new() { GuildId = 999, StreamConfig = new StreamConfig { GuildId = 999, Users = otherUsers } },
+            new() { GuildId = GuildId, StreamConfig = thisStream }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var sut = new StreamService(db.Object, NullLogger<StreamService>.Instance);
+
+        var result = await sut.AddUser(GuildId, 42, "Alice");
+
+        Assert.Equal("Added Twitch alice for <@42> !", result);
+        Assert.Equal("alice", Assert.Single(thisStream.Users).TwitchLogin);
+        Assert.Equal(42ul, thisStream.Users[0].DiscordUserId);
+        Assert.Single(otherUsers);
+        db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RemoveUser_DoesNotRemoveTheSameDiscordUser_FromAnotherGuild()
+    {
+        var otherUser = new StreamUser { GuildId = 999, DiscordUserId = 42, TwitchLogin = "alice" };
+        var thisUser = new StreamUser { GuildId = GuildId, DiscordUserId = 42, TwitchLogin = "alice" };
+        var configs = new List<GuildConfig>
+        {
+            new()
+            {
+                GuildId = 999,
+                StreamConfig = new StreamConfig { GuildId = 999, Users = [otherUser] }
+            },
+            new()
+            {
+                GuildId = GuildId,
+                StreamConfig = new StreamConfig { GuildId = GuildId, Users = [thisUser] }
+            }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var sut = new StreamService(db.Object, NullLogger<StreamService>.Instance);
+
+        var removed = await sut.RemoveUser(GuildId, 42);
+
+        Assert.True(removed);
+        Assert.Contains(otherUser, configs[0].StreamConfig!.Users);
+        Assert.DoesNotContain(thisUser, configs[1].StreamConfig!.Users);
+    }
+
+    [Fact]
     public async Task AddUser_RejectsInvalidTwitchLogin()
     {
         var stream = new StreamConfig { GuildId = GuildId, Users = [] };
@@ -317,6 +374,7 @@ public class StreamServiceTests
     [InlineData("http://twitch.tv/name?foo=1", "name")]
     [InlineData("twitch.tv/NoScheme", "noscheme")]
     [InlineData("https://twitch.tv/login#panel", "login")]
+    [InlineData("abcdefghijklmnopqrstuvwxy", "abcdefghijklmnopqrstuvwxy")]
     public void NormalizeTwitchLogin_StripsUrlAndCasing(string input, string expected)
         => Assert.Equal(expected, StreamService.NormalizeTwitchLogin(input));
 
@@ -325,6 +383,9 @@ public class StreamServiceTests
     [InlineData("   ")]
     [InlineData("not a login!")]
     [InlineData("thisloginiswaytoolongtobevalid")]
+    [InlineData("abcdefghijklmnopqrstuvwxyz")]
+    [InlineData("cool-streamer")]
+    [InlineData("námé")]
     public void NormalizeTwitchLogin_ReturnsNull_WhenInvalid(string input)
         => Assert.Null(StreamService.NormalizeTwitchLogin(input));
 }
