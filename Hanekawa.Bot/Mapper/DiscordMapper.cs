@@ -93,50 +93,84 @@ internal static class DiscordExtensions
     internal static DiscordMember ToDiscordMember(this IMember? member)
     {
         if (member is null) return new DiscordMember();
+        IGatewayGuild? guild = null;
+        try
+        {
+            guild = member.GetGuild();
+        }
+        catch
+        {
+            // ignored
+        }
+
+        string? voiceSessionId = null;
+        try
+        {
+            voiceSessionId = member.GetVoiceState()?.SessionId;
+        }
+        catch
+        {
+            // ignored
+        }
+
         return new DiscordMember
         {
             Id = member.Id,
             Username = member.Name,
             AvatarUrl = member.GetAvatarUrl(),
-            GuildId = member.GetGuild()!.Id,
-            Guild = new Guild
-            {
-                GuildId = member.GetGuild()!.Id,
-                Name = member.GetGuild()!.Name,
-                IconUrl = member.GetGuild()?.GetIconUrl()!,
-                Description = member.GetGuild()?.Description,
-                BoostCount = member.GetGuild()?.BoostingMemberCount,
-                BoostTier = member.GetGuild()!.BoostTier.GetHashCode(),
-                MemberCount = member.GetGuild()!.MemberCount,
-                Emotes = member.GetGuild()!.Emojis
-                    .Select(e => new Emote
-                    {
-                        Id = e.Key.RawValue,
-                        Name = e.Value.Name,
-                        Format = e.Value.GetReactionFormat(),
-                        IsAnimated = e.Value.IsAnimated,
-                        IsAvailable = e.Value.IsAvailable,
-                        IsManaged = e.Value.IsManaged
-                    }).ToArray()
-            },
+            GuildId = member.GuildId,
+            Guild = guild is null
+                ? new Guild { GuildId = member.GuildId }
+                : new Guild
+                {
+                    GuildId = guild.Id,
+                    Name = guild.Name,
+                    IconUrl = guild.GetIconUrl() ?? string.Empty,
+                    Description = guild.Description,
+                    BoostCount = guild.BoostingMemberCount,
+                    BoostTier = guild.BoostTier.GetHashCode(),
+                    MemberCount = guild.MemberCount,
+                    Emotes = guild.Emojis?
+                        .Select(e => new Emote
+                        {
+                            Id = e.Key.RawValue,
+                            Name = e.Value.Name,
+                            Format = e.Value.GetReactionFormat(),
+                            IsAnimated = e.Value.IsAnimated,
+                            IsAvailable = e.Value.IsAvailable,
+                            IsManaged = e.Value.IsManaged
+                        }).ToArray() ?? []
+                },
             Nickname = member.Nick,
             IsBot = member.IsBot,
             RoleIds = member.RoleIds.Select(x => x.RawValue).ToArray(),
-            VoiceSessionId = member.GetVoiceState()?.SessionId
+            VoiceSessionId = voiceSessionId
         };
     }
 
-    internal static Guild ToGuild(this IMember user) =>
-        new()
+    internal static Guild ToGuild(this IMember user)
+    {
+        IGatewayGuild? guild = null;
+        try
         {
-            GuildId = user.GetGuild()!.Id,
-            Name = user.GetGuild()!.Name,
-            IconUrl = user.GetGuild()?.GetIconUrl()!,
-            Description = user.GetGuild()?.Description,
-            BoostCount = user.GetGuild()?.BoostingMemberCount,
-            BoostTier = user.GetGuild()!.BoostTier.GetHashCode(),
-            MemberCount = user.GetGuild()!.MemberCount,
-            Emotes = user.GetGuild()!.Emojis
+            guild = user.GetGuild();
+        }
+        catch
+        {
+            // ignored
+        }
+
+        if (guild is null) return new Guild { GuildId = user.GuildId };
+        return new Guild
+        {
+            GuildId = guild.Id,
+            Name = guild.Name,
+            IconUrl = guild.GetIconUrl() ?? string.Empty,
+            Description = guild.Description,
+            BoostCount = guild.BoostingMemberCount,
+            BoostTier = guild.BoostTier.GetHashCode(),
+            MemberCount = guild.MemberCount,
+            Emotes = guild.Emojis?
                 .Select(e => new Emote
                 {
                     Id = e.Key.RawValue,
@@ -145,8 +179,9 @@ internal static class DiscordExtensions
                     IsAnimated = e.Value.IsAnimated,
                     IsAvailable = e.Value.IsAvailable,
                     IsManaged = e.Value.IsManaged
-                }).ToArray()
+                }).ToArray() ?? []
         };
+    }
 
     internal static LocalInteractionMessageResponse ToLocalInteractionMessageResponse(this Response<Message> response)
     {

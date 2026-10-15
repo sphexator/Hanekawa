@@ -50,9 +50,8 @@ public class AccountCommands : DiscordApplicationModuleBase
     {
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IAccountCommandService>();
-        var result = await service.ProfileAsync(
-            Bot.GetMember(Context.GuildId!.Value, Context.Author.Id)
-                .ToDiscordMember());
+        var member = Context.Author as IMember ?? Bot.GetMember(Context.GuildId!.Value, Context.Author.Id);
+        var result = await service.ProfileAsync(member.ToDiscordMember());
         result.Position = 0;
         return Response(new LocalInteractionMessageResponse()
             .WithContent($"Profile for {Context.Author.Name}")

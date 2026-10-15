@@ -137,4 +137,32 @@ public class DiscordMapperTests
 
         Assert.Empty(pages);
     }
+
+    [Fact]
+    public void ToDiscordMember_NullMember_ReturnsEmptyDiscordMember()
+    {
+        IMember? member = null;
+
+        var result = member.ToDiscordMember();
+
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public void ToDiscordMember_MemberWithNullGuild_DoesNotThrow()
+    {
+        var memberMock = new Moq.Mock<IMember>();
+        memberMock.Setup(m => m.Id).Returns(new Snowflake(12345));
+        memberMock.Setup(m => m.GuildId).Returns(new Snowflake(67890));
+        memberMock.Setup(m => m.Name).Returns("TestUser");
+        memberMock.Setup(m => m.RoleIds).Returns(Array.Empty<Snowflake>());
+
+        var result = memberMock.Object.ToDiscordMember();
+
+        Assert.NotNull(result);
+        Assert.Equal(12345ul, result.Id);
+        Assert.Equal(67890ul, result.GuildId);
+        Assert.Equal(67890ul, result.Guild.GuildId);
+        Assert.Equal("TestUser", result.Username);
+    }
 }
