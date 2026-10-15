@@ -75,6 +75,54 @@ public class ClubCommandServiceTests
     }
 
     [Fact]
+    public async Task Create_Should_AllowSameName_WhenClubExistsInAnotherGuild()
+    {
+        var clubs = new List<Club>
+        {
+            new() { GuildId = 999, Name = "TestClub", OwnerId = 111111 }
+        };
+        _mockDbContext.Setup(db => db.Clubs).ReturnsDbSet(clubs);
+        _mockDbContext.Setup(db => db.ClubMembers).ReturnsDbSet(new List<ClubMember>());
+        _mockDbContext.Setup(db => db.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        var result = await _clubCommandService.Create(_guildId, "TestClub", "Test Description", _userId);
+
+        Assert.Equal("Club 'TestClub' has been created successfully!", result.Value.Content);
+        _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Create_Should_AllowOwnership_WhenUserOwnsClubInAnotherGuild()
+    {
+        var clubs = new List<Club>
+        {
+            new() { GuildId = 999, Name = "OtherClub", OwnerId = _userId }
+        };
+        _mockDbContext.Setup(db => db.Clubs).ReturnsDbSet(clubs);
+        _mockDbContext.Setup(db => db.ClubMembers).ReturnsDbSet(new List<ClubMember>());
+        _mockDbContext.Setup(db => db.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        var result = await _clubCommandService.Create(_guildId, "TestClub", "Test Description", _userId);
+
+        Assert.Equal("Club 'TestClub' has been created successfully!", result.Value.Content);
+        _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Delete_Should_NotDeleteClub_WhenSameNameExistsOnlyInAnotherGuild()
+    {
+        var otherGuildClub = new Club { GuildId = 999, Name = "TestClub", OwnerId = _userId };
+        var clubs = new List<Club> { otherGuildClub };
+        _mockDbContext.Setup(db => db.Clubs).ReturnsDbSet(clubs);
+
+        var result = await _clubCommandService.Delete(_guildId, "TestClub", _userId);
+
+        Assert.Equal("Club 'TestClub' doesn't exist", result.Value.Content);
+        Assert.Contains(otherGuildClub, clubs);
+        _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task Delete_Should_DeleteClub_When_UserIsOwner()
     {
         // Arrange

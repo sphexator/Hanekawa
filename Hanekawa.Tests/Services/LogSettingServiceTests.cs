@@ -64,6 +64,27 @@ public class LogSettingServiceTests
     }
 
     [Fact]
+    public async Task SetModLogChannelAsync_DoesNotUpdateAnotherGuild_WhenThatRowIsFirst()
+    {
+        var otherGuild = new LogConfig { GuildId = 2, ModLogChannelId = 20 };
+        var thisGuild = new LogConfig { GuildId = 1, ModLogChannelId = 10 };
+        var configs = new List<GuildConfig>
+        {
+            new() { GuildId = 2, LogConfig = otherGuild },
+            new() { GuildId = 1, LogConfig = thisGuild }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.GuildConfigs).ReturnsDbSet(configs);
+        db.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var sut = new LogSettingService(NullLogger<LogSettingService>.Instance, db.Object);
+
+        await sut.SetModLogChannelAsync(1, 77);
+
+        Assert.Equal(77ul, thisGuild.ModLogChannelId);
+        Assert.Equal(20ul, otherGuild.ModLogChannelId);
+    }
+
+    [Fact]
     public async Task SetJoinLeaveLogChannelAsync_ClearsChannel_WhenNull()
     {
         var logConfig = new LogConfig { GuildId = 1, JoinLeaveLogChannelId = 5 };

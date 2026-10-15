@@ -72,7 +72,14 @@ public static class DbExtensions
     {
         try
         {
-            dbContext.Users.Entry(user).State = EntityState.Detached;
+            var entry = dbContext.Users.Entry(user);
+            // AddAsync tracks a brand-new global User as Added. Detaching only the guild
+            // user leaves that insert pending, so the next SaveChanges retries it and
+            // loses the experience update on the row that won the race.
+            if (entry.Reference(static x => x.User).TargetEntry is { State: EntityState.Added } globalUser)
+                globalUser.State = EntityState.Detached;
+
+            entry.State = EntityState.Detached;
         }
         catch (Exception ex) when (ex is NullReferenceException or InvalidOperationException)
         {
