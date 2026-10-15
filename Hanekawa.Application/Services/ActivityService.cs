@@ -82,14 +82,14 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
         {
             logger.LogInformation("Assigning current-week activity role {Role} to user {User} in guild {Guild}",
                 config.CurrentWeekRoleId.Value, userId, guildId);
-            await bot.AddRoleAsync(guildId, userId, config.CurrentWeekRoleId.Value);
+            await ApplyRoleChangeAsync(guildId, userId, config.CurrentWeekRoleId.Value, add: true);
         }
 
         foreach (var userId in toRemove)
         {
             logger.LogInformation("Removing current-week activity role {Role} from user {User} in guild {Guild}",
                 config.CurrentWeekRoleId.Value, userId, guildId);
-            await bot.RemoveRoleAsync(guildId, userId, config.CurrentWeekRoleId.Value);
+            await ApplyRoleChangeAsync(guildId, userId, config.CurrentWeekRoleId.Value, add: false);
         }
 
         config.CurrentHolders = top;
@@ -110,8 +110,16 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
 
         foreach (var config in configs)
         {
+            // One guild's Discord failure must not skip the others or drop their watermark update.
             // Only the transition into the current ISO week is processed. Missed earlier weeks are not backfilled.
-            await ProcessRolloverAsync(config, currentWeek, cancellationToken);
+            try
+            {
+                await ProcessRolloverAsync(config, currentWeek, cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                logger.LogError(ex, "Failed to process activity week rollover for guild {Guild}", config.GuildId);
+            }
         }
 
         if (configs.Count > 0) await db.SaveChangesAsync(cancellationToken);
@@ -131,13 +139,13 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
         {
             if (config.PreviousWeekHolderId.HasValue && config.PreviousWeekHolderId.Value != winner.UserId)
             {
-                await bot.RemoveRoleAsync(config.GuildId, config.PreviousWeekHolderId.Value,
-                    config.PreviousWeekRoleId.Value);
+                await ApplyRoleChangeAsync(config.GuildId, config.PreviousWeekHolderId.Value,
+                    config.PreviousWeekRoleId.Value, add: false);
             }
 
             if (config.PreviousWeekHolderId != winner.UserId)
             {
-                await bot.AddRoleAsync(config.GuildId, winner.UserId, config.PreviousWeekRoleId.Value);
+                await ApplyRoleChangeAsync(config.GuildId, winner.UserId, config.PreviousWeekRoleId.Value, add: true);
             }
 
             config.PreviousWeekHolderId = winner.UserId;
@@ -157,7 +165,7 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
         {
             foreach (var holder in config.CurrentHolders)
             {
-                await bot.RemoveRoleAsync(config.GuildId, holder, config.CurrentWeekRoleId.Value);
+                await ApplyRoleChangeAsync(config.GuildId, holder, config.CurrentWeekRoleId.Value, add: false);
             }
 
             config.CurrentHolders = [];
@@ -175,8 +183,8 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
             config.PreviousWeekRoleId != roleId &&
             config.PreviousWeekHolderId.HasValue)
         {
-            await bot.RemoveRoleAsync(config.GuildId, config.PreviousWeekHolderId.Value,
-                config.PreviousWeekRoleId.Value);
+            await ApplyRoleChangeAsync(config.GuildId, config.PreviousWeekHolderId.Value,
+                config.PreviousWeekRoleId.Value, add: false);
             config.PreviousWeekHolderId = null;
         }
 
@@ -256,10 +264,46 @@ public class ActivityService(IDbContext db, IBot bot, ILogger<ActivityService> l
             logger.LogInformation(
                 "Removing previous current-week activity role {Role} from user {User} in guild {Guild}",
                 roleId, userId, config.GuildId);
-            await bot.RemoveRoleAsync(config.GuildId, userId, roleId);
+            await ApplyRoleChangeAsync(config.GuildId, userId, roleId, add: false);
         }
 
         config.CurrentHolders = [];
+    }
+
+    /// <summary>
+    /// Applies an activity-role grant or revoke. A member who left, or a role that was
+    /// deleted, makes Discord return 404 (Unknown Member / Unknown Role). That is permanent
+    /// for this holder: failing the whole sync would skip everyone after them, never save
+    /// <see cref="ActivityConfig.CurrentHolders"/> or <see cref="ActivityConfig.LastProcessedWeekStart"/>,
+    /// and retry the weekly announcement every 15 minutes.
+    /// </summary>
+    private async Task ApplyRoleChangeAsync(ulong guildId, ulong userId, ulong roleId, bool add)
+    {
+        try
+        {
+            if (add)
+                await bot.AddRoleAsync(guildId, userId, roleId);
+            else
+                await bot.RemoveRoleAsync(guildId, userId, roleId);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException && IsMissingRoleTarget(ex))
+        {
+            logger.LogWarning(ex,
+                "Skipped activity role {Action} of {Role} for user {User} in guild {Guild} because the member or role no longer exists",
+                add ? "grant" : "revoke", roleId, userId, guildId);
+        }
+    }
+
+    private static bool IsMissingRoleTarget(Exception ex)
+    {
+        for (var current = ex; current is not null; current = current.InnerException)
+        {
+            if (current.Message.Contains("Unknown Member", StringComparison.Ordinal)
+                || current.Message.Contains("Unknown Role", StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
     }
 
     private async Task<ActivityConfig> GetOrCreateConfigAsync(ulong guildId,
