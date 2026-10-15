@@ -27,7 +27,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Prometheus.Client.Collectors;
 using Prometheus.Client.DependencyInjection;
-using SixLabors.Fonts;
 
 namespace Hanekawa.Application;
 

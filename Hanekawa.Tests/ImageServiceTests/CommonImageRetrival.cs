@@ -1,4 +1,4 @@
-using SixLabors.Fonts;
+using Hanekawa.Application.Services.Images;
 
 namespace Hanekawa.Tests.ImageServiceTests;
 

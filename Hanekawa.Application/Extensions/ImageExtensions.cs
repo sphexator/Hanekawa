@@ -1,50 +1,27 @@
-﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using ImageMagick;
+using ImageMagick.Drawing;
 
 namespace Hanekawa.Application.Extensions;
 
 public static class ImageExtensions
 {
-    public static IImageProcessingContext ConvertToAvatar(this IImageProcessingContext processingContext,
-        Size size, float cornerRadius)
-        => processingContext.Resize(new ResizeOptions
-        {
-            Size = size,
-            Mode = ResizeMode.Crop
-        }).ApplyRoundedCorners(cornerRadius);
-
-    private static IImageProcessingContext ApplyRoundedCorners(this IImageProcessingContext ctx, float cornerRadius)
+    public static void ConvertToAvatar(this IMagickImage image, int size, int cornerRadius)
     {
-        var size = ctx.GetCurrentSize();
-        var corners = BuildCorners(size.Width, size.Height, cornerRadius);
-
-        return ctx.Paint(new DrawingOptions
-        {
-            GraphicsOptions = new GraphicsOptions
-            {
-                Antialias = true,
-                AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
-            }
-        }, canvas => canvas.Fill(Brushes.Solid(Color.Red), corners));
+        image.Resize(new MagickGeometry((uint)size, (uint)size) { FillArea = true });
+        image.Crop((uint)size, (uint)size, Gravity.Center);
+        image.ApplyRoundedCorners(cornerRadius);
     }
 
-    private static PathCollection BuildCorners(int imageWidth, int imageHeight, float cornerRadius)
+    private static void ApplyRoundedCorners(this IMagickImage image, int cornerRadius)
     {
-        var rect = new RectanglePolygon(-0.5f, -0.5f, cornerRadius, cornerRadius);
-
-        var cornerTopLeft = rect.Clip(
-                new EllipsePolygon(cornerRadius - 0.5f, cornerRadius - 0.5f, cornerRadius));
-
-        var rightPos = imageWidth - cornerTopLeft.Bounds.Width + 1;
-        var bottomPos = imageHeight - cornerTopLeft.Bounds.Height + 1;
-
-        var cornerTopRight = cornerTopLeft.RotateDegree(90).Translate(rightPos, 0);
-        var cornerBottomLeft = cornerTopLeft.RotateDegree(-90).Translate(0, bottomPos);
-        var cornerBottomRight = cornerTopLeft.RotateDegree(180).Translate(rightPos, bottomPos);
-
-        return [ with(cornerTopLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight) ];
+        using var mask = new MagickImage(MagickColors.Black, image.Width, image.Height);
+        new Drawables()
+            .StrokeColor(MagickColors.White)
+            .FillColor(MagickColors.White)
+            .RoundRectangle(0, 0, image.Width - 1, image.Height - 1, cornerRadius, cornerRadius)
+            .Draw(mask);
+        mask.Alpha(AlphaAction.Off);
+        image.Alpha(AlphaAction.On);
+        image.Composite(mask, CompositeOperator.CopyAlpha);
     }
 }

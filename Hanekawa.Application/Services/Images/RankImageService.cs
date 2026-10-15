@@ -2,13 +2,9 @@ using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Discord;
 using Hanekawa.Entities.Settings.Images;
 using Hanekawa.Entities.Users;
+using ImageMagick;
+using ImageMagick.Drawing;
 using Microsoft.Extensions.Logging;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 namespace Hanekawa.Application.Services.Images;
 
@@ -36,11 +32,10 @@ internal class RankImageService
     
     internal async Task<Stream> DrawAsync(DiscordMember member, GuildUser userData, CancellationToken cancellationToken)
     {
-        var image = new Image<Rgba32>(_currentValue.Rank.Width, _currentValue.Rank.Height);
-        image.Mutate(x => x.Paint(canvas => canvas.Fill(Brushes.Solid(Color.White))));
+        using var image = new MagickImage(MagickColors.White, (uint)_currentValue.Rank.Width, (uint)_currentValue.Rank.Height);
 
-        var avatar = await _common.CreateAvatarAsync(member.AvatarUrl, _currentValue.Rank.Avatar.Size, cancellationToken);
-        image.Mutate(x => x.DrawImage(avatar, new Point(_currentValue.Rank.Avatar.X, _currentValue.Rank.Avatar.Y), 1f));
+        using var avatar = await _common.CreateAvatarAsync(member.AvatarUrl, _currentValue.Rank.Avatar.Size, cancellationToken);
+        image.Composite(avatar, _currentValue.Rank.Avatar.X, _currentValue.Rank.Avatar.Y, CompositeOperator.Over);
 
         var font = _fontCollection.Get(_currentValue.Rank.Font);
 
@@ -65,23 +60,20 @@ internal class RankImageService
                 _ => string.Empty
             };
 
-            var textFont = text.Headline 
-                ? new Font(font, text.Size, FontStyle.Bold) 
-                : new Font(font, text.Size);
+            var drawables = new Drawables()
+                .FontPointSize(text.Size)
+                .FillColor(MagickColors.Black);
+            drawables = text.Headline
+                ? drawables.Font(font, FontStyleType.Any, FontWeight.Bold, FontStretch.Normal)
+                : drawables.Font(font);
 
-            image.Mutate(x => x.Paint(canvas => canvas.DrawText(
-                new RichTextOptions(textFont)
-                {
-                    Origin = new PointF(text.TextPosition.X, text.TextPosition.Y)
-                },
-                textValue,
-                Brushes.Solid(Color.Black),
-                null
-            )));
+            drawables
+                .Text(text.TextPosition.X, text.TextPosition.Y + text.Size, textValue)
+                .Draw(image);
         }   
 
         var stream = new MemoryStream();
-        await image.SaveAsync(stream, new WebpEncoder(), cancellationToken);
+        await image.WriteAsync(stream, MagickFormat.WebP, cancellationToken);
         stream.Position = 0;
         return stream;
     }

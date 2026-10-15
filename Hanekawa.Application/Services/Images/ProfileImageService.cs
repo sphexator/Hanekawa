@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using Hanekawa.Application.Extensions;
+﻿using Hanekawa.Application.Extensions;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Discord;
@@ -7,16 +6,10 @@ using Hanekawa.Entities.Settings.Images;
 using Hanekawa.Entities.Users;
 using Hanekawa.Extensions;
 using Humanizer;
+using ImageMagick;
+using ImageMagick.Drawing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using Path = SixLabors.ImageSharp.Drawing.Path;
 
 namespace Hanekawa.Application.Services.Images;
 
@@ -29,55 +22,58 @@ public class ProfileImageService(ImageSettings settings,
 {
 	private readonly CommonImageService _common = new(httpClientFactory);
 
-	private static Image<Rgba64> ProfileTemplate => Image.Load<Rgba64>(ProfileTemplatePath);
+	private static IMagickImage ProfileTemplate => new MagickImage(ProfileTemplatePath);
     private static string ProfileTemplatePath => $"{Directory.GetCurrentDirectory()}/Data/Template/ProfileTemplate.png";
 
     public async ValueTask<Stream> DrawAsync(DiscordMember member, GuildUser userData, CancellationToken cancellationToken = default)
     {
         var toReturn = new MemoryStream();
-        using var img = new Image<Rgba64>(settings.Profile.Width, settings.Profile.Height);
-        var avatar = await _common.CreateAvatarAsync(member.AvatarUrl, settings.Profile.Avatar.Size, cancellationToken);
-        img.Mutate(x =>
+        using var img = new MagickImage(MagickColors.Transparent, (uint)settings.Profile.Width, (uint)settings.Profile.Height);
+        using var avatar = await _common.CreateAvatarAsync(member.AvatarUrl, settings.Profile.Avatar.Size, cancellationToken);
+        using (var template = ProfileTemplate)
         {
-            x.DrawImage(ProfileTemplate, new Point(0, 0), new GraphicsOptions()); // image
-            x.DrawImage(avatar,
-                new Point(settings.Profile.Avatar.X, settings.Profile.Avatar.Y),
-                new GraphicsOptions { Antialias = true });
-        });
+            img.Composite(template, 0, 0, CompositeOperator.Over);
+        }
+        img.Composite(avatar, settings.Profile.Avatar.X, settings.Profile.Avatar.Y, CompositeOperator.Atop);
 
         await ApplyText(img, settings.Profile.Texts, member, userData, cancellationToken);
-        var progressBar = CreateProgressBar(userData, avatar.Height);
-        img.Mutate(x => x.Paint(new DrawingOptions
-        {
-            GraphicsOptions = new GraphicsOptions
-            {
-                BlendPercentage = 1
-            }
-        }, canvas => canvas.DrawLine(Pens.Solid(Color.Gray, 3), CreateProgressBar(1, avatar.Height))));
+        var progressBar = CreateProgressBar(userData, (int)avatar.Height);
+        new Drawables()
+            .StrokeColor(MagickColors.Gray)
+            .StrokeWidth(3)
+            .FillOpacity(new Percentage(0))
+            .Polyline(CreateProgressBar(1, (int)avatar.Height))
+            .Draw(img);
         if (progressBar.Length > 0)
         {
-            img.Mutate(x => x.Paint(canvas => canvas.DrawLine(Pens.Solid(Color.Red, 3), progressBar)));
+            new Drawables()
+                .StrokeColor(MagickColors.Red)
+                .StrokeWidth(3)
+                .FillOpacity(new Percentage(0))
+                .Polyline(progressBar)
+                .Draw(img);
         }
 
-        await img.SaveAsync(toReturn, WebpFormat.Instance, cancellationToken: cancellationToken);
+        await img.WriteAsync(toReturn, MagickFormat.WebP, cancellationToken);
+        toReturn.Position = 0;
         return toReturn;
     }
 
-    private async ValueTask ApplyText(Image<Rgba64> img, TextSettings[] texts, DiscordMember member,
+    private async ValueTask ApplyText(IMagickImage<ushort> img, TextSettings[] texts, DiscordMember member,
         GuildUser userData,
         CancellationToken cancellationToken)
     {
-        var draws = new List<(string Text, TextSettings Item, PointF[] Points, HorizontalAlignment Alignment)>();
+        var draws = new List<(string Text, TextSettings Item, PointD[] Points, TextAlignment Alignment)>();
         for (var i = 0; i < texts.Length; i++)
         {
             var item = texts[i];
-            var points = item.Position.Select(e => new PointF(e.X, e.Y)).ToArray();
+            var points = item.Position.Select(e => new PointD(e.X, e.Y)).ToArray();
             try
             {
                 if (!item.Headline)
                 {
                     var textValue = await HandleCustomTextAsync(member, userData, item, cancellationToken);
-                    draws.Add((textValue, item, points, HorizontalAlignment.Left));
+                    draws.Add((textValue, item, points, TextAlignment.Left));
                 }
 
                 var value = "undefined";
@@ -96,7 +92,7 @@ public class ProfileImageService(ImageSettings settings,
                         break;
                 }
 
-                draws.Add((value, item, points, HorizontalAlignment.Right));
+                draws.Add((value, item, points, TextAlignment.Right));
             }
             catch (Exception e)
             {
@@ -104,13 +100,10 @@ public class ProfileImageService(ImageSettings settings,
             }
         }
 
-        img.Mutate(x => x.Paint(canvas =>
+        foreach (var (text, item, points, alignment) in draws)
         {
-            foreach (var (text, item, points, alignment) in draws)
-            {
-                DrawTextValue(canvas, text, item, points, alignment);
-            }
-        }));
+            DrawTextValue(img, text, item, points, alignment);
+        }
     }
 
     private async ValueTask<string> HandleCustomTextAsync(DiscordMember member, GuildUser userData, TextSettings item,
@@ -158,10 +151,10 @@ public class ProfileImageService(ImageSettings settings,
         return value;
     }
 
-    private static PointF[] CreateProgressBar(float percentage, int size)
+    private static PointD[] CreateProgressBar(float percentage, int size)
     {
         var numb = percentage * 100 / 100 * 360 * 2;
-        var points = new PointF[Convert.ToInt32(numb)];
+        var points = new PointD[Convert.ToInt32(numb)];
         //const double radius = 55;
         var radius = (int) Math.Ceiling((size * Math.PI) / (2 * Math.PI));
         
@@ -171,12 +164,12 @@ public class ProfileImageService(ImageSettings settings,
 
             var x = 200 + radius * Math.Cos(radians - Math.PI / 2);
             var y = 58 + radius * Math.Sin(radians - Math.PI / 2);
-            points[i] = (new PointF((float) x, (float) y));
+            points[i] = new PointD(x, y);
         }
         return points;
     }
 
-    private static PointF[] CreateProgressBar(GuildUser userData, int avatarSize)
+    private static PointD[] CreateProgressBar(GuildUser userData, int avatarSize)
     {
         var exp = userData.CurrentLevelExperience;
         if (exp == 0) exp = 1;
@@ -185,33 +178,34 @@ public class ProfileImageService(ImageSettings settings,
         return CreateProgressBar(percentage, avatarSize);
     }
 
-    private void DrawTextValue(DrawingCanvas canvas, string text, TextSettings item, PointF[] points, HorizontalAlignment alignment = HorizontalAlignment.Left)
+    private void DrawTextValue(IMagickImage<ushort> img, string text, TextSettings item, PointD[] points, TextAlignment alignment = TextAlignment.Left)
     {
-        var position = Vector2.Zero;
         if (item.Headline)
         {
-            alignment = HorizontalAlignment.Center;
+            alignment = TextAlignment.Center;
         }
 
+        double x;
         switch (alignment)
         {
-            case HorizontalAlignment.Left:
-                position.X = 0;
+            case TextAlignment.Right:
+                x = points[1].X;
                 break;
-            case HorizontalAlignment.Right:
-                position.X = points[1].X;
+            case TextAlignment.Center:
+                x = (points[0].X + points[1].X) / 2.0;
                 break;
-            case HorizontalAlignment.Center:
-                position.X = points[1].X / 2F;
+            default:
+                x = points[0].X;
                 break;
         }
 
-        var font = new Font(fontCollection.Get(settings.Profile.Font), item.Size);
-        var options = new RichTextOptions(font)
-        {
-            HorizontalAlignment = alignment,
-            Origin = position
-        };
-        canvas.DrawText(options, text, new Path(new LinearLineSegment(points)), Brushes.Solid(Color.White), null);
+        var y = points[0].Y + item.Size;
+        new Drawables()
+            .Font(fontCollection.Get(settings.Profile.Font))
+            .FontPointSize(item.Size)
+            .FillColor(MagickColors.White)
+            .TextAlignment(alignment)
+            .Text(x, y, text)
+            .Draw(img);
     }
 }

@@ -1,39 +1,86 @@
-﻿using Hanekawa.Application.Services;
+﻿using System.Net;
+using System.Net.Http.Headers;
+using Hanekawa.Application.Interfaces;
+using Hanekawa.Application.Services;
 using Hanekawa.Application.Services.Images;
 using Hanekawa.Entities.Discord;
+using Hanekawa.Entities.Settings.Images;
 using Hanekawa.Entities.Users;
+using Hanekawa.Tests.Common;
+using ImageMagick;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
-using SixLabors.Fonts;
 
 namespace Hanekawa.Tests.ImageServiceTests;
 
 public class ProfilePictureTests
 {
-    private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
-    private readonly Mock<ILogger<ImageService>> _loggerMock = new();
-    private readonly ImageService _imageServiceMock;
-
-    public ProfilePictureTests()
-    {
-        _httpClientFactoryMock.Setup(x => x.CreateClient(It.IsAny<string>()))
-            .Returns(new HttpClient());
-    }
+    // 1x1 PNG used so profile rendering stays offline and deterministic.
+    private static readonly byte[] OneByOnePng = Convert.FromBase64String(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
 
     [Fact]
-    public async Task GetProfilePictureAsync_WithValidUser_ReturnsProfilePicture()
+    public async Task DrawProfileAsync_ReturnsStream()
     {
-        // Arrange
+        var httpClientFactory = new Mock<IHttpClientFactory>();
+        httpClientFactory
+            .Setup(x => x.CreateClient(It.IsAny<string>()))
+            .Returns(() => new HttpClient(new StaticImageHandler(OneByOnePng)));
 
-        // Act
-        Stream result = await _imageServiceMock.DrawProfileAsync(new DiscordMember(), new GuildUser(), CancellationToken.None);
+        var fontCollection = CommonImageRetrival.GetTestFontCollection();
+        var fontName = fontCollection.Names.First();
+        var imageSettings = new Mock<IOptionsMonitor<ImageSettings>>();
+        imageSettings.Setup(x => x.CurrentValue).Returns(new ImageSettings
+        {
+            Profile = new ProfileSettings
+            {
+                Width = 400,
+                Height = 400,
+                Font = fontName,
+                Avatar = new AvatarSettings { Size = 110, X = 145, Y = 4 },
+                Texts = []
+            }
+        });
 
-        // Assert
+        var imageService = new ImageService(
+            httpClientFactory.Object,
+            fontCollection,
+            imageSettings.Object,
+            new Mock<ILogger<ImageService>>().Object,
+            new Mock<IDbContext>().Object,
+            new Mock<IConfigService>().Object);
+
+        var member = new DiscordMember
+        {
+            Id = TestUsers.TestMember.Id,
+            GuildId = TestUsers.TestMember.GuildId,
+            Guild = TestUsers.TestMember.Guild,
+            Username = TestUsers.TestMember.Username,
+            AvatarUrl = "http://example.test/avatar.png"
+        };
+
+        var stream = await imageService.DrawProfileAsync(member, TestUsers.TestUser, CancellationToken.None);
+
+        Assert.NotNull(stream);
+        Assert.True(stream.Length > 0);
+        stream.Position = 0;
+        using var image = new MagickImage(stream);
+        Assert.Equal(400, (int)image.Width);
+        Assert.Equal(400, (int)image.Height);
     }
 
-    [Fact]
-    public async Task GetProfilePictureAsync_WithInvalidUser_ReturnsNull()
+    private sealed class StaticImageHandler(byte[] bytes) : HttpMessageHandler
     {
-
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(bytes)
+            };
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+            return Task.FromResult(response);
+        }
     }
 }

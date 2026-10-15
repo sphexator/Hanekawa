@@ -1,11 +1,8 @@
 ﻿using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Discord;
+using ImageMagick;
+using ImageMagick.Drawing;
 using Microsoft.Extensions.Logging;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.Processing;
 
 namespace Hanekawa.Application.Services.Images;
 
@@ -26,24 +23,20 @@ public class WelcomeImageService
     {
         var toReturn = new MemoryStream();
         var dbImage = cfg.Images[Random.Shared.Next(cfg.Images.Count - 1)];
-        var image = await _common.GetImageFromUrlAsync(new Uri(dbImage.ImageUrl), cancellationToken);
+        using var image = await _common.GetImageFromUrlAsync(new Uri(dbImage.ImageUrl), cancellationToken);
 
-        var avatar =
+        using var avatar =
             await _common.CreateAvatarAsync(member.AvatarUrl, dbImage.AvatarSize, cancellationToken);
-        image.Mutate(x =>
-        {
-            x.DrawImage(avatar, new Point(dbImage.AvatarX, dbImage.AvatarY), 1f);
-            x.Paint(canvas => canvas.DrawText(
-                new RichTextOptions(new Font(_fontCollection.Get("Arial"), dbImage.UsernameSize))
-                {
-                    Origin = new PointF(dbImage.UsernameX, dbImage.UsernameY)
-                },
-                member.Username,
-                Brushes.Solid(Color.White),
-                null));
-        });
+        image.Composite(avatar, dbImage.AvatarX, dbImage.AvatarY, CompositeOperator.Over);
+        new Drawables()
+            .Font(_fontCollection.Get("Arial"))
+            .FontPointSize(dbImage.UsernameSize)
+            .FillColor(MagickColors.White)
+            .Text(dbImage.UsernameX, dbImage.UsernameY + dbImage.UsernameSize, member.Username)
+            .Draw(image);
 
-        await image.SaveAsync(toReturn, PngFormat.Instance, cancellationToken: cancellationToken);
+        await image.WriteAsync(toReturn, MagickFormat.Png, cancellationToken);
+        toReturn.Position = 0;
         return toReturn;
     }
 }

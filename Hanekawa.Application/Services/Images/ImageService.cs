@@ -6,7 +6,6 @@ using Hanekawa.Entities.Settings.Images;
 using Hanekawa.Entities.Users;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SixLabors.Fonts;
 
 namespace Hanekawa.Application.Services.Images;
 

@@ -6,10 +6,10 @@ using Hanekawa.Application.Services.Images;
 using Hanekawa.Entities.Discord;
 using Hanekawa.Entities.Settings.Images;
 using Hanekawa.Tests.Common;
+using ImageMagick;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using SixLabors.ImageSharp;
 
 namespace Hanekawa.Tests.ImageServiceTests;
 
@@ -28,7 +28,7 @@ public class RankPictureTests
             .Returns(() => new HttpClient(new StaticImageHandler(OneByOnePng)));
 
         var fontCollection = CommonImageRetrival.GetTestFontCollection();
-        var fontName = fontCollection.Families.First().Name;
+        var fontName = fontCollection.Names.First();
         var imageSettings = new Mock<IOptionsMonitor<ImageSettings>>();
         imageSettings.Setup(x => x.CurrentValue).Returns(new ImageSettings
         {
@@ -74,9 +74,9 @@ public class RankPictureTests
         Assert.NotNull(stream);
         Assert.True(stream.Length > 0);
         stream.Position = 0;
-        using var image = await Image.LoadAsync(stream);
-        Assert.Equal(200, image.Width);
-        Assert.Equal(80, image.Height);
+        using var image = new MagickImage(stream);
+        Assert.Equal(200, (int)image.Width);
+        Assert.Equal(80, (int)image.Height);
     }
 
     private sealed class StaticImageHandler(byte[] bytes) : HttpMessageHandler

@@ -1,7 +1,5 @@
 ﻿using Hanekawa.Application.Extensions;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using ImageMagick;
 
 namespace Hanekawa.Application.Services.Images;
 
@@ -14,12 +12,11 @@ public class CommonImageService(IHttpClientFactory httpClientFactory)
     /// <param name="size">Size of avatar</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<Image> CreateAvatarAsync(string avatarUrl, int size, CancellationToken cancellationToken = default)
+    public async Task<IMagickImage<ushort>> CreateAvatarAsync(string avatarUrl, int size, CancellationToken cancellationToken = default)
     {
-        using var img = await GetImageFromUrlAsync(new Uri(avatarUrl), cancellationToken);
-        img.Mutate(e =>
-            e.ConvertToAvatar(new Size(size), (int)Math.Ceiling((size * Math.PI) / (2 * Math.PI))));
-        return img.CloneAs<Rgba64>();
+        var img = await GetImageFromUrlAsync(new Uri(avatarUrl), cancellationToken);
+        img.ConvertToAvatar(size, (int)Math.Ceiling((size * Math.PI) / (2 * Math.PI)));
+        return img;
     }
 
     /// <summary>
@@ -28,10 +25,10 @@ public class CommonImageService(IHttpClientFactory httpClientFactory)
     /// <param name="uri"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    internal async Task<Image> GetImageFromUrlAsync(Uri uri, CancellationToken cancellationToken = default)
+    internal async Task<IMagickImage<ushort>> GetImageFromUrlAsync(Uri uri, CancellationToken cancellationToken = default)
     {
         var client = httpClientFactory.CreateClient("ImageService");
-        var imgStream = await client.GetStreamAsync(uri, cancellationToken);
-        return await Image.LoadAsync<Rgba64>(imgStream, cancellationToken);
+        var bytes = await client.GetByteArrayAsync(uri, cancellationToken);
+        return new MagickImage(bytes);
     }
 }
