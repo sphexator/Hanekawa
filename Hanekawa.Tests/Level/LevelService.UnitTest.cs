@@ -338,4 +338,48 @@ public class LevelServiceUnitTest
         Assert.Equal(new ulong[] { 1, 2 }, member.RoleIds);
         _mockBot.Verify(x => x.ModifyRolesAsync(member, member.RoleIds), Times.Once);
     }
+
+    [Fact]
+    public async Task AddExperienceAsync_LevelsUp_WhenAwardLandsExactlyOnNextRequirement()
+    {
+        _user.Experience = 300;
+        var configDbSet = new List<GuildConfig> { _config }.MockDbSet();
+        var levelDbSet = new List<LevelRequirement> { new() { Level = 2, Experience = 400 } }.MockDbSet();
+        var userDbSet = new List<GuildUser> { _user }.MockDbSet();
+        _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
+        _mockdb.Setup(e => e.LevelRequirements).Returns(levelDbSet.Object);
+        _mockdb.Setup(e => e.Users).Returns(userDbSet.Object);
+        _mockBot.Setup(x => x.ModifyRolesAsync(_member, It.IsAny<ulong[]>())).Returns(Task.CompletedTask);
+
+        var awarded = await _levelService.AddExperienceAsync(_member, 100);
+
+        Assert.Equal(100, awarded);
+        Assert.Equal(2, _user.Level);
+        Assert.Equal(400, _user.Experience);
+        _mockDispatcher.Verify(x => x.SendAsync(
+            It.Is<LevelUp>(e => e.Level == 2 && e.Member == _member && e.GuildConfig == _config),
+            It.IsAny<CancellationToken>()), Times.Once);
+        _mockdb.Verify(e => e.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddExperienceAsync_DoesNotLevelUp_WhenAwardIsOneBelowNextRequirement()
+    {
+        _user.Experience = 300;
+        var configDbSet = new List<GuildConfig> { _config }.MockDbSet();
+        var levelDbSet = new List<LevelRequirement> { new() { Level = 2, Experience = 400 } }.MockDbSet();
+        var userDbSet = new List<GuildUser> { _user }.MockDbSet();
+        _mockdb.Setup(e => e.GuildConfigs).Returns(configDbSet.Object);
+        _mockdb.Setup(e => e.LevelRequirements).Returns(levelDbSet.Object);
+        _mockdb.Setup(e => e.Users).Returns(userDbSet.Object);
+
+        var awarded = await _levelService.AddExperienceAsync(_member, 99);
+
+        Assert.Equal(99, awarded);
+        Assert.Equal(1, _user.Level);
+        Assert.Equal(399, _user.Experience);
+        _mockDispatcher.Verify(x => x.SendAsync(It.IsAny<LevelUp>(), It.IsAny<CancellationToken>()), Times.Never);
+        _mockBot.Verify(x => x.ModifyRolesAsync(It.IsAny<DiscordMember>(), It.IsAny<ulong[]>()), Times.Never);
+        _mockdb.Verify(e => e.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

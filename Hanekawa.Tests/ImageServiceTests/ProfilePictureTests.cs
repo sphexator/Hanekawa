@@ -11,6 +11,7 @@ using ImageMagick;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Moq.EntityFrameworkCore;
 
 namespace Hanekawa.Tests.ImageServiceTests;
 
@@ -144,6 +145,102 @@ public class ProfilePictureTests
 
         Assert.NotNull(stream);
         Assert.True(stream.Length > 0);
+    }
+
+    [Fact]
+    public async Task DrawProfileAsync_ServerRank_CountsOnlyThisGuild_AndIncludesTies()
+    {
+        var users = new List<GuildUser>
+        {
+            new() { GuildId = 1, Id = 2, Experience = 500 },
+            new() { GuildId = 1, Id = 3, Experience = 100 },
+            new() { GuildId = 1, Id = 1, Experience = 100 },
+            new() { GuildId = 1, Id = 4, Experience = 10 },
+            new() { GuildId = 2, Id = 5, Experience = 10_000 }
+        };
+        var db = new Mock<IDbContext>();
+        db.Setup(x => x.Users).ReturnsDbSet(users);
+        var subject = new GuildUser
+        {
+            Id = 1,
+            GuildId = 1,
+            Experience = 100,
+            CurrentLevelExperience = 40,
+            NextLevelExperience = 100,
+            User = new User { Id = 1 }
+        };
+
+        var rendered = await RenderAsync(db.Object, subject, "not-a-rank", "Custom", "ServerRank");
+        var expected = await RenderAsync(db.Object, subject, "3/4", nameof(DiscordMember), nameof(DiscordMember.Username));
+        var otherGuild = await RenderAsync(db.Object, subject, "4/5", nameof(DiscordMember), nameof(DiscordMember.Username));
+        var strictGreater = await RenderAsync(db.Object, subject, "1/4", nameof(DiscordMember), nameof(DiscordMember.Username));
+
+        Assert.Equal(expected, rendered);
+        Assert.NotEqual(otherGuild, rendered);
+        Assert.NotEqual(strictGreater, rendered);
+    }
+
+    private static async Task<string> RenderAsync(
+        IDbContext db,
+        GuildUser user,
+        string username,
+        string sourceType,
+        string sourceField)
+    {
+        var httpClientFactory = new Mock<IHttpClientFactory>();
+        httpClientFactory
+            .Setup(x => x.CreateClient(It.IsAny<string>()))
+            .Returns(() => new HttpClient(new StaticImageHandler(OneByOnePng)));
+
+        var fontCollection = CommonImageRetrival.GetTestFontCollection();
+        var imageSettings = new Mock<IOptionsMonitor<ImageSettings>>();
+        imageSettings.Setup(x => x.CurrentValue).Returns(new ImageSettings
+        {
+            Profile = new ProfileSettings
+            {
+                Width = 400,
+                Height = 200,
+                Font = fontCollection.Names.First(),
+                Avatar = new AvatarSettings { Size = 64, X = 8, Y = 8 },
+                Texts =
+                [
+                    new TextSettings
+                    {
+                        Headline = true,
+                        SourceType = sourceType,
+                        SourceField = sourceField,
+                        Size = 28,
+                        Position =
+                        [
+                            new ImagePosition { X = 40, Y = 80 },
+                            new ImagePosition { X = 280, Y = 80 }
+                        ]
+                    }
+                ]
+            }
+        });
+
+        var imageService = new ImageService(
+            httpClientFactory.Object,
+            fontCollection,
+            imageSettings.Object,
+            new Mock<ILogger<ImageService>>().Object,
+            db,
+            new Mock<IConfigService>().Object);
+
+        var member = new DiscordMember
+        {
+            Id = user.Id,
+            GuildId = user.GuildId,
+            Guild = new Guild { GuildId = user.GuildId, Name = "guild" },
+            Username = username,
+            AvatarUrl = "http://example.test/avatar.png"
+        };
+
+        var stream = await imageService.DrawProfileAsync(member, user, CancellationToken.None);
+        stream.Position = 0;
+        using var image = new MagickImage(stream);
+        return image.Signature;
     }
 
     private sealed class StaticImageHandler(byte[] bytes) : HttpMessageHandler
