@@ -1001,6 +1001,76 @@ public class ActivityServiceTests
         _db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    [Fact]
+    public async Task ProcessWeekRolloversAsync_Completes_WhenPreviousWeekRoleTargetIsMissing()
+    {
+        var currentWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow);
+        var previousWeek = currentWeek.AddDays(-7);
+        var config = new ActivityConfig(1)
+        {
+            PreviousWeekRoleId = 100,
+            PreviousWeekHolderId = 8,
+            AnnouncementChannelId = 300,
+            LastProcessedWeekStart = previousWeek
+        };
+        SetupConfigs([new GuildConfig { GuildId = 1, ActivityConfig = config }]);
+        SetupActivities(
+        [
+            new GuildActivity { GuildId = 1, UserId = 9, WeekStart = previousWeek, MessageCount = 15 }
+        ]);
+        _bot.Setup(x => x.RemoveRoleAsync(1, 8, 100))
+            .ThrowsAsync(new InvalidOperationException("role change failed",
+                new InvalidOperationException("HTTP 404: Unknown Role")));
+        _bot.Setup(x => x.AddRoleAsync(1, 9, 100))
+            .ThrowsAsync(new InvalidOperationException("role change failed",
+                new InvalidOperationException("HTTP 404: Unknown Member")));
+
+        await _sut.ProcessWeekRolloversAsync();
+        await _sut.ProcessWeekRolloversAsync();
+
+        _bot.Verify(x => x.RemoveRoleAsync(1, 8, 100), Times.Once);
+        _bot.Verify(x => x.AddRoleAsync(1, 9, 100), Times.Once);
+        _bot.Verify(x => x.SendMessageAsync(300, It.Is<string>(m => m.Contains("<@9>") && m.Contains("15")), null),
+            Times.Once);
+        Assert.Equal(9UL, config.PreviousWeekHolderId);
+        Assert.Equal(currentWeek, config.LastProcessedWeekStart);
+    }
+
+    [Fact]
+    public async Task ProcessWeekRolloversAsync_PropagatesCancellation_WithoutSavingOrContinuing()
+    {
+        var previousWeek = ActivityService.GetWeekStart(DateTimeOffset.UtcNow).AddDays(-7);
+        var guildOne = new ActivityConfig(1)
+        {
+            AnnouncementChannelId = 301,
+            LastProcessedWeekStart = previousWeek
+        };
+        var guildTwo = new ActivityConfig(2)
+        {
+            AnnouncementChannelId = 302,
+            LastProcessedWeekStart = previousWeek
+        };
+        SetupConfigs(
+        [
+            new GuildConfig { GuildId = 1, ActivityConfig = guildOne },
+            new GuildConfig { GuildId = 2, ActivityConfig = guildTwo }
+        ]);
+        SetupActivities(
+        [
+            new GuildActivity { GuildId = 1, UserId = 10, WeekStart = previousWeek, MessageCount = 3 },
+            new GuildActivity { GuildId = 2, UserId = 20, WeekStart = previousWeek, MessageCount = 7 }
+        ]);
+        _bot.Setup(x => x.SendMessageAsync(It.IsAny<ulong>(), It.IsAny<string>(), null))
+            .ThrowsAsync(new OperationCanceledException());
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => _sut.ProcessWeekRolloversAsync());
+
+        _bot.Verify(x => x.SendMessageAsync(It.IsAny<ulong>(), It.IsAny<string>(), null), Times.Once);
+        Assert.Equal(previousWeek, guildOne.LastProcessedWeekStart);
+        Assert.Equal(previousWeek, guildTwo.LastProcessedWeekStart);
+        _db.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Theory]
     [InlineData("2026-09-14", "2026-09-14")] // Monday stays
     [InlineData("2026-09-16", "2026-09-14")] // Wednesday rolls back
