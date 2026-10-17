@@ -153,8 +153,17 @@ public class ProfileImageService(ImageSettings settings,
 
     private static PointD[] CreateProgressBar(float percentage, int size)
     {
+        // A non-finite or oversized ratio used to overflow the point buffer.
+        if (!float.IsFinite(percentage) || percentage <= 0)
+            return [];
+
+        percentage = Math.Min(percentage, 1f);
         var numb = percentage * 100 / 100 * 360 * 2;
-        var points = new PointD[Convert.ToInt32(numb)];
+        var count = Convert.ToInt32(numb);
+        if (count <= 0)
+            return [];
+
+        var points = new PointD[count];
         //const double radius = 55;
         var radius = (int) Math.Ceiling((size * Math.PI) / (2 * Math.PI));
         
@@ -171,9 +180,13 @@ public class ProfileImageService(ImageSettings settings,
 
     private static PointD[] CreateProgressBar(GuildUser userData, int avatarSize)
     {
+        var next = userData.NextLevelExperience;
+        if (next <= 0)
+            return [];
+
         var exp = userData.CurrentLevelExperience;
-        if (exp == 0) exp = 1;
-        var percentage = (exp) / (float) userData.NextLevelExperience;
+        if (exp <= 0) exp = 1;
+        var percentage = exp / (float)next;
 
         return CreateProgressBar(percentage, avatarSize);
     }

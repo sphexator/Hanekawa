@@ -155,7 +155,9 @@ public class DiscordMapperTests
         memberMock.Setup(m => m.Id).Returns(new Snowflake(12345));
         memberMock.Setup(m => m.GuildId).Returns(new Snowflake(67890));
         memberMock.Setup(m => m.Name).Returns("TestUser");
-        memberMock.Setup(m => m.RoleIds).Returns(Array.Empty<Snowflake>());
+        memberMock.Setup(m => m.Nick).Returns("Nick");
+        memberMock.Setup(m => m.IsBot).Returns(false);
+        memberMock.Setup(m => m.RoleIds).Returns([new Snowflake(7), new Snowflake(8)]);
 
         var result = memberMock.Object.ToDiscordMember();
 
@@ -163,6 +165,25 @@ public class DiscordMapperTests
         Assert.Equal(12345ul, result.Id);
         Assert.Equal(67890ul, result.GuildId);
         Assert.Equal(67890ul, result.Guild.GuildId);
+        Assert.Null(result.Guild.Name);
+        Assert.Empty(result.Guild.Emotes);
         Assert.Equal("TestUser", result.Username);
+        Assert.Equal("Nick", result.Nickname);
+        Assert.Equal([7ul, 8ul], result.RoleIds);
+        Assert.Null(result.VoiceSessionId);
+    }
+
+    [Fact]
+    public void ToGuild_WhenGuildIsNotCached_ReturnsGuildIdOnly()
+    {
+        var memberMock = new Moq.Mock<IMember>();
+        memberMock.Setup(m => m.GuildId).Returns(new Snowflake(67890));
+
+        var guild = memberMock.Object.ToGuild();
+
+        Assert.Equal(67890ul, guild.GuildId);
+        Assert.Null(guild.Name);
+        Assert.Null(guild.IconUrl);
+        Assert.Empty(guild.Emotes);
     }
 }

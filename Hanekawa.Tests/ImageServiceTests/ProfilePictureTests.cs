@@ -72,6 +72,82 @@ public class ProfilePictureTests
     }
 
     [Fact]
+    public async Task DrawProfileAsync_ZeroNextLevelExperience_DoesNotThrow()
+    {
+        var httpClientFactory = new Mock<IHttpClientFactory>();
+        httpClientFactory
+            .Setup(x => x.CreateClient(It.IsAny<string>()))
+            .Returns(() => new HttpClient(new StaticImageHandler(OneByOnePng)));
+
+        var fontCollection = CommonImageRetrival.GetTestFontCollection();
+        var imageSettings = new Mock<IOptionsMonitor<ImageSettings>>();
+        imageSettings.Setup(x => x.CurrentValue).Returns(new ImageSettings
+        {
+            Profile = new ProfileSettings
+            {
+                Width = 400,
+                Height = 400,
+                Font = "Arial",
+                Avatar = new AvatarSettings { Size = 110, X = 145, Y = 4 },
+                Texts =
+                [
+                    new TextSettings
+                    {
+                        TextType = "Regular",
+                        Text = "Name",
+                        Headline = true,
+                        SourceType = "DiscordMember",
+                        SourceField = "DisplayName",
+                        Position = [new ImagePosition { X = 10, Y = 120 }, new ImagePosition { X = 390, Y = 120 }],
+                        Size = 20
+                    },
+                    new TextSettings
+                    {
+                        TextType = "Regular",
+                        Text = "Level",
+                        SourceType = "GuildUser",
+                        SourceField = "Level",
+                        Position = [new ImagePosition { X = 15, Y = 160 }, new ImagePosition { X = 375, Y = 160 }],
+                        Size = 20
+                    }
+                ]
+            }
+        });
+
+        var imageService = new ImageService(
+            httpClientFactory.Object,
+            fontCollection,
+            imageSettings.Object,
+            new Mock<ILogger<ImageService>>().Object,
+            new Mock<IDbContext>().Object,
+            new Mock<IConfigService>().Object);
+
+        var member = new DiscordMember
+        {
+            Id = TestUsers.TestMember.Id,
+            GuildId = TestUsers.TestMember.GuildId,
+            Guild = TestUsers.TestMember.Guild,
+            Username = TestUsers.TestMember.Username,
+            Nickname = null,
+            AvatarUrl = "http://example.test/avatar.png"
+        };
+        var user = new GuildUser
+        {
+            Id = member.Id,
+            GuildId = member.GuildId,
+            Level = 4,
+            Experience = 500,
+            CurrentLevelExperience = 0,
+            NextLevelExperience = 0
+        };
+
+        var stream = await imageService.DrawProfileAsync(member, user, CancellationToken.None);
+
+        Assert.NotNull(stream);
+        Assert.True(stream.Length > 0);
+    }
+
+    [Fact]
     public async Task DrawProfileAsync_ServerRank_CountsOnlyThisGuild_AndIncludesTies()
     {
         var users = new List<GuildUser>
