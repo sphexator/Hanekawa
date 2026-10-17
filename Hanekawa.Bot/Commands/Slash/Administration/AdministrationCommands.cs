@@ -150,15 +150,18 @@ public class AdministrationCommands(IMetrics metrics) : DiscordApplicationGuildM
         using var _ = metrics.All<AdministrationCommands>();
         var channel = Bot.GetChannel(Context.GuildId, Context.ChannelId);
         if (channel is not ITextChannel textChannel) return Response("This command can only be used in text channels");
-        var messagesAsync = await textChannel.FetchMessagesAsync(messageCount);
-        var messageIds = new ulong[messagesAsync.Count];
+        if (messageCount <= 0)
+            return Response("No messages from the last 14 days to prune.");
 
-        for (var i = 0; i < messagesAsync.Count; i++)
-        {
-            var msg = messagesAsync[i];
-            if((msg as IUserMessage)!.CreatedAt() < DateTimeOffset.UtcNow.AddDays(-14)) continue;
-            messageIds[i] = msg.Id.RawValue;
-        }
+        var messages = await textChannel.FetchMessagesAsync(messageCount);
+        // System messages are not IUserMessage. Casting them threw, and skipping
+        // messages older than 14 days left 0 ids in the array. Discord then
+        // rejected the entire bulk delete.
+        var messageIds = PruneSelection.SelectDeletable(
+            messages.Select(msg => (msg.Id.RawValue, msg.CreatedAt())),
+            DateTimeOffset.UtcNow);
+        if (messageIds.Length == 0)
+            return Response("No messages from the last 14 days to prune.");
 
         await using var scope = Bot.Services.CreateAsyncScope();
         var result= await scope.ServiceProvider.GetRequiredService<IAdministrationCommandService>()
